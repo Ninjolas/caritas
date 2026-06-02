@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Cadastrar Família</h2>
+    <a href="/dashboard/" class="btn btn-outline-secondary">Cancelar</a>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <fieldset class="mb-4">
+        <legend class="fs-5 fw-bold text-primary border-bottom pb-2 mb-3">Dados Pessoais</legend>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Nome do Responsável *</label>
+                {{ form.responsavel_nome }}
+                {% if form.responsavel_nome.errors %}
+                <div class="text-danger small">{{ form.responsavel_nome.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Nacionalidade *</label>
+                {{ form.nacionalidade }}
+                {% if form.nacionalidade.errors %}
+                <div class="text-danger small">{{ form.nacionalidade.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-3 d-flex align-items-center">
+                <div class="form-check mt-2">
+                    {{ form.possui_cpf }}
+                    <label class="form-check-label" for="id_possui_cpf">Possui CPF</label>
+                </div>
+            </div>
+            <div class="col-md-4" id="campo-cpf">
+                <label class="form-label">CPF</label>
+                {{ form.cpf }}
+                {% if form.cpf.errors %}
+                <div class="text-danger small">{{ form.cpf.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Endereço *</label>
+                {{ form.endereco }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Telefone</label>
+                {{ form.telefone }}
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="mb-4">
+        <legend class="fs-5 fw-bold text-primary border-bottom pb-2 mb-3">Dados Socioeconômicos</legend>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Escolaridade *</label>
+                {{ form.escolaridade }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Ocupação</label>
+                {{ form.ocupacao }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Local de Trabalho</label>
+                {{ form.local_trabalho }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Renda Familiar (R$) *</label>
+                {{ form.renda_familiar }}
+            </div>
+            <div class="col-md-4 d-flex align-items-center">
+                <div class="form-check mt-3">
+                    {{ form.bolsa_familia }}
+                    <label class="form-check-label" for="id_bolsa_familia">Recebe Bolsa Família</label>
+                </div>
+            </div>
+            <div class="col-md-4" id="campo-beneficio">
+                <label class="form-label">Valor do Benefício (R$)</label>
+                {{ form.valor_beneficio }}
+            </div>
+            <div class="col-12">
+                <label class="form-label">Situação de Vulnerabilidade</label>
+                {{ form.situacao_vulnerabilidade }}
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="mb-4">
+        <legend class="fs-5 fw-bold text-primary border-bottom pb-2 mb-3">Composição Familiar</legend>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Qtd. de Pessoas *</label>
+                {{ form.qtd_pessoas }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Qtd. de Crianças</label>
+                {{ form.qtd_criancas }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Paróquia Responsável *</label>
+                {{ form.paroquia_responsavel }}
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="mb-4">
+        <legend class="fs-5 fw-bold text-primary border-bottom pb-2 mb-3">Dependentes</legend>
+        <div id="formset-dependentes">
+            {% for dep_form in formset %}
+            <div class="card mb-3 dependente-form">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Nome</label>
+                            {{ dep_form.nome }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Idade</label>
+                            {{ dep_form.idade }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Gênero</label>
+                            {{ dep_form.genero }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-adicionar-dependente">
+            + Adicionar Dependente
+        </button>
+    </fieldset>
+
+    <div class="d-flex gap-2 mt-4 mb-5">
+        <button type="submit" class="btn btn-primary px-4">Salvar</button>
+        <a href="/dashboard/" class="btn btn-outline-secondary px-4">Cancelar</a>
+    </div>
+</form>
+
+<script>
+    const possuiCpf = document.getElementById('id_possui_cpf');
+    const campoCpf = document.getElementById('campo-cpf');
+
+    function toggleCpf() {
+        campoCpf.style.display = possuiCpf.checked ? 'block' : 'none';
+    }
+    possuiCpf.addEventListener('change', toggleCpf);
+    toggleCpf();
+
+    const bolsaFamilia = document.getElementById('id_bolsa_familia');
+    const campoBeneficio = document.getElementById('campo-beneficio');
+
+    function toggleBeneficio() {
+        campoBeneficio.style.display = bolsaFamilia.checked ? 'block' : 'none';
+    }
+    bolsaFamilia.addEventListener('change', toggleBeneficio);
+    toggleBeneficio();
+
+    document.getElementById('btn-adicionar-dependente').addEventListener('click', function () {
+        const totalForms = document.getElementById('id_dependentes-TOTAL_FORMS');
+        const currentCount = parseInt(totalForms.value);
+        const container = document.getElementById('formset-dependentes');
+        const firstForm = container.querySelector('.dependente-form');
+        const newForm = firstForm.cloneNode(true);
+
+        newForm.querySelectorAll('input, select').forEach(function (input) {
+            input.name = input.name.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
+            input.id = input.id.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
+            input.value = '';
+        });
+
+        container.appendChild(newForm);
+        totalForms.value = currentCount + 1;
+    });
+</script>
+{% endblock %}

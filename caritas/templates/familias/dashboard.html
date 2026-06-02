@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h2>Bem-vindo, {{ user.get_full_name|default:user.username }}</h2>
+    <p class="text-muted">Painel de Controle — Sistema Cáritas</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total de Famílias Cadastradas</h5>
+                <p class="display-4 mb-0">{{ total_familias }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5 class="mb-3">Módulos</h5>
+<div class="row g-3">
+    <div class="col-md-3">
+        <a href="/familias/cadastrar/" class="text-decoration-none">
+            <div class="card h-100 border-primary shadow-sm">
+                <div class="card-body text-center py-4">
+                    <div class="fs-1 mb-2">&#128106;</div>
+                    <h6 class="card-title text-primary">Cadastrar Família</h6>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 text-muted shadow-sm">
+            <div class="card-body text-center py-4">
+                <div class="fs-1 mb-2">&#128203;</div>
+                <h6 class="card-title">Atendimentos</h6>
+                <small>Em breve</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 text-muted shadow-sm">
+            <div class="card-body text-center py-4">
+                <div class="fs-1 mb-2">&#128230;</div>
+                <h6 class="card-title">Estoque</h6>
+                <small>Em breve</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 text-muted shadow-sm">
+            <div class="card-body text-center py-4">
+                <div class="fs-1 mb-2">&#128202;</div>
+                <h6 class="card-title">Relatórios</h6>
+                <small>Em breve</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

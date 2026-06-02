@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: caritas_db
+      POSTGRES_USER: caritas
+      POSTGRES_PASSWORD: caritas123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.development
+      - DB_HOST=db
+      - DB_NAME=caritas_db
+      - DB_USER=caritas
+      - DB_PASSWORD=caritas123
+
+volumes:
+  postgres_data:
