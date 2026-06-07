@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h2>Registrar Doação</h2>
+    <p class="text-muted">Preencha os dados da doação e os itens envolvidos.</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">Dados da Doação</div>
+        <div class="card-body">
+            {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+            <span>Itens da Doação</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btn-adicionar-item">+ Adicionar item</button>
+        </div>
+        <div class="card-body">
+            {{ formset.management_form }}
+            <div id="formset-container">
+                {% for item_form in formset %}
+                <div class="item-form border rounded p-3 mb-3 bg-light">
+                    {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">Nome</label>
+                            {{ item_form.nome }}
+                            {% for error in item_form.nome.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Categoria</label>
+                            {{ item_form.categoria }}
+                            {% for error in item_form.categoria.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Quantidade</label>
+                            {{ item_form.quantidade }}
+                            {% for error in item_form.quantidade.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Unidade</label>
+                            {{ item_form.unidade }}
+                            {% for error in item_form.unidade.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        {% if formset.can_delete %}
+                        <div class="col-md-1">
+                            <div class="form-check mt-4">
+                                {{ item_form.DELETE }}
+                                <label class="form-check-label text-danger small" for="{{ item_form.DELETE.id_for_label }}">Remover</label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Salvar doação</button>
+        <a href="{% url 'doacoes:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
+
+<script>
+(function () {
+    const container = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_itemdoacao_set-TOTAL_FORMS');
+    const btnAdicionar = document.getElementById('btn-adicionar-item');
+
+    btnAdicionar.addEventListener('click', function () {
+        const forms = container.querySelectorAll('.item-form');
+        const count = forms.length;
+        const lastForm = forms[forms.length - 1];
+        const newForm = lastForm.cloneNode(true);
+
+        newForm.querySelectorAll('input, select, textarea').forEach(function (el) {
+            el.name = el.name.replace(/-\d+-/, '-' + count + '-');
+            if (el.id) el.id = el.id.replace(/-\d+-/, '-' + count + '-');
+            if (el.type !== 'checkbox' && el.type !== 'hidden') el.value = '';
+            if (el.type === 'checkbox') el.checked = false;
+        });
+
+        newForm.querySelectorAll('label').forEach(function (label) {
+            if (label.htmlFor) label.htmlFor = label.htmlFor.replace(/-\d+-/, '-' + count + '-');
+        });
+
+        container.appendChild(newForm);
+        totalForms.value = count + 1;
+    });
+})();
+</script>
+{% endblock %}
