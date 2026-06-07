@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.forms import formset_factory
@@ -9,8 +11,21 @@ from .models import Familia
 
 @login_required
 def dashboard(request):
-    total_familias = Familia.objects.count()
-    return render(request, 'familias/dashboard.html', {'total_familias': total_familias})
+    from apps.estoque.models import ItemEstoque
+    from apps.doacoes.models import Doacao
+
+    paroquia = request.user.paroquia or 'Paróquia Padrão'
+    hoje = date.today()
+
+    total_familias = Familia.objects.filter(paroquia_responsavel=paroquia).count()
+    total_estoque = ItemEstoque.objects.filter(paroquia=paroquia).count()
+    total_doacoes_mes = Doacao.objects.filter(paroquia=paroquia, data__month=hoje.month).count()
+
+    return render(request, 'familias/dashboard.html', {
+        'total_familias': total_familias,
+        'total_estoque': total_estoque,
+        'total_doacoes_mes': total_doacoes_mes,
+    })
 
 
 @login_required

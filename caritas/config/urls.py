@@ -7,4 +7,6 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/dashboard/', permanent=False)),
     path('', include('apps.accounts.urls')),
     path('', include('apps.familias.urls')),
+    path('estoque/', include('apps.estoque.urls')),
+    path('doacoes/', include('apps.doacoes.urls')),
 ]

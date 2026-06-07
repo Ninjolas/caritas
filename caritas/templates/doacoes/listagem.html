@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Doações</h2>
+        <p class="text-muted mb-0">Registro de doações recebidas e repassadas</p>
+    </div>
+    <a href="{% url 'doacoes:registrar' %}" class="btn btn-primary">+ Registrar doação</a>
+</div>
+
+{% if doacoes %}
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Data</th>
+                <th>Doador / Beneficiário</th>
+                <th>Tipo</th>
+                <th>Qtd. de itens</th>
+                <th>Registrado por</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doacao in doacoes %}
+            <tr>
+                <td>{{ doacao.data }}</td>
+                <td>{{ doacao.doador }}</td>
+                <td>
+                    {% if doacao.tipo == 'entrada' %}
+                        <span class="badge bg-success">Recebida</span>
+                    {% else %}
+                        <span class="badge bg-info text-dark">Repassada</span>
+                    {% endif %}
+                </td>
+                <td>{{ doacao.itens.count }}</td>
+                <td>{{ doacao.registrado_por.get_full_name|default:doacao.registrado_por.username }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">Nenhuma doação registrada ainda.</div>
+{% endif %}
+{% endblock %}

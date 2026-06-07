@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Estoque</h2>
+        <p class="text-muted mb-0">Itens registrados na paróquia</p>
+    </div>
+    <a href="{% url 'estoque:entrada' %}" class="btn btn-primary">+ Registrar entrada</a>
+</div>
+
+{% if itens %}
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Quantidade</th>
+                <th>Unidade</th>
+                <th>Validade</th>
+                <th>Situação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens %}
+            <tr class="{% if item.esta_vencido %}table-danger{% elif item.vence_em_breve %}table-warning{% endif %}">
+                <td>{{ item.nome }}</td>
+                <td>{{ item.get_categoria_display }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>{{ item.unidade }}</td>
+                <td>{{ item.validade|default:"—" }}</td>
+                <td>
+                    {% if item.esta_vencido %}
+                        <span class="badge bg-danger">Vencido</span>
+                    {% elif item.vence_em_breve %}
+                        <span class="badge bg-warning text-dark">Vence em breve</span>
+                    {% else %}
+                        <span class="badge bg-success">OK</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">Nenhum item registrado no estoque ainda.</div>
+{% endif %}
+{% endblock %}
