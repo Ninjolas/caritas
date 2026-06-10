@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Editar Doação — Sistema Cáritas{% endblock %}
+{% block page_title %}Editar Doação{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'doacoes:listagem' %}">Doações</a></li>
+<li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+    <form method="post">
+        {% csrf_token %}
+        <fieldset class="form-section">
+            <legend>Dados da Doação</legend>
+            {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for e in field.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+        </fieldset>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn" style="background:#1a5276;color:#fff;font-weight:500">
+                <i class="bi bi-check-circle me-1"></i> Salvar alterações
+            </button>
+            <a href="{% url 'doacoes:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

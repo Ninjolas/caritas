@@ -13,6 +13,7 @@ class ItemEstoque(models.Model):
     paroquia = models.CharField(max_length=100)
     nome = models.CharField(max_length=200)
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
+    categoria_outro = models.CharField(max_length=100, blank=True, default='')
     quantidade = models.IntegerField(default=0)
     unidade = models.CharField(max_length=50, default='unidade')
     validade = models.DateField(null=True, blank=True)

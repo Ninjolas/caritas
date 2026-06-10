@@ -92,6 +92,7 @@ def cadastrar_familia(request):
         if form.is_valid() and formset.is_valid():
             familia = form.save(commit=False)
             familia.criado_por = request.user
+            familia.paroquia_responsavel = request.user.paroquia or 'Paróquia Padrão'
             familia.save()
 
             for dep_form in formset:
