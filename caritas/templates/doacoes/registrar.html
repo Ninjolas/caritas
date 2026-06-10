@@ -34,8 +34,9 @@
         {{ formset.management_form }}
         <div id="formset-container">
             {% for item_form in formset %}
-            <div class="item-form border rounded p-3 mb-3" style="background:#f8fafc">
+            <div class="item-form border rounded p-3 mb-2" style="background:#f8fafc">
                 {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                <div style="display:none">{{ item_form.DELETE }}</div>
                 <div class="row g-2 align-items-end">
                     <div class="col-md-4">
                         <label class="form-label">Nome</label>
@@ -57,17 +58,14 @@
                         {{ item_form.unidade }}
                         {% for error in item_form.unidade.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
                     </div>
-                    {% if formset.can_delete %}
                     <div class="col-md-1">
-                        <div class="form-check mt-4">
-                            {{ item_form.DELETE }}
-                            <label class="form-check-label text-danger" style="font-size:11px" for="{{ item_form.DELETE.id_for_label }}">Remover</label>
-                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remover-item mt-4" title="Remover">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
-                    {% endif %}
                 </div>
                 <div class="campo-categoria-outro mt-2" style="display:none">
-                    <label class="form-label">Especifique o tipo</label>
+                    <label class="form-label" style="font-size:13px">Especifique o tipo</label>
                     {{ item_form.categoria_outro }}
                     {% for error in item_form.categoria_outro.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
                 </div>
@@ -89,10 +87,13 @@
 {% block extra_js %}
 <script>
 (function () {
+    var totalFormsEl = document.querySelector('[name$="-TOTAL_FORMS"]');
+    var prefix = totalFormsEl ? totalFormsEl.name.replace('-TOTAL_FORMS', '') : 'itens';
+
     function toggleCategoriaOutro(selectEl) {
-        const itemForm = selectEl.closest('.item-form');
+        var itemForm = selectEl.closest('.item-form');
         if (!itemForm) return;
-        const campo = itemForm.querySelector('.campo-categoria-outro');
+        var campo = itemForm.querySelector('.campo-categoria-outro');
         if (campo) campo.style.display = selectEl.value === 'outro' ? 'block' : 'none';
     }
 
@@ -101,35 +102,58 @@
         selectEl.addEventListener('change', function () { toggleCategoriaOutro(this); });
     }
 
-    document.querySelectorAll('.categoria-select').forEach(bindCategoria);
+    function bindRemover(btn) {
+        btn.addEventListener('click', function () {
+            var container = document.getElementById('formset-container');
+            var visiveis = container.querySelectorAll('.item-form:not([data-removido])');
+            if (visiveis.length <= 1) {
+                alert('A doação precisa ter pelo menos 1 item.');
+                return;
+            }
+            var itemForm = btn.closest('.item-form');
+            var deleteInput = itemForm.querySelector('input[name$="-DELETE"]');
+            if (deleteInput) deleteInput.checked = true;
+            itemForm.setAttribute('data-removido', '1');
+            itemForm.style.display = 'none';
+        });
+    }
 
-    const container = document.getElementById('formset-container');
-    const totalForms = document.getElementById('id_itemdoacao_set-TOTAL_FORMS');
-    const btnAdicionar = document.getElementById('btn-adicionar-item');
+    document.querySelectorAll('.categoria-select').forEach(bindCategoria);
+    document.querySelectorAll('.btn-remover-item').forEach(bindRemover);
+
+    var container = document.getElementById('formset-container');
+    var totalForms = document.querySelector('[name="' + prefix + '-TOTAL_FORMS"]');
+    var btnAdicionar = document.getElementById('btn-adicionar-item');
 
     btnAdicionar.addEventListener('click', function () {
-        const forms = container.querySelectorAll('.item-form');
-        const count = forms.length;
-        const newForm = forms[forms.length - 1].cloneNode(true);
+        var forms = container.querySelectorAll('.item-form');
+        var count = forms.length;
+        var newForm = forms[forms.length - 1].cloneNode(true);
+
+        newForm.removeAttribute('data-removido');
+        newForm.style.display = '';
 
         newForm.querySelectorAll('input, select, textarea').forEach(function (el) {
             el.name = el.name.replace(/-\d+-/, '-' + count + '-');
             if (el.id) el.id = el.id.replace(/-\d+-/, '-' + count + '-');
-            if (el.type !== 'checkbox' && el.type !== 'hidden') el.value = '';
+            if (el.type !== 'hidden') el.value = '';
             if (el.type === 'checkbox') el.checked = false;
         });
         newForm.querySelectorAll('label').forEach(function (label) {
             if (label.htmlFor) label.htmlFor = label.htmlFor.replace(/-\d+-/, '-' + count + '-');
         });
 
-        const campoOutro = newForm.querySelector('.campo-categoria-outro');
+        var campoOutro = newForm.querySelector('.campo-categoria-outro');
         if (campoOutro) campoOutro.style.display = 'none';
 
         container.appendChild(newForm);
-        totalForms.value = count + 1;
+        if (totalForms) totalForms.value = count + 1;
 
-        const newSelect = newForm.querySelector('.categoria-select');
+        var newSelect = newForm.querySelector('.categoria-select');
         if (newSelect) bindCategoria(newSelect);
+
+        var newRemover = newForm.querySelector('.btn-remover-item');
+        if (newRemover) bindRemover(newRemover);
     });
 })();
 </script>
