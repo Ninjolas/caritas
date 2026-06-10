@@ -1,18 +1,25 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import ItemEstoque
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
+
+from apps.accounts.decorators import coordenador_required
+
 from .forms import ItemEstoqueForm
+from .models import ItemEstoque
 
 
 @login_required
 def listagem(request):
-    paroquia = request.user.paroquia or 'Paróquia Padrão'
-    itens = ItemEstoque.objects.filter(paroquia=paroquia)
+    if request.user.perfil == 'administrador':
+        itens = ItemEstoque.objects.all().order_by('paroquia', 'nome')
+    else:
+        paroquia = request.user.paroquia or 'Paróquia Padrão'
+        itens = ItemEstoque.objects.filter(paroquia=paroquia)
     return render(request, 'estoque/listagem.html', {'itens': itens})
 
 
 @login_required
+@coordenador_required
 def entrada(request):
     if request.method == 'POST':
         form = ItemEstoqueForm(request.POST)

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Cadastrar Família — Sistema Cáritas{% endblock %}
-{% block page_title %}Cadastrar Família{% endblock %}
+{% block title %}Editar Família — Sistema Cáritas{% endblock %}
+{% block page_title %}Editar Família{% endblock %}
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{% url 'familias:listar_familias' %}">Famílias</a></li>
-<li class="breadcrumb-item active">Nova família</li>
+<li class="breadcrumb-item active">{{ familia.responsavel_nome }}</li>
 {% endblock %}
 
 {% block content %}
@@ -104,7 +104,8 @@
         <div id="formset-dependentes">
             {% for dep_form in formset %}
             <div class="border rounded p-3 mb-3 dependente-form" style="background:#f8fafc">
-                <div class="row g-3">
+                {{ dep_form.id }}
+                <div class="row g-3 align-items-end">
                     <div class="col-md-5">
                         <label class="form-label">Nome</label>
                         {{ dep_form.nome }}
@@ -113,17 +114,20 @@
                         <label class="form-label">Idade</label>
                         {{ dep_form.idade }}
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Gênero</label>
                         {{ dep_form.genero }}
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-check mt-4">
+                            {{ dep_form.DELETE }}
+                            <label class="form-check-label text-danger" style="font-size:11px">Remover</label>
+                        </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-adicionar-dependente">
-            <i class="bi bi-plus me-1"></i> Adicionar dependente
-        </button>
     </fieldset>
 
     <div class="d-flex gap-2">
@@ -148,21 +152,5 @@
     function toggleBeneficio() { campoBeneficio.style.display = bolsaFamilia.checked ? 'block' : 'none'; }
     bolsaFamilia.addEventListener('change', toggleBeneficio);
     toggleBeneficio();
-
-    document.getElementById('btn-adicionar-dependente').addEventListener('click', function () {
-        const totalForms = document.getElementById('id_dependentes-TOTAL_FORMS');
-        const currentCount = parseInt(totalForms.value);
-        const container = document.getElementById('formset-dependentes');
-        const newForm = container.querySelector('.dependente-form').cloneNode(true);
-
-        newForm.querySelectorAll('input, select').forEach(function (input) {
-            input.name = input.name.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
-            input.id = input.id.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
-            input.value = '';
-        });
-
-        container.appendChild(newForm);
-        totalForms.value = currentCount + 1;
-    });
 </script>
 {% endblock %}

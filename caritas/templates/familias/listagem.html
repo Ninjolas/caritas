@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Famílias — Sistema Cáritas{% endblock %}
+{% block page_title %}Famílias{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Famílias</li>{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0" style="font-size:14px">{{ familias.count }} família(s) cadastrada(s)</p>
+    <a href="{% url 'familias:cadastrar_familia' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+        <i class="bi bi-person-plus me-1"></i> Nova família
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Responsável</th>
+                    <th>Paróquia</th>
+                    <th>CPF / ID</th>
+                    <th>Renda Familiar</th>
+                    <th>Pessoas</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for familia in familias %}
+                <tr>
+                    <td><strong>{{ familia.responsavel_nome }}</strong></td>
+                    <td>
+                        {{ familia.paroquia_responsavel }}
+                        {% if familia.paroquia_responsavel != paroquia_usuario and not is_admin %}
+                        <span class="badge ms-1" style="background:#f3f4f6;color:#6b7280;font-size:10px">outra paróquia</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:13px;color:#6b7280">{{ familia.cpf|default:familia.id_interno }}</td>
+                    <td>R$ {{ familia.renda_familiar }}</td>
+                    <td>{{ familia.qtd_pessoas }}</td>
+                    <td>
+                        {% if familia.paroquia_responsavel == paroquia_usuario or is_admin %}
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'familias:editar_familia' familia.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'familias:detalhe_familia' familia.pk %}" class="btn btn-sm btn-outline-secondary" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                        {% else %}
+                        <a href="{% url 'familias:detalhe_familia' familia.pk %}" class="btn btn-sm btn-outline-secondary" title="Ver">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-5">
+                        <i class="bi bi-people" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
+                        Nenhuma família cadastrada ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
