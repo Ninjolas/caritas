@@ -9,8 +9,11 @@ from apps.estoque.models import ItemEstoque
 
 @login_required
 def listagem(request):
-    paroquia = request.user.paroquia or 'Paróquia Padrão'
-    doacoes = Doacao.objects.filter(paroquia=paroquia)
+    if request.user.perfil == 'administrador':
+        doacoes = Doacao.objects.all().order_by('-data')
+    else:
+        paroquia = request.user.paroquia or 'Paróquia Padrão'
+        doacoes = Doacao.objects.filter(paroquia=paroquia).order_by('-data')
     return render(request, 'doacoes/listagem.html', {'doacoes': doacoes})
 
 

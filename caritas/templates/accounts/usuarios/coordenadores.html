@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Coordenadores — Sistema Cáritas{% endblock %}
+{% block page_title %}Coordenadores{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Coordenadores</li>{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0" style="font-size:14px">{{ usuarios.count }} coordenador(es)</p>
+    <a href="{% url 'accounts:criar_coordenador' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+        <i class="bi bi-person-plus me-1"></i> Novo Coordenador
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Nome completo</th>
+                    <th>Paróquia</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td><strong>{{ usuario.username }}</strong></td>
+                    <td>{{ usuario.get_full_name|default:"—" }}</td>
+                    <td>{{ usuario.paroquia|default:"—" }}</td>
+                    <td>
+                        {% if usuario.is_active %}
+                        <span class="badge" style="background:#dcfce7;color:#166534">Ativo</span>
+                        {% else %}
+                        <span class="badge" style="background:#fecaca;color:#991b1b">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'accounts:editar_usuario' usuario.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'accounts:trocar_senha' usuario.pk %}" class="btn btn-sm btn-outline-warning" title="Trocar senha">
+                                <i class="bi bi-key"></i>
+                            </a>
+                            <form method="post" action="{% url 'accounts:toggle_usuario' usuario.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm {% if usuario.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="{% if usuario.is_active %}Desativar{% else %}Ativar{% endif %}">
+                                    <i class="bi bi-{% if usuario.is_active %}pause{% else %}play{% endif %}"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-5">
+                        <i class="bi bi-shield-check" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
+                        Nenhum coordenador cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

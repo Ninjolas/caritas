@@ -3,65 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Cáritas</title>
+    <title>{% block title %}Sistema Cáritas{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/custom.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --caritas-primary: #1a5276;
+            --caritas-secondary: #2e86c1;
+            --caritas-accent: #28b463;
+            --caritas-light: #eaf4fb;
+            --sidebar-bg: #1a2d3d;
+            --sidebar-text: #cdd8e0;
+            --sidebar-active: #2e86c1;
+        }
+        body { background-color: #f0f4f8; font-family: 'Segoe UI', sans-serif; margin: 0; }
+
+        #sidebar {
+            width: 240px; min-height: 100vh;
+            background-color: var(--sidebar-bg);
+            position: fixed; top: 0; left: 0;
+            z-index: 100; display: flex; flex-direction: column;
+        }
+        #sidebar .sidebar-brand {
+            padding: 1.5rem 1.25rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        #sidebar .sidebar-brand h6 { color: #fff; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0; }
+        #sidebar .sidebar-brand small { color: var(--sidebar-text); font-size: 11px; }
+        #sidebar .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.35); padding: 1.25rem 1.25rem 0.4rem; }
+        #sidebar .nav-link { color: var(--sidebar-text); padding: 0.55rem 1.25rem; font-size: 14px; display: flex; align-items: center; gap: 10px; border-radius: 0; transition: background 0.15s; }
+        #sidebar .nav-link:hover { background-color: rgba(255,255,255,0.07); color: #fff; }
+        #sidebar .nav-link.active { background-color: var(--sidebar-active); color: #fff; }
+        #sidebar .nav-link.disabled { color: rgba(255,255,255,0.25); pointer-events: none; }
+        #sidebar .nav-link i { font-size: 16px; width: 18px; }
+        #sidebar .sidebar-user { margin-top: auto; padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); }
+        #sidebar .sidebar-user .user-name { font-size: 13px; font-weight: 500; color: #fff; }
+        #sidebar .sidebar-user .user-role { font-size: 11px; color: var(--sidebar-text); text-transform: capitalize; }
+
+        #main-content { margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
+        #main-content.no-sidebar { margin-left: 0; }
+        .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        .topbar .page-title { font-size: 16px; font-weight: 600; color: var(--caritas-primary); margin: 0; }
+        .topbar .breadcrumb { margin: 0; font-size: 13px; }
+        .page-content { padding: 1.5rem; flex: 1; }
+
+        .card { border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .card-header { background-color: #fff; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 14px; padding: .75rem 1rem; }
+
+        .metric-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; }
+        .metric-card .metric-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .metric-card .metric-value { font-size: 28px; font-weight: 700; color: var(--caritas-primary); }
+        .metric-card .metric-label { font-size: 13px; color: #6b7280; }
+
+        .badge-voluntario { background-color: #dbeafe; color: #1d4ed8; }
+        .badge-coordenador { background-color: #dcfce7; color: #166534; }
+        .badge-administrador { background-color: #fef3c7; color: #92400e; }
+
+        .table th { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; border-bottom: 2px solid #e2e8f0; }
+        .table td { font-size: 14px; vertical-align: middle; }
+
+        .form-label { font-size: 13px; font-weight: 500; color: #374151; }
+        .form-control, .form-select { font-size: 14px; border-color: #d1d5db; }
+        .form-control:focus, .form-select:focus { border-color: var(--caritas-secondary); box-shadow: 0 0 0 3px rgba(46,134,193,0.15); }
+        fieldset.form-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+        fieldset.form-section legend { font-size: 13px; font-weight: 600; color: var(--caritas-primary); padding: 0 8px; width: auto; }
+
+        .alert { font-size: 14px; border-radius: 8px; }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'familias:dashboard' %}">Sistema Cáritas</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            {% if user.is_authenticated %}
-            <div class="collapse navbar-collapse" id="navbarMenu">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'familias:dashboard' %}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'familias:cadastrar_familia' %}">Famílias</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'estoque:listagem' %}">Estoque</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'doacoes:listagem' %}">Doações</a>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-link text-white-50">Atendimentos</span>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-link text-white-50">Relatórios</span>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="text-white">{{ user.get_full_name|default:user.username }}</span>
-                    <a class="btn btn-outline-light btn-sm" href="/logout/">Sair</a>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </nav>
 
-    <main class="container my-4">
+{% if user.is_authenticated %}
+<div id="sidebar">
+    <div class="sidebar-brand">
+        <h6><i class="bi bi-heart-fill me-2" style="color:#e74c3c"></i>Sistema Cáritas</h6>
+        <small>{{ user.paroquia|default:"Administração" }}</small>
+    </div>
+    <nav class="mt-2">
+        <span class="nav-section">Principal</span>
+        <a href="{% url 'familias:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a href="{% url 'familias:listar_familias' %}" class="nav-link {% if 'familias' in request.path and request.resolver_match.url_name != 'dashboard' %}active{% endif %}">
+            <i class="bi bi-people"></i> Famílias
+        </a>
+        <span class="nav-section">Operações</span>
+        <a href="{% url 'estoque:listagem' %}" class="nav-link {% if 'estoque' in request.path %}active{% endif %}">
+            <i class="bi bi-box-seam"></i> Estoque
+        </a>
+        <a href="{% url 'doacoes:listagem' %}" class="nav-link {% if 'doacoes' in request.path %}active{% endif %}">
+            <i class="bi bi-gift"></i> Doações
+        </a>
+        <a class="nav-link disabled">
+            <i class="bi bi-calendar-check"></i> Atendimentos
+            <span class="badge bg-secondary ms-auto" style="font-size:10px">Em breve</span>
+        </a>
+        {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
+        <span class="nav-section">Gestão</span>
+        <a href="{% url 'estoque:entrada' %}" class="nav-link">
+            <i class="bi bi-plus-circle"></i> Entrada no estoque
+        </a>
+        <a class="nav-link disabled">
+            <i class="bi bi-graph-up"></i> Relatórios
+            <span class="badge bg-secondary ms-auto" style="font-size:10px">Em breve</span>
+        </a>
+        <a href="{% url 'accounts:gerenciar_voluntarios' %}" class="nav-link {% if 'voluntarios' in request.path %}active{% endif %}">
+            <i class="bi bi-person-badge"></i> Voluntários
+        </a>
+        {% endif %}
+        {% if user.perfil == 'administrador' %}
+        <a href="{% url 'accounts:gerenciar_coordenadores' %}" class="nav-link {% if 'coordenadores' in request.path %}active{% endif %}">
+            <i class="bi bi-shield-check"></i> Coordenadores
+        </a>
+        {% endif %}
+    </nav>
+    <div class="sidebar-user">
+        <div class="d-flex align-items-center gap-2">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--sidebar-active);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0">
+                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+            </div>
+            <div>
+                <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="user-role">{{ user.get_perfil_display }}</div>
+            </div>
+        </div>
+        <a href="{% url 'accounts:logout' %}" class="btn btn-sm w-100 mt-2" style="background:rgba(255,255,255,0.08);color:var(--sidebar-text);font-size:12px;">
+            <i class="bi bi-box-arrow-right me-1"></i> Sair
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div id="main-content" {% if not user.is_authenticated %}class="no-sidebar"{% endif %}>
+    {% if user.is_authenticated %}
+    <div class="topbar">
+        <div>
+            <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">{% block breadcrumb %}<li class="breadcrumb-item active">Início</li>{% endblock %}</ol>
+            </nav>
+        </div>
+        <div>
+            <span class="badge px-3 py-2 {% if user.perfil == 'voluntario' %}badge-voluntario{% elif user.perfil == 'coordenador' %}badge-coordenador{% else %}badge-administrador{% endif %}">
+                {{ user.get_perfil_display }}
+            </span>
+        </div>
+    </div>
+    <div class="page-content">
         {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             {% endfor %}
         {% endif %}
-
+    {% else %}
+    <div>
+    {% endif %}
         {% block content %}{% endblock %}
-    </main>
+    </div>
+</div>
 
-    <footer class="bg-light text-center py-3 mt-5 border-top">
-        <small class="text-muted">Sistema Cáritas &copy; {% now "Y" %}</small>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

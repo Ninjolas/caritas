@@ -1,46 +1,53 @@
 {% extends 'base.html' %}
+{% block title %}Doações — Sistema Cáritas{% endblock %}
+{% block page_title %}Doações{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Doações</li>{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2>Doações</h2>
-        <p class="text-muted mb-0">Registro de doações recebidas e repassadas</p>
-    </div>
-    <a href="{% url 'doacoes:registrar' %}" class="btn btn-primary">+ Registrar doação</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0" style="font-size:14px">Registro de doações recebidas e repassadas</p>
+    <a href="{% url 'doacoes:registrar' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+        <i class="bi bi-plus-circle me-1"></i> Registrar doação
+    </a>
 </div>
 
-{% if doacoes %}
-<div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Data</th>
-                <th>Doador / Beneficiário</th>
-                <th>Tipo</th>
-                <th>Qtd. de itens</th>
-                <th>Registrado por</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for doacao in doacoes %}
-            <tr>
-                <td>{{ doacao.data }}</td>
-                <td>{{ doacao.doador }}</td>
-                <td>
-                    {% if doacao.tipo == 'entrada' %}
-                        <span class="badge bg-success">Recebida</span>
-                    {% else %}
-                        <span class="badge bg-info text-dark">Repassada</span>
-                    {% endif %}
-                </td>
-                <td>{{ doacao.itens.count }}</td>
-                <td>{{ doacao.registrado_por.get_full_name|default:doacao.registrado_por.username }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Doador / Beneficiário</th>
+                    <th>Tipo</th>
+                    <th>Itens</th>
+                    <th>Registrado por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doacao in doacoes %}
+                <tr>
+                    <td>{{ doacao.data|date:"d/m/Y" }}</td>
+                    <td>{{ doacao.doador }}</td>
+                    <td>
+                        {% if doacao.tipo == 'entrada' %}
+                            <span class="badge" style="background:#dcfce7;color:#166534">Recebida</span>
+                        {% else %}
+                            <span class="badge" style="background:#dbeafe;color:#1d4ed8">Repassada</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ doacao.itens.count }}</td>
+                    <td>{{ doacao.registrado_por.get_full_name|default:doacao.registrado_por.username }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-5">
+                        <i class="bi bi-gift" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
+                        Nenhuma doação registrada ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-{% else %}
-<div class="alert alert-info">Nenhuma doação registrada ainda.</div>
-{% endif %}
 {% endblock %}

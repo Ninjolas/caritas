@@ -1,78 +1,101 @@
 {% extends 'base.html' %}
+{% block title %}Dashboard — Sistema Cáritas{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h2>Bem-vindo, {{ user.get_full_name|default:user.username }}</h2>
-    <p class="text-muted">Painel de Controle — Sistema Cáritas</p>
+<p class="text-muted mb-4" style="font-size:15px">
+    Bem-vindo, <strong>{{ user.get_full_name|default:user.username }}</strong>.
+    {% if user.paroquia %}Paróquia: <strong>{{ user.paroquia }}</strong>.{% endif %}
+</p>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-4">
+        <div class="metric-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="metric-icon" style="background:#eaf4fb;color:#1a5276">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="metric-value">{{ total_familias }}</div>
+                    <div class="metric-label">Famílias cadastradas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <div class="metric-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="metric-icon" style="background:#f0fff4;color:#166534">
+                    <i class="bi bi-box-seam-fill"></i>
+                </div>
+                <div>
+                    <div class="metric-value">{{ total_estoque }}</div>
+                    <div class="metric-label">Itens em estoque</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <div class="metric-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="metric-icon" style="background:#fef3c7;color:#92400e">
+                    <i class="bi bi-gift-fill"></i>
+                </div>
+                <div>
+                    <div class="metric-value">{{ total_doacoes_mes }}</div>
+                    <div class="metric-label">Doações este mês</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row mb-4 g-3">
-    <div class="col-md-4">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h5 class="card-title">Famílias Cadastradas</h5>
-                <p class="display-4 mb-0">{{ total_familias }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <h5 class="card-title">Itens em Estoque</h5>
-                <p class="display-4 mb-0">{{ total_estoque }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
-                <h5 class="card-title">Doações este Mês</h5>
-                <p class="display-4 mb-0">{{ total_doacoes_mes }}</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<h5 class="mb-3">Módulos</h5>
+<h6 class="text-muted mb-3" style="font-size:12px;text-transform:uppercase;letter-spacing:1px">Acesso rápido</h6>
 <div class="row g-3">
-    <div class="col-md-3">
-        <a href="{% url 'familias:cadastrar_familia' %}" class="text-decoration-none">
-            <div class="card h-100 border-primary shadow-sm">
-                <div class="card-body text-center py-4">
-                    <div class="fs-1 mb-2">&#128106;</div>
-                    <h6 class="card-title text-primary">Cadastrar Família</h6>
-                </div>
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'familias:cadastrar_familia' %}" class="card text-decoration-none p-3 d-flex flex-row align-items-center gap-3">
+            <div style="width:44px;height:44px;border-radius:10px;background:#eaf4fb;display:flex;align-items:center;justify-content:center;font-size:20px;color:#1a5276;flex-shrink:0">
+                <i class="bi bi-person-plus"></i>
+            </div>
+            <div>
+                <div style="font-size:14px;font-weight:600;color:#1a5276">Cadastrar família</div>
+                <div style="font-size:12px;color:#6b7280">Nova família</div>
             </div>
         </a>
     </div>
-    <div class="col-md-3">
-        <div class="card h-100 text-muted shadow-sm">
-            <div class="card-body text-center py-4">
-                <div class="fs-1 mb-2">&#128203;</div>
-                <h6 class="card-title">Atendimentos</h6>
-                <small>Em breve</small>
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'doacoes:registrar' %}" class="card text-decoration-none p-3 d-flex flex-row align-items-center gap-3">
+            <div style="width:44px;height:44px;border-radius:10px;background:#f0fff4;display:flex;align-items:center;justify-content:center;font-size:20px;color:#166534;flex-shrink:0">
+                <i class="bi bi-gift"></i>
+            </div>
+            <div>
+                <div style="font-size:14px;font-weight:600;color:#166534">Registrar doação</div>
+                <div style="font-size:12px;color:#6b7280">Entrada ou saída</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'estoque:listagem' %}" class="card text-decoration-none p-3 d-flex flex-row align-items-center gap-3">
+            <div style="width:44px;height:44px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:20px;color:#92400e;flex-shrink:0">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div>
+                <div style="font-size:14px;font-weight:600;color:#92400e">Ver estoque</div>
+                <div style="font-size:12px;color:#6b7280">Itens disponíveis</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card p-3 d-flex flex-row align-items-center gap-3" style="opacity:0.5;cursor:not-allowed">
+            <div style="width:44px;height:44px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:20px;color:#6b7280;flex-shrink:0">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div>
+                <div style="font-size:14px;font-weight:600;color:#6b7280">Atendimentos</div>
+                <div style="font-size:12px;color:#6b7280">Em breve</div>
             </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <a href="{% url 'estoque:listagem' %}" class="text-decoration-none">
-            <div class="card h-100 border-success shadow-sm">
-                <div class="card-body text-center py-4">
-                    <div class="fs-1 mb-2">&#128230;</div>
-                    <h6 class="card-title text-success">Estoque</h6>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-3">
-        <a href="{% url 'doacoes:listagem' %}" class="text-decoration-none">
-            <div class="card h-100 border-warning shadow-sm">
-                <div class="card-body text-center py-4">
-                    <div class="fs-1 mb-2">&#127873;</div>
-                    <h6 class="card-title text-warning">Doações</h6>
-                </div>
-            </div>
-        </a>
     </div>
 </div>
 {% endblock %}

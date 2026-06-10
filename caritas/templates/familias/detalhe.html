@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Detalhes da Família — Sistema Cáritas{% endblock %}
+{% block page_title %}Detalhes da Família{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'familias:listar_familias' %}">Famílias</a></li>
+<li class="breadcrumb-item active">{{ familia.responsavel_nome }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="alert alert-info d-flex align-items-center gap-2" style="font-size:13px">
+    <i class="bi bi-info-circle"></i>
+    Visualização somente leitura — família da paróquia <strong>{{ familia.paroquia_responsavel }}</strong>.
+</div>
+
+<div style="max-width:800px">
+    <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-person me-2"></i>Dados Pessoais</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6"><span class="text-muted" style="font-size:12px">RESPONSÁVEL</span><div>{{ familia.responsavel_nome }}</div></div>
+                <div class="col-md-6"><span class="text-muted" style="font-size:12px">NACIONALIDADE</span><div>{{ familia.nacionalidade }}</div></div>
+                <div class="col-md-6"><span class="text-muted" style="font-size:12px">CPF / ID</span><div>{{ familia.cpf|default:familia.id_interno }}</div></div>
+                <div class="col-md-6"><span class="text-muted" style="font-size:12px">TELEFONE</span><div>{{ familia.telefone|default:"—" }}</div></div>
+                <div class="col-12"><span class="text-muted" style="font-size:12px">ENDEREÇO</span><div>{{ familia.endereco }}</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-cash-stack me-2"></i>Dados Socioeconômicos</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">ESCOLARIDADE</span><div>{{ familia.get_escolaridade_display }}</div></div>
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">OCUPAÇÃO</span><div>{{ familia.ocupacao|default:"—" }}</div></div>
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">LOCAL DE TRABALHO</span><div>{{ familia.local_trabalho|default:"—" }}</div></div>
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">RENDA FAMILIAR</span><div>R$ {{ familia.renda_familiar }}</div></div>
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">BOLSA FAMÍLIA</span><div>{% if familia.bolsa_familia %}Sim — R$ {{ familia.valor_beneficio }}{% else %}Não{% endif %}</div></div>
+                <div class="col-12"><span class="text-muted" style="font-size:12px">SITUAÇÃO DE VULNERABILIDADE</span><div>{{ familia.situacao_vulnerabilidade|default:"—" }}</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-people me-2"></i>Composição Familiar</div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">TOTAL DE PESSOAS</span><div>{{ familia.qtd_pessoas }}</div></div>
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">CRIANÇAS</span><div>{{ familia.qtd_criancas }}</div></div>
+                <div class="col-md-4"><span class="text-muted" style="font-size:12px">PARÓQUIA</span><div>{{ familia.paroquia_responsavel }}</div></div>
+            </div>
+            {% if familia.dependentes.all %}
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Nome</th><th>Idade</th><th>Gênero</th></tr></thead>
+                <tbody>
+                    {% for dep in familia.dependentes.all %}
+                    <tr><td>{{ dep.nome }}</td><td>{{ dep.idade }} anos</td><td>{{ dep.get_genero_display }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted mb-0" style="font-size:13px">Nenhum dependente cadastrado.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'familias:listar_familias' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+    </a>
+</div>
+{% endblock %}
