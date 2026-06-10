@@ -6,7 +6,7 @@ from .models import Dependente, Familia
 class FamiliaForm(forms.ModelForm):
     class Meta:
         model = Familia
-        exclude = ['id_interno', 'criado_por', 'criado_em']
+        exclude = ['id_interno', 'criado_por', 'criado_em', 'paroquia_responsavel']
         widgets = {
             'responsavel_nome': forms.TextInput(attrs={'class': 'form-control'}),
             'nacionalidade': forms.TextInput(attrs={'class': 'form-control'}),
@@ -23,7 +23,6 @@ class FamiliaForm(forms.ModelForm):
             'valor_beneficio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'qtd_pessoas': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'qtd_criancas': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
-            'paroquia_responsavel': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
     def clean(self):

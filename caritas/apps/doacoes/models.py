@@ -30,6 +30,7 @@ class ItemDoacao(models.Model):
     doacao = models.ForeignKey(Doacao, on_delete=models.CASCADE, related_name='itens')
     nome = models.CharField(max_length=200)
     categoria = models.CharField(max_length=20, choices=ItemEstoque.CATEGORIA_CHOICES)
+    categoria_outro = models.CharField(max_length=100, blank=True, default='')
     quantidade = models.IntegerField()
     unidade = models.CharField(max_length=50, default='unidade')
 

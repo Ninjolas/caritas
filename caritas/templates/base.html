@@ -100,9 +100,6 @@
         </a>
         {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
         <span class="nav-section">Gestão</span>
-        <a href="{% url 'estoque:entrada' %}" class="nav-link">
-            <i class="bi bi-plus-circle"></i> Entrada no estoque
-        </a>
         <a class="nav-link disabled">
             <i class="bi bi-graph-up"></i> Relatórios
             <span class="badge bg-secondary ms-auto" style="font-size:10px">Em breve</span>

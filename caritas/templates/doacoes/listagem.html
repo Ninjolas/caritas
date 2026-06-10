@@ -18,9 +18,11 @@
                 <tr>
                     <th>Data</th>
                     <th>Doador / Beneficiário</th>
+                    {% if is_admin %}<th>Paróquia</th>{% endif %}
                     <th>Tipo</th>
                     <th>Itens</th>
                     <th>Registrado por</th>
+                    {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}<th></th>{% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -28,6 +30,7 @@
                 <tr>
                     <td>{{ doacao.data|date:"d/m/Y" }}</td>
                     <td>{{ doacao.doador }}</td>
+                    {% if is_admin %}<td>{{ doacao.paroquia }}</td>{% endif %}
                     <td>
                         {% if doacao.tipo == 'entrada' %}
                             <span class="badge" style="background:#dcfce7;color:#166534">Recebida</span>
@@ -37,10 +40,27 @@
                     </td>
                     <td>{{ doacao.itens.count }}</td>
                     <td>{{ doacao.registrado_por.get_full_name|default:doacao.registrado_por.username }}</td>
+                    {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
+                    <td>
+                        {% if doacao.paroquia == paroquia_usuario or is_admin %}
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'doacoes:editar_doacao' doacao.pk %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" action="{% url 'doacoes:remover_doacao' doacao.pk %}" onsubmit="return confirm('Remover esta doação?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </td>
+                    {% endif %}
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-5">
+                    <td colspan="{% if is_admin %}7{% elif user.perfil == 'coordenador' or user.perfil == 'administrador' %}6{% else %}5{% endif %}" class="text-center text-muted py-5">
                         <i class="bi bi-gift" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
                         Nenhuma doação registrada ainda.
                     </td>

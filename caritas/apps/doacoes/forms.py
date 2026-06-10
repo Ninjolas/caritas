@@ -18,19 +18,27 @@ class DoacaoForm(forms.ModelForm):
 class ItemDoacaoForm(forms.ModelForm):
     class Meta:
         model = ItemDoacao
-        fields = ['nome', 'categoria', 'quantidade', 'unidade']
+        fields = ['nome', 'categoria', 'categoria_outro', 'quantidade', 'unidade']
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome do item'}),
-            'categoria': forms.Select(attrs={'class': 'form-select'}),
-            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'categoria': forms.Select(attrs={'class': 'form-select categoria-select'}),
+            'categoria_outro': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Especifique o tipo'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'placeholder': 'Quantidade'}),
             'unidade': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ex: kg, unidade'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['categoria_outro'].required = False
+        if not kwargs.get('instance'):
+            self.initial['quantidade'] = None
+            self.initial['unidade'] = ''
 
 
 ItemDoacaoFormSet = inlineformset_factory(
     Doacao, ItemDoacao,
     form=ItemDoacaoForm,
-    extra=1,
+    extra=0,
     min_num=1,
     validate_min=True,
     can_delete=True
