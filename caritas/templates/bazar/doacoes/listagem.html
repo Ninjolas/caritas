@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Entradas do Bazar — Sistema Cáritas{% endblock %}
+{% block page_title %}Entradas / Doações{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'bazar:dashboard' %}">Bazar</a></li>
+<li class="breadcrumb-item active">Entradas</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">Doações de itens e financeiras recebidas pelo bazar.</p>
+    <a href="{% url 'bazar:doacoes_registrar' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Registrar Entrada
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">Histórico de Entradas</div>
+    <div class="card-body p-0">
+        {% if entradas %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Doador</th>
+                    <th>Valor / Itens</th>
+                    <th>Registrado por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entrada in entradas %}
+                <tr>
+                    <td>{{ entrada.data|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if entrada.tipo_entrada == 'doacao_financeira' %}
+                        <span class="badge bg-success-subtle text-success-emphasis">Financeira</span>
+                        {% else %}
+                        <span class="badge bg-primary-subtle text-primary-emphasis">Itens</span>
+                        {% endif %}
+                    </td>
+                    <td>{% if entrada.empresa %}{{ entrada.empresa.nome }}{% else %}{{ entrada.doador_nome }}{% endif %}</td>
+                    <td>
+                        {% if entrada.tipo_entrada == 'doacao_financeira' %}
+                        R$ {{ entrada.valor|floatformat:2 }}
+                        {% else %}
+                        {{ entrada.itens.count }} item(s)
+                        {% endif %}
+                    </td>
+                    <td>{{ entrada.registrado_por.get_full_name|default:entrada.registrado_por.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-gift" style="font-size:2.5rem;"></i>
+            <p class="mt-2 mb-0">Nenhuma entrada registrada ainda.</p>
+            <a href="{% url 'bazar:doacoes_registrar' %}" class="btn btn-outline-primary btn-sm mt-3">
+                Registrar primeira entrada
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

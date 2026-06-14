@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Relatório — Sistema Cáritas{% endblock %}
+{% block page_title %}Relatório da Paróquia{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Relatórios</li>
+{% endblock %}
+
+{% block content %}
+<p class="text-muted mb-4">Resumo de <strong>{{ mes_atual }}</strong> — {{ user.paroquia }}</p>
+
+<!-- Cards resumo -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="metric-value">{{ total_familias }}</div>
+                <div class="metric-label">Famílias Cadastradas</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#dcfce7;color:#166534"><i class="bi bi-shield-check"></i></div>
+            <div>
+                <div class="metric-value">{{ familias_bolsa }}</div>
+                <div class="metric-label">Com Bolsa Família</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#fef3c7;color:#92400e"><i class="bi bi-box-seam"></i></div>
+            <div>
+                <div class="metric-value">{{ total_estoque }}</div>
+                <div class="metric-label">Itens no Estoque</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#f3e8ff;color:#7c3aed"><i class="bi bi-calendar-check"></i></div>
+            <div>
+                <div class="metric-value">{{ atendimentos_mes.count }}</div>
+                <div class="metric-label">Atendimentos no Mês</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Atendimentos por tipo -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Atendimentos por Tipo — {{ mes_atual }}</div>
+            <div class="card-body p-0">
+                {% if atendimentos_por_tipo %}
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Tipo</th><th class="text-end">Quantidade</th></tr></thead>
+                    <tbody>
+                        {% for item in atendimentos_por_tipo %}
+                        <tr>
+                            <td>{{ item.tipo }}</td>
+                            <td class="text-end"><strong>{{ item.total }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted text-center py-4 mb-0">Nenhum atendimento neste mês.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Doações do mês -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Doações do Mês — {{ mes_atual }}</div>
+            <div class="card-body p-0">
+                {% if doacoes_mes %}
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Doador</th>
+                            <th>Tipo</th>
+                            <th class="text-end">Itens</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in doacoes_mes %}
+                        <tr>
+                            <td>{{ d.data|date:"d/m" }}</td>
+                            <td>{{ d.doador }}</td>
+                            <td>{{ d.get_tipo_display }}</td>
+                            <td class="text-end">{{ d.itens.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted text-center py-4 mb-0">Nenhuma doação neste mês.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas de estoque -->
+{% if itens_vencidos or itens_vence_breve %}
+<div class="card">
+    <div class="card-header text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Alertas de Estoque</div>
+    <div class="card-body">
+        {% if itens_vencidos %}
+        <h6 class="text-danger">Itens Vencidos ({{ itens_vencidos|length }})</h6>
+        <ul class="mb-3">
+            {% for item in itens_vencidos %}
+            <li>{{ item.nome }} — validade: {{ item.validade|date:"d/m/Y" }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if itens_vence_breve %}
+        <h6 class="text-warning">Vencem em até 7 dias ({{ itens_vence_breve|length }})</h6>
+        <ul class="mb-0">
+            {% for item in itens_vence_breve %}
+            <li>{{ item.nome }} — validade: {{ item.validade|date:"d/m/Y" }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

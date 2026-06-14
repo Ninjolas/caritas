@@ -7,6 +7,8 @@ class Usuario(AbstractUser):
         ('voluntario', 'Voluntário'),
         ('coordenador', 'Coordenador'),
         ('administrador', 'Administrador'),
+        ('coordenador_bazar', 'Coordenador do Bazar'),
+        ('voluntario_bazar', 'Voluntário do Bazar'),
     ]
 
     perfil = models.CharField(max_length=20, choices=PERFIL_CHOICES, default='voluntario')

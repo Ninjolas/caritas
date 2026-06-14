@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Financeiro — Sistema Cáritas{% endblock %}
+{% block page_title %}Controle Financeiro{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Financeiro</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">Movimentações financeiras {% if user.perfil == 'administrador' %}da Diocese e Paróquias{% else %}da sua paróquia{% endif %}.</p>
+    <div class="d-flex gap-2">
+        <a href="{% url 'financeiro:relatorio' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-graph-up me-1"></i> Relatório do Mês
+        </a>
+        <a href="{% url 'financeiro:registrar' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Registrar
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Movimentações</div>
+    <div class="card-body p-0">
+        {% if movimentacoes %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    {% if user.perfil == 'administrador' %}<th>Origem</th>{% endif %}
+                    <th class="text-end">Valor</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentacoes %}
+                <tr>
+                    <td>{{ mov.data|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if mov.eh_entrada %}
+                        <span class="badge bg-success-subtle text-success-emphasis">{{ mov.get_tipo_display }}</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger-emphasis">{{ mov.get_tipo_display }}</span>
+                        {% endif %}
+                    </td>
+                    {% if user.perfil == 'administrador' %}
+                    <td>{{ mov.get_origem_display }}{% if mov.paroquia %} — {{ mov.paroquia }}{% endif %}</td>
+                    {% endif %}
+                    <td class="text-end fw-bold {% if mov.eh_entrada %}text-success{% else %}text-danger{% endif %}">
+                        {% if mov.eh_entrada %}+{% else %}-{% endif %}R$ {{ mov.valor|floatformat:2 }}
+                    </td>
+                    <td class="text-truncate" style="max-width:200px">{{ mov.descricao }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-cash-stack" style="font-size:2.5rem;"></i>
+            <p class="mt-2 mb-0">Nenhuma movimentação registrada ainda.</p>
+            <a href="{% url 'financeiro:registrar' %}" class="btn btn-outline-primary btn-sm mt-3">
+                Registrar primeira movimentação
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

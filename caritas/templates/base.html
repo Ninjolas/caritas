@@ -94,24 +94,59 @@
         <a href="{% url 'doacoes:listagem' %}" class="nav-link {% if 'doacoes' in request.path %}active{% endif %}">
             <i class="bi bi-gift"></i> Doações
         </a>
-        <a class="nav-link disabled">
+        {% if user.perfil in 'voluntario,coordenador,administrador' %}
+        <a href="{% url 'atendimentos:listagem' %}" class="nav-link {% if 'atendimentos' in request.path %}active{% endif %}">
             <i class="bi bi-calendar-check"></i> Atendimentos
-            <span class="badge bg-secondary ms-auto" style="font-size:10px">Em breve</span>
         </a>
+        <a href="{% url 'cestas:dashboard' %}" class="nav-link {% if 'cestas' in request.path %}active{% endif %}">
+            <i class="bi bi-basket"></i> Cestas Básicas
+        </a>
+        <a href="{% url 'brecho:listagem' %}" class="nav-link {% if 'brecho' in request.path %}active{% endif %}">
+            <i class="bi bi-bag-heart"></i> Brechó
+        </a>
+        {% endif %}
         {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
         <span class="nav-section">Gestão</span>
-        <a class="nav-link disabled">
+        <a href="{% url 'relatorios:index' %}" class="nav-link {% if 'relatorios' in request.path %}active{% endif %}">
             <i class="bi bi-graph-up"></i> Relatórios
-            <span class="badge bg-secondary ms-auto" style="font-size:10px">Em breve</span>
         </a>
-        <a href="{% url 'accounts:gerenciar_voluntarios' %}" class="nav-link {% if 'voluntarios' in request.path %}active{% endif %}">
+        <a href="{% url 'accounts:gerenciar_voluntarios' %}" class="nav-link {% if 'voluntarios' in request.path and 'bazar' not in request.path %}active{% endif %}">
             <i class="bi bi-person-badge"></i> Voluntários
+        </a>
+        <a href="{% url 'financeiro:listagem' %}" class="nav-link {% if 'financeiro' in request.path %}active{% endif %}">
+            <i class="bi bi-cash-stack"></i> Financeiro
         </a>
         {% endif %}
         {% if user.perfil == 'administrador' %}
         <a href="{% url 'accounts:gerenciar_coordenadores' %}" class="nav-link {% if 'coordenadores' in request.path %}active{% endif %}">
             <i class="bi bi-shield-check"></i> Coordenadores
         </a>
+        {% endif %}
+        {% if user.perfil == 'voluntario_bazar' or user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
+        <span class="nav-section">Bazar</span>
+        <a href="{% url 'bazar:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' and 'bazar' in request.path %}active{% endif %}">
+            <i class="bi bi-shop"></i> Dashboard Bazar
+        </a>
+        <a href="{% url 'bazar:estoque_listagem' %}" class="nav-link {% if 'bazar/estoque' in request.path %}active{% endif %}">
+            <i class="bi bi-handbag"></i> Estoque
+        </a>
+        <a href="{% url 'bazar:doacoes_listagem' %}" class="nav-link {% if 'bazar/doacoes' in request.path %}active{% endif %}">
+            <i class="bi bi-gift"></i> Entradas
+        </a>
+        <a href="{% url 'bazar:vendas_listagem' %}" class="nav-link {% if 'bazar/vendas' in request.path %}active{% endif %}">
+            <i class="bi bi-cart"></i> Vendas
+        </a>
+        {% if user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
+        <a href="{% url 'bazar:empresas_listagem' %}" class="nav-link {% if 'bazar/empresas' in request.path %}active{% endif %}">
+            <i class="bi bi-building"></i> Empresas Parceiras
+        </a>
+        <a href="{% url 'bazar:relatorio' %}" class="nav-link {% if 'bazar/relatorio' in request.path %}active{% endif %}">
+            <i class="bi bi-graph-up"></i> Relatório
+        </a>
+        <a href="{% url 'accounts:gerenciar_voluntarios_bazar' %}" class="nav-link {% if 'voluntarios-bazar' in request.path %}active{% endif %}">
+            <i class="bi bi-person-badge"></i> Voluntários Bazar
+        </a>
+        {% endif %}
         {% endif %}
     </nav>
     <div class="sidebar-user">

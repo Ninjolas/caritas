@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Entrada — Sistema Cáritas{% endblock %}
+{% block page_title %}Registrar Entrada{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'bazar:dashboard' %}">Bazar</a></li>
+<li class="breadcrumb-item"><a href="{% url 'bazar:doacoes_listagem' %}">Entradas</a></li>
+<li class="breadcrumb-item active">Registrar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <form method="post" id="form-entrada">
+            {% csrf_token %}
+            <fieldset class="form-section">
+                <legend>Dados da Entrada</legend>
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </fieldset>
+
+            <fieldset class="form-section" id="secao-itens">
+                <legend>Itens Doados</legend>
+                {{ formset.management_form }}
+                <div id="formset-container">
+                    {% for form_item in formset %}
+                    <div class="item-form border rounded p-3 mb-3 position-relative">
+                        <div class="row g-2">
+                            {% for field in form_item %}
+                            {% if field.name != 'DELETE' %}
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="d-none">{{ field }}</div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if forloop.counter > 1 %}
+                        <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" id="btn-add-item" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-plus me-1"></i> Adicionar Item
+                </button>
+            </fieldset>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
+                <a href="{% url 'bazar:doacoes_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const tipoEntrada = document.getElementById('id_tipo_entrada');
+    const secaoItens = document.getElementById('secao-itens');
+    const valorField = document.querySelector('[name="valor"]');
+
+    function atualizarSecoes() {
+        const tipo = tipoEntrada ? tipoEntrada.value : '';
+        if (secaoItens) secaoItens.style.display = tipo === 'doacao_item' ? '' : 'none';
+    }
+
+    if (tipoEntrada) {
+        tipoEntrada.addEventListener('change', atualizarSecoes);
+        atualizarSecoes();
+    }
+
+    // Clonar formulário de item
+    const btnAdd = document.getElementById('btn-add-item');
+    const container = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+    if (btnAdd && container && totalForms) {
+        btnAdd.addEventListener('click', function () {
+            const forms = container.querySelectorAll('.item-form');
+            const lastForm = forms[forms.length - 1];
+            const newForm = lastForm.cloneNode(true);
+            const idx = parseInt(totalForms.value);
+
+            newForm.innerHTML = newForm.innerHTML.replace(/form-(\d+)-/g, `form-${idx}-`);
+            newForm.querySelectorAll('input, select, textarea').forEach(el => {
+                if (el.type !== 'hidden') el.value = '';
+            });
+
+            const btnRemover = newForm.querySelector('.btn-remover');
+            if (!btnRemover) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover';
+                btn.innerHTML = '<i class="bi bi-x"></i>';
+                newForm.appendChild(btn);
+            }
+
+            container.appendChild(newForm);
+            totalForms.value = idx + 1;
+            bindRemover(newForm.querySelector('.btn-remover'));
+        });
+    }
+
+    function bindRemover(btn) {
+        if (btn) {
+            btn.addEventListener('click', function () {
+                btn.closest('.item-form').remove();
+                totalForms.value = container.querySelectorAll('.item-form').length;
+            });
+        }
+    }
+
+    document.querySelectorAll('.btn-remover').forEach(bindRemover);
+})();
+</script>
+{% endblock %}

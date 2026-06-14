@@ -12,17 +12,8 @@
     {{ formset.management_form }}
 
     <fieldset class="form-section">
-        <legend>Dados Pessoais</legend>
+        <legend>Identificação e Contato</legend>
         <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label">Nome do Responsável *</label>
-                {{ form.responsavel_nome }}
-                {% if form.responsavel_nome.errors %}<div class="text-danger" style="font-size:12px">{{ form.responsavel_nome.errors }}</div>{% endif %}
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Nacionalidade *</label>
-                {{ form.nacionalidade }}
-            </div>
             <div class="col-md-3 d-flex align-items-center">
                 <div class="form-check mt-2">
                     {{ form.possui_cpf }}
@@ -34,13 +25,35 @@
                 {{ form.cpf }}
                 {% if form.cpf.errors %}<div class="text-danger" style="font-size:12px">{{ form.cpf.errors }}</div>{% endif %}
             </div>
-            <div class="col-md-8">
-                <label class="form-label">Endereço *</label>
-                {{ form.endereco }}
+            <div class="col-md-5">
+                <label class="form-label">Nome do Responsável *</label>
+                {{ form.responsavel_nome }}
+                {% if form.responsavel_nome.errors %}<div class="text-danger" style="font-size:12px">{{ form.responsavel_nome.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Nome da Mãe *</label>
+                {{ form.nome_mae }}
+                {% if form.nome_mae.errors %}<div class="text-danger" style="font-size:12px">{{ form.nome_mae.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Nome do Pai</label>
+                {{ form.nome_pai }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Data de Nascimento</label>
+                {{ form.data_nascimento }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Nacionalidade *</label>
+                {{ form.nacionalidade }}
             </div>
             <div class="col-md-4">
                 <label class="form-label">Telefone</label>
                 {{ form.telefone }}
+            </div>
+            <div class="col-12">
+                <label class="form-label">Endereço *</label>
+                {{ form.endereco }}
             </div>
         </div>
     </fieldset>
@@ -91,6 +104,20 @@
             <div class="col-md-3">
                 <label class="form-label">Qtd. de Crianças</label>
                 {{ form.qtd_criancas }}
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+        <legend>Histórico de Atendimento</legend>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Data da Última Visita Domiciliar</label>
+                {{ form.data_ultima_visita }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Data do Último Atendimento</label>
+                {{ form.data_ultimo_atendimento }}
             </div>
         </div>
     </fieldset>

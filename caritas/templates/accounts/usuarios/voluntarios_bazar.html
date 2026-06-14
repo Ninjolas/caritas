@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Voluntários do Bazar — Sistema Cáritas{% endblock %}
+{% block page_title %}Voluntários do Bazar{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Voluntários do Bazar</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">Usuários com acesso ao módulo do bazar.</p>
+    <a href="{% url 'accounts:criar_voluntario_bazar' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Novo Voluntário do Bazar
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">Voluntários do Bazar</div>
+    <div class="card-body p-0">
+        {% if usuarios %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.get_full_name|default:"—" }}</td>
+                    <td>{{ u.email|default:"—" }}</td>
+                    <td>
+                        {% if u.is_active %}
+                        <span class="badge bg-success-subtle text-success-emphasis">Ativo</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger-emphasis">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'accounts:editar_usuario' u.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'accounts:toggle_usuario' u.pk %}" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                            {% if u.is_active %}<i class="bi bi-person-dash"></i>{% else %}<i class="bi bi-person-check"></i>{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-person-badge" style="font-size:2.5rem;"></i>
+            <p class="mt-2 mb-0">Nenhum voluntário do bazar cadastrado.</p>
+            <a href="{% url 'accounts:criar_voluntario_bazar' %}" class="btn btn-outline-primary btn-sm mt-3">
+                Criar primeiro voluntário
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

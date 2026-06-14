@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Bazar — Sistema Cáritas{% endblock %}
+{% block page_title %}Dashboard Bazar{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Bazar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-handbag-fill"></i></div>
+            <div>
+                <div class="metric-value">{{ total_itens }}</div>
+                <div class="metric-label">Itens em Estoque</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#dcfce7;color:#166534"><i class="bi bi-cash-coin"></i></div>
+            <div>
+                <div class="metric-value">R$ {{ total_vendas_mes|floatformat:2 }}</div>
+                <div class="metric-label">Receita de Vendas (mês)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#fef3c7;color:#92400e"><i class="bi bi-gift-fill"></i></div>
+            <div>
+                <div class="metric-value">{{ total_doacoes_mes }}</div>
+                <div class="metric-label">Entradas (mês)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#f3e8ff;color:#7c3aed"><i class="bi bi-bank"></i></div>
+            <div>
+                <div class="metric-value">R$ {{ receita_financeira_mes|floatformat:2 }}</div>
+                <div class="metric-label">Receita Financeira (mês)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Ações Rápidas</div>
+            <div class="card-body d-flex flex-column gap-2">
+                <a href="{% url 'bazar:doacoes_registrar' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Registrar Entrada / Doação
+                </a>
+                <a href="{% url 'bazar:vendas_registrar' %}" class="btn btn-outline-success">
+                    <i class="bi bi-cart-plus me-1"></i> Registrar Venda
+                </a>
+                <a href="{% url 'bazar:estoque_listagem' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-handbag me-1"></i> Ver Estoque
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

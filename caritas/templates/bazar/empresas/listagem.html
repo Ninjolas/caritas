@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Empresas Parceiras — Sistema Cáritas{% endblock %}
+{% block page_title %}Empresas Parceiras{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'bazar:dashboard' %}">Bazar</a></li>
+<li class="breadcrumb-item active">Empresas Parceiras</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">Empresas que fazem doações ao bazar.</p>
+    <a href="{% url 'bazar:empresa_nova' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Nova Empresa
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">Lista de Empresas</div>
+    <div class="card-body p-0">
+        {% if empresas %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>CNPJ</th>
+                    <th>Contato</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for empresa in empresas %}
+                <tr>
+                    <td>{{ empresa.nome }}</td>
+                    <td>{{ empresa.cnpj|default:"—" }}</td>
+                    <td>
+                        {% if empresa.contato_nome %}{{ empresa.contato_nome }}{% endif %}
+                        {% if empresa.contato_telefone %}<br><small class="text-muted">{{ empresa.contato_telefone }}</small>{% endif %}
+                    </td>
+                    <td>
+                        {% if empresa.ativa %}
+                        <span class="badge bg-success-subtle text-success-emphasis">Ativa</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis">Inativa</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'bazar:empresa_editar' empresa.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-building" style="font-size:2.5rem;"></i>
+            <p class="mt-2 mb-0">Nenhuma empresa cadastrada ainda.</p>
+            <a href="{% url 'bazar:empresa_nova' %}" class="btn btn-outline-primary btn-sm mt-3">
+                Cadastrar primeira empresa
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

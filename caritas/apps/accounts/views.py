@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import CoordenadorCreateForm, TrocarSenhaForm, UsuarioEditForm, VoluntarioCreateForm
+from .forms import (CoordenadorBazarCreateForm, CoordenadorCreateForm, TrocarSenhaForm,
+                    UsuarioEditForm, VoluntarioBazarCreateForm, VoluntarioCreateForm)
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 
-from .decorators import admin_required, coordenador_required
+from .decorators import admin_required, coordenador_bazar_required, coordenador_required
 from .models import Usuario
 
 
@@ -42,6 +43,53 @@ def criar_coordenador(request):
         'form': form,
         'titulo': 'Novo Coordenador',
         'cancelar_url': 'accounts:gerenciar_coordenadores',
+    })
+
+
+# ── Administrador: gerencia coordenadores do bazar ───────────────────────────
+
+@login_required
+@admin_required
+def criar_coordenador_bazar(request):
+    if request.method == 'POST':
+        form = CoordenadorBazarCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Coordenador do Bazar criado com sucesso!')
+            return redirect('accounts:gerenciar_coordenadores')
+    else:
+        form = CoordenadorBazarCreateForm()
+    return render(request, 'accounts/usuarios/form.html', {
+        'form': form,
+        'titulo': 'Novo Coordenador do Bazar',
+        'cancelar_url': 'accounts:gerenciar_coordenadores',
+    })
+
+
+# ── Coordenador do Bazar: gerencia voluntários do bazar ──────────────────────
+
+@login_required
+@coordenador_bazar_required
+def gerenciar_voluntarios_bazar(request):
+    voluntarios = Usuario.objects.filter(perfil='voluntario_bazar')
+    return render(request, 'accounts/usuarios/voluntarios_bazar.html', {'usuarios': voluntarios})
+
+
+@login_required
+@coordenador_bazar_required
+def criar_voluntario_bazar(request):
+    if request.method == 'POST':
+        form = VoluntarioBazarCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Voluntário do Bazar criado com sucesso!')
+            return redirect('accounts:gerenciar_voluntarios_bazar')
+    else:
+        form = VoluntarioBazarCreateForm()
+    return render(request, 'accounts/usuarios/form.html', {
+        'form': form,
+        'titulo': 'Novo Voluntário do Bazar',
+        'cancelar_url': 'accounts:gerenciar_voluntarios_bazar',
     })
 
 

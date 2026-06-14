@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Brechó — Sistema Cáritas{% endblock %}
+{% block page_title %}Brechós{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Brechó</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">Eventos de brechó da sua paróquia.</p>
+    {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
+    <a href="{% url 'brecho:criar_evento' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Novo Brechó
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">Eventos de Brechó</div>
+    <div class="card-body p-0">
+        {% if eventos %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Data</th>
+                    <th>Status</th>
+                    <th class="text-center">Peças vendidas</th>
+                    <th class="text-end">Receita</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evento in eventos %}
+                <tr>
+                    <td>{{ evento.nome }}</td>
+                    <td>{{ evento.data|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if evento.status == 'planejado' %}
+                        <span class="badge bg-primary-subtle text-primary-emphasis">Planejado</span>
+                        {% elif evento.status == 'em_andamento' %}
+                        <span class="badge bg-success-subtle text-success-emphasis">Em andamento</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis">Encerrado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ evento.total_pecas_vendidas }}</td>
+                    <td class="text-end">R$ {{ evento.total_vendas|floatformat:2 }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'brecho:detalhe' evento.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-bag-heart" style="font-size:2.5rem;"></i>
+            <p class="mt-2 mb-0">Nenhum evento de brechó cadastrado ainda.</p>
+            {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
+            <a href="{% url 'brecho:criar_evento' %}" class="btn btn-outline-primary btn-sm mt-3">
+                Criar primeiro brechó
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

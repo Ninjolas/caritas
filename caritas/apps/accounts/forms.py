@@ -69,6 +69,54 @@ class VoluntarioCreateForm(UserCreationForm):
         return usuario
 
 
+class CoordenadorBazarCreateForm(UserCreationForm):
+    class Meta:
+        model = Usuario
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
+        labels = {
+            'username': 'Nome de usuário',
+            'first_name': 'Nome',
+            'last_name': 'Sobrenome',
+            'email': 'E-mail',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_form_control(self)
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        usuario.perfil = 'coordenador_bazar'
+        usuario.paroquia = None
+        if commit:
+            usuario.save()
+        return usuario
+
+
+class VoluntarioBazarCreateForm(UserCreationForm):
+    class Meta:
+        model = Usuario
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
+        labels = {
+            'username': 'Nome de usuário',
+            'first_name': 'Nome',
+            'last_name': 'Sobrenome',
+            'email': 'E-mail',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_form_control(self)
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        usuario.perfil = 'voluntario_bazar'
+        usuario.paroquia = None
+        if commit:
+            usuario.save()
+        return usuario
+
+
 class UsuarioEditForm(forms.ModelForm):
     class Meta:
         model = Usuario

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Entregar Cesta — Sistema Cáritas{% endblock %}
+{% block page_title %}Registrar Entrega{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:dashboard' %}">Cestas Básicas</a></li>
+<li class="breadcrumb-item active">Registrar Entrega</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-basket me-2"></i>
+            <strong>{{ saldo }} cesta(s) disponível(is)</strong> em estoque.
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <fieldset class="form-section">
+                <legend>Dados da Entrega</legend>
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </fieldset>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
+                <a href="{% url 'cestas:dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
