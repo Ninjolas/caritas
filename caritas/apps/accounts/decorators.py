@@ -16,3 +16,21 @@ def admin_required(view_func):
             return True
         raise PermissionDenied
     return user_passes_test(check, login_url='/login/')(view_func)
+
+
+def bazar_required(view_func):
+    """Permite acesso a coordenador do bazar, voluntário do bazar e administrador."""
+    def check(user):
+        if user.is_authenticated and user.perfil in ['coordenador_bazar', 'voluntario_bazar', 'administrador']:
+            return True
+        raise PermissionDenied
+    return user_passes_test(check, login_url='/login/')(view_func)
+
+
+def coordenador_bazar_required(view_func):
+    """Permite acesso apenas a coordenador do bazar e administrador."""
+    def check(user):
+        if user.is_authenticated and user.perfil in ['coordenador_bazar', 'administrador']:
+            return True
+        raise PermissionDenied
+    return user_passes_test(check, login_url='/login/')(view_func)

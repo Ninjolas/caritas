@@ -1,0 +1,7 @@
+from django.apps import AppConfig
+
+
+class CestasConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.cestas'
+    verbose_name = 'Cestas Básicas'

@@ -19,6 +19,12 @@ INSTALLED_APPS = [
     'apps.familias',
     'apps.estoque',
     'apps.doacoes',
+    'apps.atendimentos',
+    'apps.relatorios',
+    'apps.bazar',
+    'apps.brecho',
+    'apps.cestas',
+    'apps.financeiro',
 ]
 
 MIDDLEWARE = [

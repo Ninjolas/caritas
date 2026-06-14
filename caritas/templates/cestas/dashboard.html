@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Cestas Básicas — Sistema Cáritas{% endblock %}
+{% block page_title %}Cestas Básicas{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Cestas Básicas</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#dbeafe;color:#1d4ed8;font-size:28px;width:56px;height:56px;">
+                <i class="bi bi-basket-fill"></i>
+            </div>
+            <div>
+                <div class="metric-value" style="font-size:42px;">{{ saldo_cestas }}</div>
+                <div class="metric-label">Cestas Disponíveis</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <a href="{% url 'cestas:registrar_montagem' %}" class="btn btn-outline-primary w-100 py-3">
+            <i class="bi bi-tools d-block mb-1" style="font-size:1.5rem;"></i>
+            Montar Cestas
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'cestas:registrar_doacao_cesta' %}" class="btn btn-outline-success w-100 py-3">
+            <i class="bi bi-gift d-block mb-1" style="font-size:1.5rem;"></i>
+            Receber Doação de Cestas
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'cestas:registrar_entrega' %}" class="btn btn-outline-warning w-100 py-3">
+            <i class="bi bi-box-arrow-right d-block mb-1" style="font-size:1.5rem;"></i>
+            Entregar Cesta
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Últimas Entregas</div>
+    <div class="card-body p-0">
+        {% if ultimas_entregas %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Data</th><th>Família</th><th class="text-center">Qtd.</th></tr>
+            </thead>
+            <tbody>
+                {% for entrega in ultimas_entregas %}
+                <tr>
+                    <td>{{ entrega.data|date:"d/m/Y" }}</td>
+                    <td>{{ entrega.familia.responsavel_nome }}</td>
+                    <td class="text-center">{{ entrega.quantidade }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center text-muted py-4 mb-0">Nenhuma entrega registrada ainda.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

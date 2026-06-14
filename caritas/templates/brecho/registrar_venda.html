@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Venda — {{ evento.nome }}{% endblock %}
+{% block page_title %}Registrar Venda{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'brecho:listagem' %}">Brechó</a></li>
+<li class="breadcrumb-item"><a href="{% url 'brecho:detalhe' evento.pk %}">{{ evento.nome }}</a></li>
+<li class="breadcrumb-item active">Registrar Venda</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <form method="post">
+            {% csrf_token %}
+            <fieldset class="form-section">
+                <legend>Dados da Venda — {{ evento.nome }}</legend>
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.name == 'item_estoque' %}
+                    <div id="estoque-info" class="form-text text-muted"></div>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </fieldset>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
+                <a href="{% url 'brecho:detalhe' evento.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const itemSelect = document.getElementById('id_item_estoque');
+    const estoqueInfo = document.getElementById('estoque-info');
+
+    if (itemSelect && estoqueInfo) {
+        const estoque = {};
+        Array.from(itemSelect.options).forEach(opt => {
+            const match = opt.text.match(/\((\d+)\)/);
+            if (match) estoque[opt.value] = parseInt(match[1], 10);
+        });
+
+        itemSelect.addEventListener('change', function () {
+            const qty = estoque[this.value];
+            if (qty !== undefined) {
+                estoqueInfo.textContent = `Disponível em estoque: ${qty} unidade(s)`;
+                estoqueInfo.className = qty === 0 ? 'form-text text-danger' : 'form-text text-muted';
+            } else {
+                estoqueInfo.textContent = '';
+            }
+        });
+        itemSelect.dispatchEvent(new Event('change'));
+    }
+})();
+</script>
+{% endblock %}

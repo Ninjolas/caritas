@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Entregas de Cestas — Sistema Cáritas{% endblock %}
+{% block page_title %}Entregas de Cestas{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:dashboard' %}">Cestas Básicas</a></li>
+<li class="breadcrumb-item active">Entregas</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">Histórico de entregas de cestas básicas.</p>
+    <a href="{% url 'cestas:registrar_entrega' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Nova Entrega
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">Entregas Realizadas</div>
+    <div class="card-body p-0">
+        {% if entregas %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Família</th>
+                    <th class="text-center">Qtd.</th>
+                    <th>Registrado por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entrega in entregas %}
+                <tr>
+                    <td>{{ entrega.data|date:"d/m/Y" }}</td>
+                    <td>{{ entrega.familia.responsavel_nome }}</td>
+                    <td class="text-center">{{ entrega.quantidade }}</td>
+                    <td>{{ entrega.registrado_por.get_full_name|default:entrega.registrado_por.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-basket" style="font-size:2.5rem;"></i>
+            <p class="mt-2 mb-0">Nenhuma entrega registrada ainda.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
