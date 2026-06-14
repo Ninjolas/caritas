@@ -20,6 +20,12 @@ services:
           property: connectionString
       - key: PYTHON_VERSION
         value: "3.11.0"
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: "admin"
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: "admin@caritas.com"
+      - key: DJANGO_SUPERUSER_PASSWORD
+        generateValue: true
 
 databases:
   - name: caritas-db
