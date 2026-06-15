@@ -25,7 +25,7 @@ services:
       - key: DJANGO_SUPERUSER_EMAIL
         value: "admin@caritas.com"
       - key: DJANGO_SUPERUSER_PASSWORD
-        generateValue: true
+        sync: false
 
 databases:
   - name: caritas-db
