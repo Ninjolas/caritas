@@ -36,7 +36,11 @@
         #sidebar .nav-link.active { background-color: var(--sidebar-active); color: #fff; }
         #sidebar .nav-link.disabled { color: rgba(255,255,255,0.25); pointer-events: none; }
         #sidebar .nav-link i { font-size: 16px; width: 18px; }
-        #sidebar .sidebar-user { margin-top: auto; padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); }
+        #sidebar nav { flex: 1; overflow-y: auto; }
+        #sidebar nav::-webkit-scrollbar { width: 4px; }
+        #sidebar nav::-webkit-scrollbar-track { background: transparent; }
+        #sidebar nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+        #sidebar .sidebar-user { padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
         #sidebar .sidebar-user .user-name { font-size: 13px; font-weight: 500; color: #fff; }
         #sidebar .sidebar-user .user-role { font-size: 11px; color: var(--sidebar-text); text-transform: capitalize; }
 
