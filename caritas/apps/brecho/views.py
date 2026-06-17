@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from apps.accounts.decorators import coordenador_required
+from apps.accounts.decorators import coordenador_required, modulo_paroquia_required
 from .models import BrechoEvento, VendaBrecho
 from .forms import BrechoEventoForm, VendaBrechoForm
 
 
 @login_required
+@modulo_paroquia_required
 def listagem(request):
     eventos = BrechoEvento.objects.filter(paroquia=request.user.paroquia)
     return render(request, 'brecho/listagem.html', {'eventos': eventos})

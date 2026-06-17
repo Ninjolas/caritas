@@ -3,13 +3,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.accounts.decorators import coordenador_required
+from apps.accounts.decorators import coordenador_required, modulo_paroquia_required
 
 from .forms import ItemEstoqueForm
 from .models import ItemEstoque
 
 
 @login_required
+@modulo_paroquia_required
 def listagem(request):
     is_admin = request.user.perfil == 'administrador'
     paroquia_usuario = request.user.paroquia

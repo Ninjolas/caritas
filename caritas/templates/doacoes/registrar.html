@@ -69,6 +69,11 @@
                     {{ item_form.categoria_outro }}
                     {% for error in item_form.categoria_outro.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
                 </div>
+                <div class="campo-validade mt-2" style="display:none">
+                    <label class="form-label" style="font-size:13px">Data de validade</label>
+                    {{ item_form.data_validade }}
+                    {% for error in item_form.data_validade.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -90,16 +95,18 @@
     var totalFormsEl = document.querySelector('[name$="-TOTAL_FORMS"]');
     var prefix = totalFormsEl ? totalFormsEl.name.replace('-TOTAL_FORMS', '') : 'itens';
 
-    function toggleCategoriaOutro(selectEl) {
+    function toggleCampos(selectEl) {
         var itemForm = selectEl.closest('.item-form');
         if (!itemForm) return;
-        var campo = itemForm.querySelector('.campo-categoria-outro');
-        if (campo) campo.style.display = selectEl.value === 'outro' ? 'block' : 'none';
+        var outro = itemForm.querySelector('.campo-categoria-outro');
+        var validade = itemForm.querySelector('.campo-validade');
+        if (outro) outro.style.display = selectEl.value === 'outro' ? 'block' : 'none';
+        if (validade) validade.style.display = selectEl.value === 'alimento' ? 'block' : 'none';
     }
 
     function bindCategoria(selectEl) {
-        toggleCategoriaOutro(selectEl);
-        selectEl.addEventListener('change', function () { toggleCategoriaOutro(this); });
+        toggleCampos(selectEl);
+        selectEl.addEventListener('change', function () { toggleCampos(this); });
     }
 
     function bindRemover(btn) {
@@ -145,6 +152,8 @@
 
         var campoOutro = newForm.querySelector('.campo-categoria-outro');
         if (campoOutro) campoOutro.style.display = 'none';
+        var campoValidade = newForm.querySelector('.campo-validade');
+        if (campoValidade) campoValidade.style.display = 'none';
 
         container.appendChild(newForm);
         if (totalForms) totalForms.value = count + 1;

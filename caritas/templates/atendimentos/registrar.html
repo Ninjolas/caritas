@@ -7,31 +7,137 @@
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <form method="post">
-            {% csrf_token %}
-            <fieldset class="form-section">
-                <legend>Dados do Atendimento</legend>
-                {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                        <div class="text-danger small mt-1">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
+<div style="max-width:800px">
+<form method="post" id="form-atendimento">
+    {% csrf_token %}
+
+    <fieldset class="form-section">
+        <legend>Dados do Atendimento</legend>
+        {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                {% for error in field.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
                 {% endfor %}
-            </fieldset>
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-lg me-1"></i> Salvar
-                </button>
-                <a href="{% url 'atendimentos:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </fieldset>
+
+    <fieldset class="form-section" id="secao-itens" style="display:none">
+        <legend class="d-flex justify-content-between align-items-center w-100">
+            <span>Itens do Estoque</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-add-item" style="font-size:12px">
+                <i class="bi bi-plus me-1"></i>Adicionar item
+            </button>
+        </legend>
+        {{ formset.management_form }}
+        <div id="itens-container">
+            {% for item_form in formset %}
+            <div class="item-row border rounded p-3 mb-2" style="background:#f8fafc">
+                {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                <div style="display:none">{{ item_form.DELETE }}</div>
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-7">
+                        <label class="form-label">Item</label>
+                        {{ item_form.item_estoque }}
+                        {% for error in item_form.item_estoque.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Quantidade</label>
+                        {{ item_form.quantidade }}
+                        {% for error in item_form.quantidade.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-sm btn-outline-danger mt-4 btn-remover-item w-100" title="Remover">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </form>
+            {% endfor %}
+        </div>
+    </fieldset>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i> Salvar
+        </button>
+        <a href="{% url 'atendimentos:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
     </div>
+</form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var TIPOS_COM_ITENS = {{ tipos_com_itens|safe }};
+    var tipoSelect = document.getElementById('id_tipo');
+    var secaoItens = document.getElementById('secao-itens');
+    var container = document.getElementById('itens-container');
+    var totalForms = document.querySelector('[name="itens-TOTAL_FORMS"]');
+    var btnAdd = document.getElementById('btn-add-item');
+
+    function atualizarSecao() {
+        var tipo = tipoSelect ? tipoSelect.value : '';
+        if (TIPOS_COM_ITENS.indexOf(tipo) !== -1) {
+            secaoItens.style.display = 'block';
+        } else {
+            secaoItens.style.display = 'none';
+        }
+    }
+
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', atualizarSecao);
+        atualizarSecao();
+    }
+
+    function bindRemover(btn) {
+        btn.addEventListener('click', function () {
+            var rows = container.querySelectorAll('.item-row:not([data-removido])');
+            if (rows.length <= 1) {
+                alert('Adicione pelo menos 1 item para este tipo de atendimento.');
+                return;
+            }
+            var row = btn.closest('.item-row');
+            var del = row.querySelector('input[name$="-DELETE"]');
+            if (del) del.checked = true;
+            row.setAttribute('data-removido', '1');
+            row.style.display = 'none';
+        });
+    }
+
+    document.querySelectorAll('.btn-remover-item').forEach(bindRemover);
+
+    if (btnAdd && container && totalForms) {
+        btnAdd.addEventListener('click', function () {
+            var rows = container.querySelectorAll('.item-row');
+            var count = rows.length;
+            var newRow = rows[rows.length - 1].cloneNode(true);
+            newRow.removeAttribute('data-removido');
+            newRow.style.display = '';
+            newRow.querySelectorAll('input, select, textarea').forEach(function (el) {
+                el.name = el.name.replace(/itens-\d+-/, 'itens-' + count + '-');
+                if (el.id) el.id = el.id.replace(/itens-\d+-/, 'itens-' + count + '-');
+                if (el.type !== 'hidden') el.value = '';
+                if (el.type === 'checkbox') el.checked = false;
+            });
+            newRow.querySelectorAll('label').forEach(function (label) {
+                if (label.htmlFor) label.htmlFor = label.htmlFor.replace(/itens-\d+-/, 'itens-' + count + '-');
+            });
+            container.appendChild(newRow);
+            totalForms.value = count + 1;
+            var newBtn = newRow.querySelector('.btn-remover-item');
+            if (newBtn) bindRemover(newBtn);
+        });
+    }
+})();
+</script>
 {% endblock %}

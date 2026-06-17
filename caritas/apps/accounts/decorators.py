@@ -34,3 +34,12 @@ def coordenador_bazar_required(view_func):
             return True
         raise PermissionDenied
     return user_passes_test(check, login_url='/login/')(view_func)
+
+
+def modulo_paroquia_required(view_func):
+    """Bloqueia acesso de usuários exclusivos do bazar a módulos da paróquia."""
+    def check(user):
+        if user.is_authenticated and user.perfil not in ['voluntario_bazar', 'coordenador_bazar']:
+            return True
+        raise PermissionDenied
+    return user_passes_test(check, login_url='/login/')(view_func)

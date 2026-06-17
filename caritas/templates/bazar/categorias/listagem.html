@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Categorias do Bazar — Sistema Cáritas{% endblock %}
+{% block page_title %}Categorias{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'bazar:dashboard' %}">Bazar</a></li>
+<li class="breadcrumb-item active">Categorias</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">Gerencie as categorias e subcategorias do estoque do bazar.</p>
+    <a href="{% url 'bazar:categoria_nova' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Nova Categoria
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">Categorias Cadastradas</div>
+    <div class="card-body p-0">
+        {% if raizes %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in raizes %}
+                <tr class="table-light">
+                    <td><strong>{{ cat.nome }}</strong></td>
+                    <td class="text-center">
+                        {% if cat.ativa %}
+                        <span class="badge bg-success-subtle text-success">Ativa</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">Inativa</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'bazar:categoria_editar' cat.pk %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'bazar:categoria_remover' cat.pk %}"
+                           class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Remover categoria \'{{ cat.nome }}\'? As subcategorias também serão removidas.')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% for sub in cat.subcategorias.all %}
+                <tr>
+                    <td style="padding-left:2.5rem">
+                        <span class="text-muted me-1">↳</span>{{ sub.nome }}
+                    </td>
+                    <td class="text-center">
+                        {% if sub.ativa %}
+                        <span class="badge bg-success-subtle text-success">Ativa</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">Inativa</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'bazar:categoria_editar' sub.pk %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'bazar:categoria_remover' sub.pk %}"
+                           class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Remover subcategoria \'{{ sub.nome }}\'?')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-tags" style="font-size:2.5rem;display:block;opacity:.4;margin-bottom:8px"></i>
+            <p class="mb-0">Nenhuma categoria cadastrada.</p>
+            <a href="{% url 'bazar:categoria_nova' %}" class="btn btn-outline-primary btn-sm mt-3">
+                Cadastrar primeira categoria
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

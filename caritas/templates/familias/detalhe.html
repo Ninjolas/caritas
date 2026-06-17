@@ -7,12 +7,14 @@
 {% endblock %}
 
 {% block content %}
+{% if familia.paroquia_responsavel != user.paroquia and user.perfil != 'administrador' %}
 <div class="alert alert-info d-flex align-items-center gap-2" style="font-size:13px">
     <i class="bi bi-info-circle"></i>
     Visualização somente leitura — família da paróquia <strong>{{ familia.paroquia_responsavel }}</strong>.
 </div>
+{% endif %}
 
-<div style="max-width:800px">
+<div style="max-width:900px">
     <div class="card mb-3">
         <div class="card-header"><i class="bi bi-person me-2"></i>Dados Pessoais</div>
         <div class="card-body">
@@ -63,8 +65,64 @@
         </div>
     </div>
 
-    <a href="{% url 'familias:listar_familias' %}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Voltar
-    </a>
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-clock-history me-2"></i>Histórico de Atendimentos</span>
+            <span class="badge bg-secondary">{{ atendimentos.count }} registro(s)</span>
+        </div>
+        <div class="card-body p-0">
+            {% if atendimentos %}
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Paróquia</th>
+                        <th>Responsável</th>
+                        <th>Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in atendimentos %}
+                    <tr>
+                        <td style="white-space:nowrap">{{ a.data|date:"d/m/Y" }}</td>
+                        <td><span class="badge bg-primary-subtle text-primary-emphasis">{{ a.get_tipo_display }}</span></td>
+                        <td>{{ a.paroquia }}</td>
+                        <td>{{ a.registrado_por.get_full_name|default:a.registrado_por.username }}</td>
+                        <td style="font-size:13px;color:#374151">{{ a.descricao|truncatechars:80 }}</td>
+                    </tr>
+                    {% if a.itens.exists %}
+                    <tr style="background:#f8fafc">
+                        <td colspan="5" style="font-size:12px;padding-left:2rem;color:#6b7280">
+                            <i class="bi bi-box-seam me-1"></i>
+                            Itens doados:
+                            {% for item in a.itens.all %}
+                                {{ item.quantidade }}x {{ item.item_nome }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-calendar-x" style="font-size:2rem;display:block;opacity:.4;margin-bottom:8px"></i>
+                Nenhum atendimento registrado para esta família.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        {% if familia.paroquia_responsavel == user.paroquia or user.perfil == 'administrador' %}
+        <a href="{% url 'familias:editar_familia' familia.pk %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-pencil me-1"></i> Editar
+        </a>
+        {% endif %}
+        <a href="{% url 'familias:listar_familias' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Voltar
+        </a>
+    </div>
 </div>
 {% endblock %}

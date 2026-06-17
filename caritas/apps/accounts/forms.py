@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
 
-from .models import Usuario
+from .models import Paroquia, Usuario
 
 
 class TrocarSenhaForm(SetPasswordForm):
@@ -22,34 +22,26 @@ def _apply_form_control(form):
                 widget.attrs['class'] = 'form-control'
 
 
-class CoordenadorCreateForm(UserCreationForm):
+def _paroquia_choices():
+    return [('', '---------')] + [(p.nome, p.nome) for p in Paroquia.objects.filter(ativa=True)]
+
+
+class UsuarioCreateForm(UserCreationForm):
+    perfil = forms.ChoiceField(
+        choices=Usuario.PERFIL_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Nível de acesso',
+    )
+    paroquia = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Paróquia',
+        choices=[],
+    )
+
     class Meta:
         model = Usuario
-        fields = ['username', 'first_name', 'last_name', 'email', 'paroquia', 'password1', 'password2']
-        labels = {
-            'username': 'Nome de usuário',
-            'first_name': 'Nome',
-            'last_name': 'Sobrenome',
-            'email': 'E-mail',
-            'paroquia': 'Paróquia',
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        _apply_form_control(self)
-
-    def save(self, commit=True):
-        usuario = super().save(commit=False)
-        usuario.perfil = 'coordenador'
-        if commit:
-            usuario.save()
-        return usuario
-
-
-class VoluntarioCreateForm(UserCreationForm):
-    class Meta:
-        model = Usuario
-        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
+        fields = ['username', 'first_name', 'last_name', 'email', 'perfil', 'paroquia', 'password1', 'password2']
         labels = {
             'username': 'Nome de usuário',
             'first_name': 'Nome',
@@ -57,61 +49,27 @@ class VoluntarioCreateForm(UserCreationForm):
             'email': 'E-mail',
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, solicitante=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['paroquia'].choices = _paroquia_choices()
+
+        if solicitante:
+            if solicitante.perfil == 'coordenador':
+                self.fields['perfil'].choices = [('voluntario', 'Voluntário')]
+                self.fields['paroquia'].widget = forms.HiddenInput()
+                if not self.data:
+                    self.initial['paroquia'] = solicitante.paroquia or ''
+            elif solicitante.perfil == 'coordenador_bazar':
+                self.fields['perfil'].choices = [('voluntario_bazar', 'Voluntário do Bazar')]
+                self.fields.pop('paroquia', None)
+
         _apply_form_control(self)
 
     def save(self, commit=True):
         usuario = super().save(commit=False)
-        usuario.perfil = 'voluntario'
-        if commit:
-            usuario.save()
-        return usuario
-
-
-class CoordenadorBazarCreateForm(UserCreationForm):
-    class Meta:
-        model = Usuario
-        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
-        labels = {
-            'username': 'Nome de usuário',
-            'first_name': 'Nome',
-            'last_name': 'Sobrenome',
-            'email': 'E-mail',
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        _apply_form_control(self)
-
-    def save(self, commit=True):
-        usuario = super().save(commit=False)
-        usuario.perfil = 'coordenador_bazar'
-        usuario.paroquia = None
-        if commit:
-            usuario.save()
-        return usuario
-
-
-class VoluntarioBazarCreateForm(UserCreationForm):
-    class Meta:
-        model = Usuario
-        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
-        labels = {
-            'username': 'Nome de usuário',
-            'first_name': 'Nome',
-            'last_name': 'Sobrenome',
-            'email': 'E-mail',
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        _apply_form_control(self)
-
-    def save(self, commit=True):
-        usuario = super().save(commit=False)
-        usuario.perfil = 'voluntario_bazar'
-        usuario.paroquia = None
+        usuario.perfil = self.cleaned_data.get('perfil', 'voluntario')
+        paroquia = self.cleaned_data.get('paroquia', '')
+        usuario.paroquia = paroquia or None
         if commit:
             usuario.save()
         return usuario
@@ -128,6 +86,41 @@ class UsuarioEditForm(forms.ModelForm):
             'is_active': 'Ativo',
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, solicitante=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if solicitante and solicitante.perfil == 'administrador':
+            self.fields['perfil'] = forms.ChoiceField(
+                choices=Usuario.PERFIL_CHOICES,
+                widget=forms.Select(attrs={'class': 'form-select'}),
+                label='Nível de acesso',
+                initial=self.instance.perfil if self.instance else 'voluntario',
+            )
+            self.fields['paroquia'] = forms.ChoiceField(
+                required=False,
+                widget=forms.Select(attrs={'class': 'form-select'}),
+                label='Paróquia',
+                choices=_paroquia_choices(),
+                initial=self.instance.paroquia if self.instance else '',
+            )
         _apply_form_control(self)
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        if 'perfil' in self.cleaned_data:
+            usuario.perfil = self.cleaned_data['perfil']
+        if 'paroquia' in self.cleaned_data:
+            usuario.paroquia = self.cleaned_data['paroquia'] or None
+        if commit:
+            usuario.save()
+        return usuario
+
+
+class ParoquiaForm(forms.ModelForm):
+    class Meta:
+        model = Paroquia
+        fields = ['nome', 'ativa']
+        labels = {'nome': 'Nome da Paróquia', 'ativa': 'Ativa'}
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'ativa': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

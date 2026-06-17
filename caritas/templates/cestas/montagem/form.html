@@ -26,7 +26,12 @@
 
             {% if formset %}
             <fieldset class="form-section">
-                <legend>Itens Retirados do Estoque</legend>
+                <legend class="d-flex justify-content-between align-items-center w-100">
+                    <span>Itens Retirados do Estoque</span>
+                    <button type="button" id="btn-add-item" class="btn btn-outline-secondary btn-sm" style="font-size:12px">
+                        <i class="bi bi-plus me-1"></i> Adicionar Item
+                    </button>
+                </legend>
                 {{ formset.management_form }}
                 <div id="formset-container">
                     {% for item_form in formset %}
@@ -34,9 +39,12 @@
                         <div class="row g-2">
                             {% for field in item_form %}
                             {% if field.name != 'DELETE' %}
-                            <div class="col-md-6 mb-2">
+                            <div class="col-md-{% if field.name == 'item_estoque' %}7{% else %}4{% endif %} mb-2">
                                 <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 {{ field }}
+                                {% if field.name == 'item_estoque' %}
+                                <div class="estoque-info form-text text-muted mt-1" style="font-size:12px"></div>
+                                {% endif %}
                                 {% if field.errors %}
                                     {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                                 {% endif %}
@@ -45,18 +53,15 @@
                             <div class="d-none">{{ field }}</div>
                             {% endif %}
                             {% endfor %}
+                            <div class="col-md-1 mb-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-remover" title="Remover">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
-                        {% if forloop.counter > 1 %}
-                        <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover">
-                            <i class="bi bi-x"></i>
-                        </button>
-                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
-                <button type="button" id="btn-add-item" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-plus me-1"></i> Adicionar Item
-                </button>
             </fieldset>
             {% endif %}
 
@@ -73,11 +78,79 @@
 {% if formset %}
 <script>
 (function () {
-    const btnAdd = document.getElementById('btn-add-item');
     const container = document.getElementById('formset-container');
     const totalForms = document.getElementById('id_itens_usados-TOTAL_FORMS');
+    const btnAdd = document.getElementById('btn-add-item');
 
-    if (btnAdd && container && totalForms) {
+    function getStocks(select) {
+        try { return JSON.parse(select.dataset.stocks || '{}'); }
+        catch(e) { return {}; }
+    }
+
+    function updateEstoqueInfo(select) {
+        const row = select.closest('.item-form');
+        const info = row.querySelector('.estoque-info');
+        const qtdInput = row.querySelector('.quantidade-input');
+        if (!info) return;
+
+        const stocks = getStocks(select);
+        const avail = stocks[select.value];
+
+        if (avail === undefined || select.value === '') {
+            info.textContent = '';
+            if (qtdInput) qtdInput.removeAttribute('max');
+            return;
+        }
+
+        info.textContent = `Disponível em estoque: ${avail} unidade(s)`;
+        info.className = avail === 0
+            ? 'estoque-info form-text text-danger mt-1'
+            : 'estoque-info form-text text-success mt-1';
+
+        if (qtdInput) {
+            qtdInput.setAttribute('max', avail);
+            if (parseInt(qtdInput.value) > avail) qtdInput.value = avail;
+        }
+    }
+
+    function bindRow(row) {
+        const select = row.querySelector('.item-estoque-select');
+        const qtdInput = row.querySelector('.quantidade-input');
+
+        if (select) {
+            select.addEventListener('change', () => updateEstoqueInfo(select));
+            updateEstoqueInfo(select);
+        }
+
+        if (qtdInput && select) {
+            qtdInput.addEventListener('input', function () {
+                const stocks = getStocks(select);
+                const avail = stocks[select.value];
+                if (avail !== undefined && parseInt(this.value) > avail) {
+                    this.value = avail;
+                }
+            });
+        }
+
+        const btnRemover = row.querySelector('.btn-remover');
+        if (btnRemover) {
+            btnRemover.addEventListener('click', function () {
+                const rows = container.querySelectorAll('.item-form');
+                if (rows.length <= 1) {
+                    alert('É necessário ao menos 1 item na montagem.');
+                    return;
+                }
+                const del = row.querySelector('input[name$="-DELETE"]');
+                if (del) { del.checked = true; row.style.display = 'none'; }
+                else row.remove();
+                if (totalForms) totalForms.value = container.querySelectorAll('.item-form:not([style*="none"])').length;
+            });
+        }
+    }
+
+    container.querySelectorAll('.item-form').forEach(bindRow);
+
+    if (btnAdd) {
         btnAdd.addEventListener('click', function () {
             const forms = container.querySelectorAll('.item-form');
             const lastForm = forms[forms.length - 1];
@@ -85,30 +158,16 @@
             const idx = parseInt(totalForms.value);
 
             newForm.innerHTML = newForm.innerHTML.replace(/itens_usados-(\d+)-/g, `itens_usados-${idx}-`);
-            newForm.querySelectorAll('input:not([type=hidden]), select').forEach(el => el.value = '');
-
-            let btnRemover = newForm.querySelector('.btn-remover');
-            if (!btnRemover) {
-                btnRemover = document.createElement('button');
-                btnRemover.type = 'button';
-                btnRemover.className = 'btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover';
-                btnRemover.innerHTML = '<i class="bi bi-x"></i>';
-                newForm.appendChild(btnRemover);
-            }
+            newForm.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+            newForm.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+            newForm.querySelectorAll('.estoque-info').forEach(el => el.textContent = '');
+            newForm.style.display = '';
 
             container.appendChild(newForm);
             totalForms.value = idx + 1;
-            bindRemover(btnRemover);
+            bindRow(newForm);
         });
     }
-
-    function bindRemover(btn) {
-        if (btn) btn.addEventListener('click', () => {
-            btn.closest('.item-form').remove();
-            if (totalForms) totalForms.value = container.querySelectorAll('.item-form').length;
-        });
-    }
-    document.querySelectorAll('.btn-remover').forEach(bindRemover);
 })();
 </script>
 {% endif %}

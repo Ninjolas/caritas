@@ -42,16 +42,16 @@ def registrar(request):
                     for item in itens:
                         item.doacao = doacao
                         item.save()
-                        if doacao.tipo == 'entrada':
-                            ItemEstoque.objects.create(
-                                paroquia=doacao.paroquia,
-                                nome=item.nome,
-                                categoria=item.categoria,
-                                categoria_outro=item.categoria_outro,
-                                quantidade=item.quantidade,
-                                unidade=item.unidade,
-                                registrado_por=request.user,
-                            )
+                        ItemEstoque.objects.create(
+                            paroquia=doacao.paroquia,
+                            nome=item.nome,
+                            categoria=item.categoria,
+                            categoria_outro=item.categoria_outro,
+                            quantidade=item.quantidade,
+                            unidade=item.unidade,
+                            validade=item.data_validade,
+                            registrado_por=request.user,
+                        )
                     messages.success(request, 'Doação registrada e estoque atualizado com sucesso!')
                     return redirect('doacoes:listagem')
             except Exception as e:

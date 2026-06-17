@@ -33,6 +33,14 @@ class ItemEstoque(models.Model):
             return date.today() <= self.validade <= date.today() + timedelta(days=7)
         return False
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.quantidade <= 0:
+            try:
+                self.delete()
+            except Exception:
+                pass
+
     def __str__(self):
         return f"{self.nome} ({self.paroquia})"
 

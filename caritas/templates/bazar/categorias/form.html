@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }} — Sistema Cáritas{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'bazar:dashboard' %}">Bazar</a></li>
+<li class="breadcrumb-item"><a href="{% url 'bazar:categorias_listagem' %}">Categorias</a></li>
+<li class="breadcrumb-item active">{{ titulo }}</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:500px">
+    <form method="post">
+        {% csrf_token %}
+        <fieldset class="form-section">
+            <legend>Dados da Categoria</legend>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.nome.id_for_label }}">Nome *</label>
+                {{ form.nome }}
+                {% if form.nome.errors %}
+                <div class="text-danger" style="font-size:12px">{{ form.nome.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.pai.id_for_label }}">Categoria Pai</label>
+                {{ form.pai }}
+                <div class="form-text">Deixe em branco para criar uma categoria principal.</div>
+                {% if form.pai.errors %}
+                <div class="text-danger" style="font-size:12px">{{ form.pai.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.ativa }}
+                    <label class="form-check-label" for="{{ form.ativa.id_for_label }}">Categoria ativa</label>
+                </div>
+                {% if form.ativa.errors %}
+                <div class="text-danger" style="font-size:12px">{{ form.ativa.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-check-lg me-1"></i> Salvar
+            </button>
+            <a href="{% url 'bazar:categorias_listagem' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

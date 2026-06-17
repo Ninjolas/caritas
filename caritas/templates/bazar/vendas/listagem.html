@@ -21,30 +21,46 @@
         <table class="table table-hover mb-0">
             <thead>
                 <tr>
+                    <th>Nº Operação</th>
                     <th>Data</th>
                     <th>Item</th>
                     <th class="text-center">Qtd.</th>
+                    {% if show_financial %}
                     <th class="text-end">Preço Unit.</th>
                     <th class="text-end">Total</th>
+                    {% endif %}
+                    <th class="text-end">Comprovante</th>
                 </tr>
             </thead>
             <tbody>
                 {% for venda in vendas %}
                 <tr>
+                    <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ venda.numero_operacao|default:"—" }}</span></td>
                     <td>{{ venda.data|date:"d/m/Y" }}</td>
                     <td>{{ venda.item.descricao }}</td>
                     <td class="text-center">{{ venda.quantidade }}</td>
+                    {% if show_financial %}
                     <td class="text-end">R$ {{ venda.preco_unitario|floatformat:2 }}</td>
                     <td class="text-end"><strong>R$ {{ venda.valor_total|floatformat:2 }}</strong></td>
+                    {% endif %}
+                    <td class="text-end">
+                        <a href="{% url 'bazar:comprovante' venda.pk %}"
+                           class="btn btn-outline-secondary btn-sm" title="Ver comprovante">
+                            <i class="bi bi-receipt"></i>
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
+            {% if show_financial %}
             <tfoot class="table-light">
                 <tr>
-                    <td colspan="4" class="text-end fw-bold">Total Geral:</td>
+                    <td colspan="5" class="text-end fw-bold">Total Geral:</td>
                     <td class="text-end fw-bold text-success">R$ {{ total_geral|floatformat:2 }}</td>
+                    <td></td>
                 </tr>
             </tfoot>
+            {% endif %}
         </table>
         {% else %}
         <div class="text-center py-5 text-muted">

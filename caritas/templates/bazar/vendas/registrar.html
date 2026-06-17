@@ -19,16 +19,21 @@
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                     {% if field.name == 'item' %}
-                    <div id="estoque-info" class="form-text text-muted"></div>
+                    <div id="estoque-info" class="form-text mt-1"></div>
                     {% endif %}
                     {% if field.errors %}
                         {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     {% endif %}
                 </div>
                 {% endfor %}
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
             </fieldset>
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Registrar Venda</button>
                 <a href="{% url 'bazar:vendas_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
             </div>
         </form>
@@ -39,32 +44,50 @@
 {% block extra_js %}
 <script>
 (function () {
-    // Monta mapa id → quantidade a partir das opções do select
     const itemSelect = document.getElementById('id_item');
     const estoqueInfo = document.getElementById('estoque-info');
+    const qtdInput = document.getElementById('id_quantidade');
+    const precoInput = document.getElementById('id_preco_unitario');
 
-    // Os dados de estoque são injetados via data-attributes no select pelo view,
-    // ou consultados via opções com texto "... (X un.)"
-    if (itemSelect && estoqueInfo) {
-        const estoque = {};
-        Array.from(itemSelect.options).forEach(opt => {
-            // Tenta extrair quantidade do texto da opção: "Descrição — TAM (N un.)"
-            const match = opt.text.match(/\((\d+) un\.\)/);
-            if (match) {
-                estoque[opt.value] = parseInt(match[1], 10);
-            }
-        });
+    // Build maps: id → { qty, price } from option text
+    // Option text: "Descrição — TAM (N un.)" + data-price may not exist,
+    // so we parse qty from "(N un.)" and set max accordingly.
+    const itemData = {};
+    Array.from(itemSelect.options).forEach(opt => {
+        const qtyMatch = opt.text.match(/\((\d+) un\.\)/);
+        if (qtyMatch) {
+            itemData[opt.value] = { qty: parseInt(qtyMatch[1], 10) };
+        }
+    });
 
-        itemSelect.addEventListener('change', function () {
-            const qty = estoque[this.value];
-            if (qty !== undefined) {
-                estoqueInfo.textContent = `Disponível em estoque: ${qty} unidade(s)`;
-                estoqueInfo.className = qty === 0 ? 'form-text text-danger' : 'form-text text-muted';
-            } else {
-                estoqueInfo.textContent = '';
-            }
+    function atualizar() {
+        const data = itemData[itemSelect.value];
+        if (!data) {
+            estoqueInfo.textContent = '';
+            if (qtdInput) qtdInput.removeAttribute('max');
+            return;
+        }
+        const { qty } = data;
+        estoqueInfo.textContent = `Disponível em estoque: ${qty} unidade(s)`;
+        estoqueInfo.className = qty === 0
+            ? 'form-text text-danger mt-1'
+            : 'form-text text-success mt-1';
+        if (qtdInput) {
+            qtdInput.setAttribute('max', qty);
+            if (parseInt(qtdInput.value) > qty) qtdInput.value = qty;
+        }
+    }
+
+    if (itemSelect) {
+        itemSelect.addEventListener('change', atualizar);
+        atualizar();
+    }
+
+    if (qtdInput && itemSelect) {
+        qtdInput.addEventListener('input', function () {
+            const data = itemData[itemSelect.value];
+            if (data && parseInt(this.value) > data.qty) this.value = data.qty;
         });
-        itemSelect.dispatchEvent(new Event('change'));
     }
 })();
 </script>

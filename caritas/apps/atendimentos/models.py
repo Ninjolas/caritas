@@ -2,12 +2,15 @@ from django.db import models
 from apps.accounts.models import Usuario
 from apps.familias.models import Familia
 
+TIPOS_COM_ITENS = ['doacao_alimentos', 'doacao_roupas', 'doacao_cesta_basica']
+
 
 class Atendimento(models.Model):
     TIPO_CHOICES = [
         ('assistencia_social', 'Assistência Social'),
         ('doacao_alimentos', 'Doação de Alimentos'),
         ('doacao_roupas', 'Doação de Roupas'),
+        ('doacao_cesta_basica', 'Doação de Cesta Básica'),
         ('encaminhamento', 'Encaminhamento'),
         ('visita_domiciliar', 'Visita Domiciliar'),
         ('outro', 'Outro'),
@@ -28,3 +31,16 @@ class Atendimento(models.Model):
         ordering = ['-data']
         verbose_name = 'Atendimento'
         verbose_name_plural = 'Atendimentos'
+
+
+class ItemAtendimento(models.Model):
+    atendimento = models.ForeignKey(Atendimento, on_delete=models.CASCADE, related_name='itens')
+    item_estoque = models.ForeignKey(
+        'estoque.ItemEstoque', on_delete=models.SET_NULL, null=True, related_name='usos_atendimento'
+    )
+    item_nome = models.CharField(max_length=200)
+    item_unidade = models.CharField(max_length=50, default='unidade')
+    quantidade = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.quantidade}x {self.item_nome}"

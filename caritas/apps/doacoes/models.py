@@ -4,15 +4,9 @@ from apps.estoque.models import ItemEstoque
 
 
 class Doacao(models.Model):
-    TIPO_CHOICES = [
-        ('entrada', 'Recebida'),
-        ('saida', 'Repassada'),
-    ]
-
     paroquia = models.CharField(max_length=100)
     doador = models.CharField(max_length=200)
     data = models.DateField()
-    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default='entrada')
     descricao = models.TextField(blank=True)
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     criado_em = models.DateTimeField(auto_now_add=True)
@@ -33,6 +27,7 @@ class ItemDoacao(models.Model):
     categoria_outro = models.CharField(max_length=100, blank=True, default='')
     quantidade = models.IntegerField()
     unidade = models.CharField(max_length=50, default='unidade')
+    data_validade = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.quantidade} {self.unidade} de {self.nome}"

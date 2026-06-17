@@ -2,29 +2,74 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from django.utils import timezone
 from apps.accounts.decorators import bazar_required, coordenador_bazar_required
-from .models import ItemEstoqueBazar, EntradaBazar, ItemEntradaBazar, Venda, EmpresaParceira
-from .forms import (EntradaBazarForm, ItemEntradaBazarFormSet, VendaForm,
+from .models import CategoriaBazar, ItemEstoqueBazar, EntradaBazar, ItemEntradaBazar, Venda, EmpresaParceira
+from .forms import (CategoriaBazarForm, EntradaBazarForm, ItemEntradaBazarFormSet, VendaForm,
                     ItemEstoqueBazarForm, EmpresaParceiraForm)
 
+
+def _pode_ver_financeiro(user):
+    return user.perfil in ['coordenador_bazar', 'administrador']
+
+
+# ── Dashboard ──────────────────────────────────────────────────────────────────
 
 @login_required
 @bazar_required
 def dashboard(request):
     hoje = timezone.now().date()
+    show_financial = _pode_ver_financeiro(request.user)
     contexto = {
         'total_itens': ItemEstoqueBazar.objects.aggregate(total=Sum('quantidade'))['total'] or 0,
-        'total_vendas_mes': Venda.objects.filter(data__month=hoje.month, data__year=hoje.year).aggregate(total=Sum('valor_total'))['total'] or 0,
         'total_doacoes_mes': EntradaBazar.objects.filter(data__month=hoje.month, data__year=hoje.year).count(),
-        'receita_financeira_mes': EntradaBazar.objects.filter(
-            tipo_entrada='doacao_financeira',
-            data__month=hoje.month,
-            data__year=hoje.year
-        ).aggregate(total=Sum('valor'))['total'] or 0,
+        'show_financial': show_financial,
     }
+    if show_financial:
+        contexto['total_vendas_mes'] = Venda.objects.filter(
+            data__month=hoje.month, data__year=hoje.year
+        ).aggregate(total=Sum('valor_total'))['total'] or 0
+        contexto['receita_financeira_mes'] = EntradaBazar.objects.filter(
+            tipo_entrada='doacao_financeira',
+            data__month=hoje.month, data__year=hoje.year
+        ).aggregate(total=Sum('valor'))['total'] or 0
     return render(request, 'bazar/dashboard.html', contexto)
+
+
+# ── Categorias ─────────────────────────────────────────────────────────────────
+
+@login_required
+@coordenador_bazar_required
+def categorias_listagem(request):
+    raizes = CategoriaBazar.objects.filter(pai=None).prefetch_related('subcategorias')
+    return render(request, 'bazar/categorias/listagem.html', {'raizes': raizes})
+
+
+@login_required
+@coordenador_bazar_required
+def categoria_form(request, pk=None):
+    categoria = get_object_or_404(CategoriaBazar, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = CategoriaBazarForm(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoria salva com sucesso!')
+            return redirect('bazar:categorias_listagem')
+    else:
+        form = CategoriaBazarForm(instance=categoria)
+    titulo = f'Editar {categoria.nome}' if categoria else 'Nova Categoria'
+    return render(request, 'bazar/categorias/form.html', {'form': form, 'titulo': titulo})
+
+
+@login_required
+@coordenador_bazar_required
+def categoria_remover(request, pk):
+    categoria = get_object_or_404(CategoriaBazar, pk=pk)
+    if request.method == 'POST':
+        categoria.delete()
+        messages.success(request, 'Categoria removida.')
+    return redirect('bazar:categorias_listagem')
 
 
 # ── Estoque ────────────────────────────────────────────────────────────────────
@@ -32,7 +77,7 @@ def dashboard(request):
 @login_required
 @bazar_required
 def estoque_listagem(request):
-    itens = ItemEstoqueBazar.objects.all()
+    itens = ItemEstoqueBazar.objects.select_related('categoria', 'categoria__pai').all()
     return render(request, 'bazar/estoque/listagem.html', {'itens': itens})
 
 
@@ -105,8 +150,13 @@ def doacoes_registrar(request):
 @bazar_required
 def vendas_listagem(request):
     vendas = Venda.objects.select_related('item', 'registrado_por').all()
-    total_geral = vendas.aggregate(total=Sum('valor_total'))['total'] or 0
-    return render(request, 'bazar/vendas/listagem.html', {'vendas': vendas, 'total_geral': total_geral})
+    show_financial = _pode_ver_financeiro(request.user)
+    total_geral = vendas.aggregate(total=Sum('valor_total'))['total'] or 0 if show_financial else None
+    return render(request, 'bazar/vendas/listagem.html', {
+        'vendas': vendas,
+        'total_geral': total_geral,
+        'show_financial': show_financial,
+    })
 
 
 @login_required
@@ -119,6 +169,7 @@ def vendas_registrar(request):
                 with transaction.atomic():
                     venda = form.save(commit=False)
                     venda.registrado_por = request.user
+                    venda.paroquia = request.user.paroquia or ''
                     item = venda.item
                     if item.quantidade < venda.quantidade:
                         messages.error(request, f'Estoque insuficiente. Disponível: {item.quantidade}.')
@@ -126,13 +177,23 @@ def vendas_registrar(request):
                     item.quantidade -= venda.quantidade
                     item.save()
                     venda.save()
-                    messages.success(request, 'Venda registrada e estoque atualizado!')
-                    return redirect('bazar:vendas_listagem')
+                    ano = timezone.now().year
+                    venda.numero_operacao = f"{ano}-{venda.pk:05d}"
+                    venda.save(update_fields=['numero_operacao'])
+                    messages.success(request, f'Venda #{venda.numero_operacao} registrada!')
+                    return redirect('bazar:comprovante', pk=venda.pk)
             except Exception as e:
                 messages.error(request, f'Erro ao registrar venda: {str(e)}')
     else:
         form = VendaForm()
     return render(request, 'bazar/vendas/registrar.html', {'form': form})
+
+
+@login_required
+@bazar_required
+def comprovante(request, pk):
+    venda = get_object_or_404(Venda, pk=pk)
+    return render(request, 'bazar/comprovante.html', {'venda': venda})
 
 
 # ── Empresas Parceiras ─────────────────────────────────────────────────────────

@@ -49,7 +49,11 @@ def listar_familias(request):
 @login_required
 def detalhe_familia(request, pk):
     familia = get_object_or_404(Familia, pk=pk)
-    return render(request, 'familias/detalhe.html', {'familia': familia})
+    atendimentos = familia.atendimentos.select_related('registrado_por').order_by('-data')
+    return render(request, 'familias/detalhe.html', {
+        'familia': familia,
+        'atendimentos': atendimentos,
+    })
 
 
 @login_required

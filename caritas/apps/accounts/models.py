@@ -2,6 +2,20 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+class Paroquia(models.Model):
+    nome = models.CharField(max_length=150, unique=True)
+    ativa = models.BooleanField(default=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nome
+
+    class Meta:
+        ordering = ['nome']
+        verbose_name = 'Paróquia'
+        verbose_name_plural = 'Paróquias'
+
+
 class Usuario(AbstractUser):
     PERFIL_CHOICES = [
         ('voluntario', 'Voluntário'),

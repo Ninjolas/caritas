@@ -2,6 +2,28 @@ from django.db import models
 from apps.accounts.models import Usuario
 
 
+class CategoriaBazar(models.Model):
+    nome = models.CharField(max_length=100)
+    pai = models.ForeignKey(
+        'self', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='subcategorias'
+    )
+    ativa = models.BooleanField(default=True)
+
+    def __str__(self):
+        if self.pai:
+            return f"{self.pai.nome} › {self.nome}"
+        return self.nome
+
+    def is_raiz(self):
+        return self.pai is None
+
+    class Meta:
+        ordering = ['pai__nome', 'nome']
+        verbose_name = 'Categoria do Bazar'
+        verbose_name_plural = 'Categorias do Bazar'
+
+
 class EmpresaParceira(models.Model):
     nome = models.CharField(max_length=200)
     cnpj = models.CharField(max_length=18, blank=True)
@@ -21,31 +43,19 @@ class EmpresaParceira(models.Model):
 
 
 class ItemEstoqueBazar(models.Model):
-    CATEGORIA_CHOICES = [
-        ('masculino_adulto', 'Masculino Adulto'),
-        ('feminino_adulto', 'Feminino Adulto'),
-        ('infantil', 'Infantil'),
-        ('calcados', 'Calçados'),
-        ('acessorios', 'Acessórios'),
-        ('outro', 'Outro'),
-    ]
     TAMANHO_CHOICES = [
-        ('pp', 'PP'),
-        ('p', 'P'),
-        ('m', 'M'),
-        ('g', 'G'),
-        ('gg', 'GG'),
-        ('xgg', 'XGG'),
-        ('unico', 'Único'),
+        ('pp', 'PP'), ('p', 'P'), ('m', 'M'),
+        ('g', 'G'), ('gg', 'GG'), ('xgg', 'XGG'), ('unico', 'Único'),
     ]
     ESTADO_CHOICES = [
-        ('novo', 'Novo'),
-        ('bom', 'Bom estado'),
-        ('regular', 'Regular'),
+        ('novo', 'Novo'), ('bom', 'Bom estado'), ('regular', 'Regular'),
     ]
 
     descricao = models.CharField(max_length=200)
-    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
+    categoria = models.ForeignKey(
+        CategoriaBazar, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='itens_estoque'
+    )
     tamanho = models.CharField(max_length=10, choices=TAMANHO_CHOICES, default='unico')
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='bom')
     quantidade = models.IntegerField(default=0)
@@ -54,10 +64,11 @@ class ItemEstoqueBazar(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        cat = str(self.categoria) if self.categoria else '—'
         return f"{self.descricao} — {self.get_tamanho_display()} ({self.quantidade} un.)"
 
     class Meta:
-        ordering = ['categoria', 'tamanho']
+        ordering = ['categoria__nome', 'tamanho']
         verbose_name = 'Item do Estoque do Bazar'
         verbose_name_plural = 'Itens do Estoque do Bazar'
 
@@ -74,14 +85,10 @@ class EntradaBazar(models.Model):
 
     tipo_entrada = models.CharField(max_length=20, choices=TIPO_ENTRADA_CHOICES)
     tipo_doador = models.CharField(max_length=20, choices=TIPO_DOADOR_CHOICES)
-
     doador_nome = models.CharField(max_length=200, blank=True)
     doador_contato = models.CharField(max_length=100, blank=True)
-
     empresa = models.ForeignKey(EmpresaParceira, on_delete=models.SET_NULL, null=True, blank=True)
-
     valor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
     data = models.DateField()
     observacao = models.TextField(blank=True)
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, related_name='entradas_bazar')
@@ -100,7 +107,10 @@ class EntradaBazar(models.Model):
 class ItemEntradaBazar(models.Model):
     entrada = models.ForeignKey(EntradaBazar, on_delete=models.CASCADE, related_name='itens')
     descricao = models.CharField(max_length=200)
-    categoria = models.CharField(max_length=20, choices=ItemEstoqueBazar.CATEGORIA_CHOICES)
+    categoria = models.ForeignKey(
+        CategoriaBazar, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='itens_entrada'
+    )
     tamanho = models.CharField(max_length=10, choices=ItemEstoqueBazar.TAMANHO_CHOICES, default='unico')
     estado = models.CharField(max_length=10, choices=ItemEstoqueBazar.ESTADO_CHOICES, default='bom')
     quantidade = models.IntegerField(default=1)
@@ -111,11 +121,13 @@ class ItemEntradaBazar(models.Model):
 
 
 class Venda(models.Model):
+    numero_operacao = models.CharField(max_length=20, unique=True, blank=True)
     item = models.ForeignKey(ItemEstoqueBazar, on_delete=models.PROTECT, related_name='vendas')
     quantidade = models.IntegerField(default=1)
     preco_unitario = models.DecimalField(max_digits=8, decimal_places=2)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     data = models.DateField()
+    paroquia = models.CharField(max_length=100, blank=True)
     observacao = models.TextField(blank=True)
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     criado_em = models.DateTimeField(auto_now_add=True)
