@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Editar Entrada — Sistema Cáritas{% endblock %}
+{% block page_title %}Editar Entrada{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'bazar:dashboard' %}">Bazar</a></li>
+<li class="breadcrumb-item"><a href="{% url 'bazar:doacoes_listagem' %}">Entradas</a></li>
+<li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <form method="post">
+            {% csrf_token %}
+            <fieldset class="form-section">
+                <legend>Dados da Entrada</legend>
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de entrada *</label>
+                        {{ form.tipo_entrada }}
+                        {% if form.tipo_entrada.errors %}{% for e in form.tipo_entrada.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Data *</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}{% for e in form.data.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de doador *</label>
+                        {{ form.tipo_doador }}
+                    </div>
+
+                    <div class="col-md-6" id="wrap-doador-nome">
+                        <label class="form-label">Nome do doador</label>
+                        {{ form.doador_nome }}
+                    </div>
+                    <div class="col-md-6" id="wrap-doador-contato">
+                        <label class="form-label">Contato</label>
+                        {{ form.doador_contato }}
+                    </div>
+
+                    <div class="col-md-6" id="wrap-empresa" style="display:none">
+                        <label class="form-label">Empresa Parceira</label>
+                        {{ form.empresa }}
+                    </div>
+
+                    <div class="col-md-6" id="wrap-valor" style="display:none">
+                        <label class="form-label">Valor (R$)</label>
+                        {{ form.valor }}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Observação</label>
+                        {{ form.observacao }}
+                    </div>
+
+                </div>
+            </fieldset>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
+                <a href="{% url 'bazar:doacoes_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var tipoEntrada = document.getElementById('id_tipo_entrada');
+    var tipoDoador  = document.getElementById('id_tipo_doador');
+    var wrapNome    = document.getElementById('wrap-doador-nome');
+    var wrapContato = document.getElementById('wrap-doador-contato');
+    var wrapEmpresa = document.getElementById('wrap-empresa');
+    var wrapValor   = document.getElementById('wrap-valor');
+
+    function atualizarEntrada() {
+        var tipo = tipoEntrada ? tipoEntrada.value : '';
+        if (wrapValor) wrapValor.style.display = (tipo === 'doacao_financeira') ? '' : 'none';
+    }
+
+    function atualizarDoador() {
+        var tipo  = tipoDoador ? tipoDoador.value : '';
+        var isPF  = tipo === 'pessoa_fisica';
+        var isEmp = tipo === 'empresa';
+        if (wrapNome)    wrapNome.style.display    = isPF  ? '' : 'none';
+        if (wrapContato) wrapContato.style.display = isPF  ? '' : 'none';
+        if (wrapEmpresa) wrapEmpresa.style.display = isEmp ? '' : 'none';
+    }
+
+    if (tipoEntrada) { tipoEntrada.addEventListener('change', atualizarEntrada); atualizarEntrada(); }
+    if (tipoDoador)  { tipoDoador.addEventListener('change', atualizarDoador);   atualizarDoador(); }
+})();
+</script>
+{% endblock %}

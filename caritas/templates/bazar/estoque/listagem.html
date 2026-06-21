@@ -18,7 +18,7 @@
 
 {% if itens %}
 <div class="mb-3">
-    <input type="text" id="busca" class="form-control" placeholder="Buscar por descrição, catálogo, tamanho..." style="max-width:380px">
+    <input type="text" id="busca" class="form-control" placeholder="Buscar por catálogo, tamanho, estado..." style="max-width:380px">
 </div>
 {% endif %}
 
@@ -29,18 +29,19 @@
         <table class="table table-hover mb-0" id="tabela-lista">
             <thead>
                 <tr>
-                    <th>Descrição</th>
                     <th>Catálogo</th>
                     <th>Tamanho</th>
                     <th>Estado</th>
                     <th class="text-center">Qtd.</th>
                     <th class="text-end">Preço Sugerido</th>
+                    {% if user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
+                    <th></th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for item in itens %}
                 <tr>
-                    <td>{{ item.descricao }}</td>
                     <td>{{ item.catalogo }}</td>
                     <td>{{ item.get_tamanho_display }}</td>
                     <td>{{ item.get_estado_display }}</td>
@@ -52,6 +53,20 @@
                         {% endif %}
                     </td>
                     <td class="text-end">R$ {{ item.preco_sugerido|floatformat:2 }}</td>
+                    {% if user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
+                    <td class="text-end" style="white-space:nowrap">
+                        <a href="{% url 'bazar:estoque_editar' item.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{% url 'bazar:estoque_remover' item.pk %}" class="d-inline"
+                              onsubmit="return confirm('Remover este item do estoque?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

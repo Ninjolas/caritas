@@ -21,7 +21,7 @@ import json
 from apps.accounts.decorators import bazar_required, coordenador_bazar_required
 from .models import CatalogoBazar, ItemEstoqueBazar, EntradaBazar, ItemEntradaBazar, Venda, EmpresaParceira
 from .forms import (CatalogoBazarForm, EntradaBazarForm, ItemEntradaBazarFormSet, VendaForm,
-                    ItemEstoqueBazarForm, EmpresaParceiraForm)
+                    VendaEditForm, ItemEstoqueBazarForm, EmpresaParceiraForm)
 
 
 def _pode_ver_financeiro(user):
@@ -111,6 +111,34 @@ def estoque_adicionar(request):
     return render(request, 'bazar/estoque/adicionar.html', {'form': form})
 
 
+@login_required
+@coordenador_bazar_required
+def estoque_editar(request, pk):
+    item = get_object_or_404(ItemEstoqueBazar, pk=pk)
+    if request.method == 'POST':
+        form = ItemEstoqueBazarForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Item atualizado com sucesso!')
+            return redirect('bazar:estoque_listagem')
+    else:
+        form = ItemEstoqueBazarForm(instance=item)
+    return render(request, 'bazar/estoque/editar.html', {'form': form, 'item': item})
+
+
+@login_required
+@coordenador_bazar_required
+def estoque_remover(request, pk):
+    item = get_object_or_404(ItemEstoqueBazar, pk=pk)
+    if request.method == 'POST':
+        try:
+            item.delete()
+            messages.success(request, 'Item removido do estoque.')
+        except Exception:
+            messages.error(request, 'Não é possível remover: este item possui vendas vinculadas.')
+    return redirect('bazar:estoque_listagem')
+
+
 # ── Doações / Entradas ─────────────────────────────────────────────────────────
 
 @login_required
@@ -118,6 +146,31 @@ def estoque_adicionar(request):
 def doacoes_listagem(request):
     entradas = EntradaBazar.objects.select_related('empresa', 'registrado_por').all()
     return render(request, 'bazar/doacoes/listagem.html', {'entradas': entradas})
+
+
+@login_required
+@coordenador_bazar_required
+def entrada_editar(request, pk):
+    entrada = get_object_or_404(EntradaBazar, pk=pk)
+    if request.method == 'POST':
+        form = EntradaBazarForm(request.POST, instance=entrada)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Entrada atualizada com sucesso!')
+            return redirect('bazar:doacoes_listagem')
+    else:
+        form = EntradaBazarForm(instance=entrada)
+    return render(request, 'bazar/doacoes/editar.html', {'form': form, 'entrada': entrada})
+
+
+@login_required
+@coordenador_bazar_required
+def entrada_remover(request, pk):
+    entrada = get_object_or_404(EntradaBazar, pk=pk)
+    if request.method == 'POST':
+        entrada.delete()
+        messages.success(request, 'Entrada removida com sucesso.')
+    return redirect('bazar:doacoes_listagem')
 
 
 @login_required
@@ -159,6 +212,45 @@ def doacoes_registrar(request):
 
 
 # ── Vendas ─────────────────────────────────────────────────────────────────────
+
+@login_required
+@coordenador_bazar_required
+def venda_editar(request, pk):
+    venda = get_object_or_404(Venda, pk=pk)
+    quantidade_antiga = venda.quantidade
+    if request.method == 'POST':
+        form = VendaEditForm(request.POST, instance=venda)
+        if form.is_valid():
+            nova_quantidade = form.cleaned_data['quantidade']
+            item = venda.item
+            diferenca = nova_quantidade - quantidade_antiga
+            if diferenca > 0 and item.quantidade < diferenca:
+                messages.error(request, f'Estoque insuficiente. Disponível: {item.quantidade} unidade(s).')
+            else:
+                with transaction.atomic():
+                    item.quantidade -= diferenca
+                    item.save()
+                    form.save()
+                    messages.success(request, 'Venda atualizada e estoque ajustado!')
+                    return redirect('bazar:vendas_listagem')
+    else:
+        form = VendaEditForm(instance=venda)
+    return render(request, 'bazar/vendas/editar.html', {'form': form, 'venda': venda})
+
+
+@login_required
+@coordenador_bazar_required
+def venda_remover(request, pk):
+    venda = get_object_or_404(Venda, pk=pk)
+    if request.method == 'POST':
+        with transaction.atomic():
+            item = venda.item
+            item.quantidade += venda.quantidade
+            item.save()
+            venda.delete()
+            messages.success(request, 'Venda removida e estoque restaurado.')
+    return redirect('bazar:vendas_listagem')
+
 
 @login_required
 @bazar_required
@@ -260,6 +352,19 @@ def empresas_form(request, pk=None):
         'form': form,
         'titulo': 'Editar Empresa' if empresa else 'Nova Empresa Parceira',
     })
+
+
+@login_required
+@coordenador_bazar_required
+def empresa_remover(request, pk):
+    empresa = get_object_or_404(EmpresaParceira, pk=pk)
+    if request.method == 'POST':
+        try:
+            empresa.delete()
+            messages.success(request, 'Empresa removida.')
+        except Exception:
+            messages.error(request, 'Não é possível remover: há entradas vinculadas a esta empresa.')
+    return redirect('bazar:empresas_listagem')
 
 
 # ── Relatório do Bazar ─────────────────────────────────────────────────────────

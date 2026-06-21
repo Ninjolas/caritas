@@ -124,6 +124,24 @@ class VendaForm(forms.ModelForm):
         return cleaned
 
 
+class VendaEditForm(forms.ModelForm):
+    class Meta:
+        model = Venda
+        fields = ['quantidade', 'preco_unitario', 'data', 'observacao']
+        labels = {
+            'quantidade': 'Quantidade',
+            'preco_unitario': 'Preço Unitário (R$)',
+            'data': 'Data',
+            'observacao': 'Observação',
+        }
+        widgets = {
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'preco_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
+            'data': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'observacao': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+
 class ItemEstoqueBazarForm(forms.ModelForm):
     catalogo = forms.ModelChoiceField(
         queryset=CatalogoBazar.objects.filter(ativo=True),

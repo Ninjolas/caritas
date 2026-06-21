@@ -52,7 +52,6 @@ class UsuarioCreateForm(UserCreationForm):
         if solicitante:
             if solicitante.perfil == 'coordenador':
                 self.fields['perfil'].choices = [
-                    ('coordenador', 'Coordenador'),
                     ('voluntario', 'Voluntário'),
                 ]
                 self.fields['paroquia'].widget = forms.HiddenInput()
@@ -60,7 +59,6 @@ class UsuarioCreateForm(UserCreationForm):
                     self.initial['paroquia'] = solicitante.paroquia
             elif solicitante.perfil == 'coordenador_bazar':
                 self.fields['perfil'].choices = [
-                    ('coordenador_bazar', 'Coordenador do Bazar'),
                     ('voluntario_bazar', 'Voluntário do Bazar'),
                 ]
                 self.fields.pop('paroquia', None)

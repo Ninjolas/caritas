@@ -35,7 +35,7 @@
                     <th class="text-end">Preço Unit.</th>
                     <th class="text-end">Total</th>
                     {% endif %}
-                    <th class="text-end">Comprovante</th>
+                    <th class="text-end">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,23 +43,31 @@
                 <tr>
                     <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ venda.numero_operacao|default:"—" }}</span></td>
                     <td>{{ venda.data|date:"d/m/Y" }}</td>
-                    <td>{{ venda.item.descricao }}</td>
+                    <td>{{ venda.item }}</td>
                     <td class="text-center">{{ venda.quantidade }}</td>
                     {% if show_financial %}
                     <td class="text-end">R$ {{ venda.preco_unitario|floatformat:2 }}</td>
                     <td class="text-end"><strong>R$ {{ venda.valor_total|floatformat:2 }}</strong></td>
                     {% endif %}
-                    <td class="text-end">
-                        <div class="d-flex gap-1 justify-content-end">
-                            <a href="{% url 'bazar:comprovante' venda.pk %}"
-                               class="btn btn-outline-secondary btn-sm" title="Ver comprovante">
-                                <i class="bi bi-receipt"></i>
-                            </a>
-                            <a href="{% url 'bazar:comprovante_pdf' venda.pk %}"
-                               class="btn btn-outline-success btn-sm" title="Baixar PDF">
-                                <i class="bi bi-file-earmark-pdf"></i>
-                            </a>
-                        </div>
+                    <td class="text-end" style="white-space:nowrap">
+                        <a href="{% url 'bazar:comprovante' venda.pk %}" class="btn btn-outline-secondary btn-sm" title="Comprovante">
+                            <i class="bi bi-receipt"></i>
+                        </a>
+                        <a href="{% url 'bazar:comprovante_pdf' venda.pk %}" class="btn btn-outline-success btn-sm" title="PDF">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </a>
+                        {% if user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
+                        <a href="{% url 'bazar:venda_editar' venda.pk %}" class="btn btn-outline-secondary btn-sm" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{% url 'bazar:venda_remover' venda.pk %}" class="d-inline"
+                              onsubmit="return confirm('Remover venda #{{ venda.numero_operacao }}? O estoque será restaurado.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Remover">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

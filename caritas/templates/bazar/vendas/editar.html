@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Editar Venda — Sistema Cáritas{% endblock %}
+{% block page_title %}Editar Venda #{{ venda.numero_operacao }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'bazar:dashboard' %}">Bazar</a></li>
+<li class="breadcrumb-item"><a href="{% url 'bazar:vendas_listagem' %}">Vendas</a></li>
+<li class="breadcrumb-item active">Editar #{{ venda.numero_operacao }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="alert alert-info py-2 mb-3" style="font-size:13px">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Item:</strong> {{ venda.item }}
+            &nbsp;|&nbsp; <strong>Estoque atual:</strong> {{ venda.item.quantidade }} un.
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <fieldset class="form-section">
+                <legend>Dados da Venda</legend>
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </fieldset>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
+                <a href="{% url 'bazar:vendas_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -32,6 +32,9 @@
                     <th>Doador</th>
                     <th>Valor / Itens</th>
                     <th>Registrado por</th>
+                    {% if user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
+                    <th></th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -54,6 +57,20 @@
                         {% endif %}
                     </td>
                     <td>{{ entrada.registrado_por.get_full_name|default:entrada.registrado_por.username }}</td>
+                    {% if user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
+                    <td class="text-end" style="white-space:nowrap">
+                        <a href="{% url 'bazar:entrada_editar' entrada.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{% url 'bazar:entrada_remover' entrada.pk %}" class="d-inline"
+                              onsubmit="return confirm('Remover esta entrada? Os itens no estoque não serão afetados.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
