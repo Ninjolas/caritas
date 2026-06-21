@@ -16,7 +16,11 @@ class MovimentacaoFinanceira(models.Model):
     ]
 
     origem = models.CharField(max_length=10, choices=ORIGEM_CHOICES)
-    paroquia = models.CharField(max_length=100, blank=True, help_text='Preencher apenas se origem = Paróquia')
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='movimentacoes',
+        help_text='Preencher apenas se origem = Paróquia'
+    )
     tipo = models.CharField(max_length=30, choices=TIPO_CHOICES)
     valor = models.DecimalField(max_digits=12, decimal_places=2)
     data = models.DateField()

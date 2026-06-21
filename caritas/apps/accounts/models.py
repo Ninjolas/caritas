@@ -31,7 +31,10 @@ class Usuario(AbstractUser):
     ]
 
     perfil = models.CharField(max_length=20, choices=PERFIL_CHOICES, default='voluntario')
-    paroquia = models.CharField(max_length=100, null=True, blank=True)
+    paroquia = models.ForeignKey(
+        'Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='usuarios'
+    )
 
     class Meta:
         verbose_name = 'Usuário'

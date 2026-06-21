@@ -4,7 +4,10 @@ from apps.estoque.models import CATEGORIA_CHOICES
 
 
 class Doacao(models.Model):
-    paroquia = models.CharField(max_length=100)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='doacoes'
+    )
     doador = models.CharField(max_length=200)
     data = models.DateField()
     descricao = models.TextField(blank=True)
@@ -22,12 +25,21 @@ class Doacao(models.Model):
 
 class ItemDoacao(models.Model):
     doacao = models.ForeignKey(Doacao, on_delete=models.CASCADE, related_name='itens')
-    nome = models.CharField(max_length=200)
-    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
-    categoria_outro = models.CharField(max_length=100, blank=True, default='')
+    produto = models.ForeignKey(
+        'estoque.ProdutoCatalogo', on_delete=models.PROTECT,
+        null=True, blank=True, related_name='itens_doacao'
+    )
+    nome = models.CharField(max_length=200, blank=True)
+    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, blank=True)
     quantidade = models.IntegerField()
     unidade = models.CharField(max_length=50, default='unidade')
     data_validade = models.DateField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.produto:
+            self.nome = self.produto.nome
+            self.categoria = self.produto.categoria
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.quantidade} {self.unidade} de {self.nome}"
+        return f"{self.quantidade} {self.unidade} de {self.nome or '—'}"

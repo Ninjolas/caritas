@@ -15,7 +15,7 @@ def listagem(request):
     is_admin = request.user.perfil == 'administrador'
     paroquia_usuario = request.user.paroquia
     if is_admin:
-        itens = ItemEstoque.objects.all().order_by('paroquia', 'nome')
+        itens = ItemEstoque.objects.all().order_by('paroquia__nome', 'nome')
     else:
         itens = ItemEstoque.objects.filter(paroquia=paroquia_usuario)
     return render(request, 'estoque/listagem.html', {
@@ -32,7 +32,7 @@ def entrada(request):
         form = ItemEstoqueForm(request.POST)
         if form.is_valid():
             item = form.save(commit=False)
-            item.paroquia = request.user.paroquia or 'Paróquia Padrão'
+            item.paroquia = request.user.paroquia
             item.registrado_por = request.user
             item.save()
             messages.success(request, 'Item registrado no estoque com sucesso!')

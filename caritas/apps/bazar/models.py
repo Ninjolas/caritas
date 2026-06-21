@@ -127,7 +127,10 @@ class Venda(models.Model):
     preco_unitario = models.DecimalField(max_digits=8, decimal_places=2)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     data = models.DateField()
-    paroquia = models.CharField(max_length=100, blank=True)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='vendas_bazar'
+    )
     observacao = models.TextField(blank=True)
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     criado_em = models.DateTimeField(auto_now_add=True)

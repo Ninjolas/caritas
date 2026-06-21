@@ -22,21 +22,18 @@ def _apply_form_control(form):
                 widget.attrs['class'] = 'form-control'
 
 
-def _paroquia_choices():
-    return [('', '---------')] + [(p.nome, p.nome) for p in Paroquia.objects.filter(ativa=True)]
-
-
 class UsuarioCreateForm(UserCreationForm):
     perfil = forms.ChoiceField(
         choices=Usuario.PERFIL_CHOICES,
         widget=forms.Select(attrs={'class': 'form-select'}),
         label='Nível de acesso',
     )
-    paroquia = forms.ChoiceField(
+    paroquia = forms.ModelChoiceField(
+        queryset=Paroquia.objects.filter(ativa=True),
         required=False,
         widget=forms.Select(attrs={'class': 'form-select'}),
         label='Paróquia',
-        choices=[],
+        empty_label='---------',
     )
 
     class Meta:
@@ -51,14 +48,13 @@ class UsuarioCreateForm(UserCreationForm):
 
     def __init__(self, *args, solicitante=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['paroquia'].choices = _paroquia_choices()
 
         if solicitante:
             if solicitante.perfil == 'coordenador':
                 self.fields['perfil'].choices = [('voluntario', 'Voluntário')]
                 self.fields['paroquia'].widget = forms.HiddenInput()
                 if not self.data:
-                    self.initial['paroquia'] = solicitante.paroquia or ''
+                    self.initial['paroquia'] = solicitante.paroquia
             elif solicitante.perfil == 'coordenador_bazar':
                 self.fields['perfil'].choices = [('voluntario_bazar', 'Voluntário do Bazar')]
                 self.fields.pop('paroquia', None)
@@ -68,8 +64,7 @@ class UsuarioCreateForm(UserCreationForm):
     def save(self, commit=True):
         usuario = super().save(commit=False)
         usuario.perfil = self.cleaned_data.get('perfil', 'voluntario')
-        paroquia = self.cleaned_data.get('paroquia', '')
-        usuario.paroquia = paroquia or None
+        usuario.paroquia = self.cleaned_data.get('paroquia')
         if commit:
             usuario.save()
         return usuario
@@ -95,12 +90,13 @@ class UsuarioEditForm(forms.ModelForm):
                 label='Nível de acesso',
                 initial=self.instance.perfil if self.instance else 'voluntario',
             )
-            self.fields['paroquia'] = forms.ChoiceField(
+            self.fields['paroquia'] = forms.ModelChoiceField(
+                queryset=Paroquia.objects.filter(ativa=True),
                 required=False,
                 widget=forms.Select(attrs={'class': 'form-select'}),
                 label='Paróquia',
-                choices=_paroquia_choices(),
-                initial=self.instance.paroquia if self.instance else '',
+                empty_label='---------',
+                initial=self.instance.paroquia if self.instance else None,
             )
         _apply_form_control(self)
 
@@ -109,7 +105,7 @@ class UsuarioEditForm(forms.ModelForm):
         if 'perfil' in self.cleaned_data:
             usuario.perfil = self.cleaned_data['perfil']
         if 'paroquia' in self.cleaned_data:
-            usuario.paroquia = self.cleaned_data['paroquia'] or None
+            usuario.paroquia = self.cleaned_data.get('paroquia')
         if commit:
             usuario.save()
         return usuario

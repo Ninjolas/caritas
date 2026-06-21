@@ -75,7 +75,7 @@
             <tbody>
                 {% for venda in vendas %}
                 <tr>
-                    <td>{{ venda.item_estoque.nome }}</td>
+                    <td>{{ venda.item_nome }}</td>
                     <td class="text-center">{{ venda.quantidade }}</td>
                     <td class="text-end">R$ {{ venda.preco_unitario|floatformat:2 }}</td>
                     <td class="text-end"><strong>R$ {{ venda.valor_total|floatformat:2 }}</strong></td>

@@ -15,7 +15,7 @@ def dashboard(request):
     from apps.estoque.models import ItemEstoque
     from apps.doacoes.models import Doacao
 
-    paroquia = request.user.paroquia or 'Paróquia Padrão'
+    paroquia = request.user.paroquia
     hoje = date.today()
 
     if request.user.perfil == 'administrador':
@@ -36,7 +36,7 @@ def dashboard(request):
 
 @login_required
 def listar_familias(request):
-    familias = Familia.objects.all().order_by('paroquia_responsavel', 'responsavel_nome')
+    familias = Familia.objects.all().order_by('paroquia_responsavel__nome', 'responsavel_nome')
     paroquia_usuario = request.user.paroquia
     is_admin = request.user.perfil == 'administrador'
     return render(request, 'familias/listagem.html', {
@@ -96,7 +96,7 @@ def cadastrar_familia(request):
         if form.is_valid() and formset.is_valid():
             familia = form.save(commit=False)
             familia.criado_por = request.user
-            familia.paroquia_responsavel = request.user.paroquia or 'Paróquia Padrão'
+            familia.paroquia_responsavel = request.user.paroquia
             familia.save()
 
             for dep_form in formset:

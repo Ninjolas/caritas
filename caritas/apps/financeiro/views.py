@@ -28,10 +28,10 @@ def registrar(request):
             mov = form.save(commit=False)
             if request.user.perfil == 'administrador':
                 mov.origem = 'diocese'
-                mov.paroquia = ''
+                mov.paroquia = None
             else:
                 mov.origem = 'paroquia'
-                mov.paroquia = request.user.paroquia or 'Paróquia Padrão'
+                mov.paroquia = request.user.paroquia
             mov.registrado_por = request.user
             mov.save()
             messages.success(request, 'Movimentação registrada!')

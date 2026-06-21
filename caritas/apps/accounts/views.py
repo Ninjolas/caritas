@@ -24,7 +24,7 @@ class CustomLogoutView(LogoutView):
 def gerenciar_usuarios(request):
     perfil = request.user.perfil
     if perfil == 'administrador':
-        usuarios = Usuario.objects.exclude(perfil='administrador').order_by('paroquia', 'perfil', 'username')
+        usuarios = Usuario.objects.exclude(perfil='administrador').order_by('paroquia__nome', 'perfil', 'username')
     elif perfil == 'coordenador':
         usuarios = Usuario.objects.filter(
             perfil='voluntario', paroquia=request.user.paroquia
@@ -180,8 +180,11 @@ def editar_paroquia(request, pk):
 def remover_paroquia(request, pk):
     paroquia = get_object_or_404(Paroquia, pk=pk)
     if request.method == 'POST':
-        paroquia.delete()
-        messages.success(request, 'Paróquia removida.')
+        try:
+            paroquia.delete()
+            messages.success(request, 'Paróquia removida com sucesso. Dados vinculados foram removidos em cascata.')
+        except Exception:
+            messages.error(request, 'Não é possível remover esta paróquia pois ela possui vendas ou cestas montadas vinculadas. Remova esses registros antes.')
     return redirect('accounts:gerenciar_paroquias')
 
 

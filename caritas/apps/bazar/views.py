@@ -175,7 +175,7 @@ def vendas_registrar(request):
                 with transaction.atomic():
                     venda = form.save(commit=False)
                     venda.registrado_por = request.user
-                    venda.paroquia = request.user.paroquia or ''
+                    venda.paroquia = request.user.paroquia
                     item = venda.item
                     if item.quantidade < venda.quantidade:
                         messages.error(request, f'Estoque insuficiente. Disponível: {item.quantidade}.')

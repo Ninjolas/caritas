@@ -31,7 +31,10 @@ class ProdutoCatalogo(models.Model):
 
 
 class ItemEstoque(models.Model):
-    paroquia = models.CharField(max_length=100)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='itens_estoque'
+    )
     produto = models.ForeignKey(
         ProdutoCatalogo, on_delete=models.PROTECT,
         null=True, blank=True, related_name='itens_estoque'
@@ -70,7 +73,7 @@ class ItemEstoque(models.Model):
         return False
 
     def __str__(self):
-        return f"{self.nome} ({self.paroquia})"
+        return f"{self.nome} ({self.paroquia or 'sem paróquia'})"
 
     class Meta:
         ordering = ['validade', 'nome']

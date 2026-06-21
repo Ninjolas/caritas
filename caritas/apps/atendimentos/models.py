@@ -19,7 +19,10 @@ class Atendimento(models.Model):
     tipo = models.CharField(max_length=30, choices=TIPO_CHOICES)
     data = models.DateField()
     descricao = models.TextField()
-    paroquia = models.CharField(max_length=100)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='atendimentos'
+    )
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     criado_em = models.DateTimeField(auto_now_add=True)
 

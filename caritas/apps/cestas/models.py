@@ -9,7 +9,10 @@ class CestaPronta(models.Model):
         ('doacao', 'Doação recebida'),
     ]
 
-    paroquia = models.CharField(max_length=100)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='cestas_prontas'
+    )
     quantidade = models.IntegerField(default=0)
     origem = models.CharField(max_length=10, choices=ORIGEM_CHOICES)
     data = models.DateField()
@@ -31,19 +34,25 @@ class CestaPronta(models.Model):
 class ItemMontagem(models.Model):
     cesta_pronta = models.ForeignKey(CestaPronta, on_delete=models.CASCADE, related_name='itens_usados')
     item_estoque = models.ForeignKey(
-        'estoque.ItemEstoque', on_delete=models.PROTECT, related_name='usos_montagem'
+        'estoque.ItemEstoque', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='usos_montagem'
     )
+    item_nome = models.CharField(max_length=200, blank=True)
     quantidade_total = models.IntegerField(
         help_text='Quantidade total retirada do estoque para todas as cestas'
     )
 
     def __str__(self):
-        return f"{self.quantidade_total}x {self.item_estoque.nome}"
+        nome = self.item_nome or (self.item_estoque.nome if self.item_estoque else '—')
+        return f"{self.quantidade_total}x {nome}"
 
 
 class EntregaCesta(models.Model):
     familia = models.ForeignKey(Familia, on_delete=models.PROTECT, related_name='cestas_recebidas')
-    paroquia = models.CharField(max_length=100)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='entregas_cesta'
+    )
     quantidade = models.IntegerField(default=1)
     data = models.DateField()
     observacao = models.TextField(blank=True)

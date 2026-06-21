@@ -33,7 +33,7 @@ def registrar_montagem(request):
             try:
                 with transaction.atomic():
                     cesta = form.save(commit=False)
-                    cesta.paroquia = request.user.paroquia or 'Paróquia Padrão'
+                    cesta.paroquia = request.user.paroquia
                     cesta.origem = 'montagem'
                     cesta.registrado_por = request.user
                     cesta.save()
@@ -41,6 +41,7 @@ def registrar_montagem(request):
                     for item_montagem in itens:
                         item_montagem.cesta_pronta = cesta
                         item_estoque = item_montagem.item_estoque
+                        item_montagem.item_nome = item_estoque.nome
                         if item_estoque.quantidade < item_montagem.quantidade_total:
                             raise ValueError(
                                 f'Estoque insuficiente para {item_estoque.nome}. Disponível: {item_estoque.quantidade}.'
@@ -66,7 +67,7 @@ def registrar_doacao_cesta(request):
         form = DoacaoCestaForm(request.POST)
         if form.is_valid():
             cesta = form.save(commit=False)
-            cesta.paroquia = request.user.paroquia or 'Paróquia Padrão'
+            cesta.paroquia = request.user.paroquia
             cesta.origem = 'doacao'
             cesta.registrado_por = request.user
             cesta.save()
@@ -92,7 +93,7 @@ def registrar_entrega(request):
             if entrega.quantidade > saldo:
                 messages.error(request, f'Cestas insuficientes. Disponível: {saldo}.')
             else:
-                entrega.paroquia = paroquia or 'Paróquia Padrão'
+                entrega.paroquia = paroquia
                 entrega.registrado_por = request.user
                 entrega.save()
                 messages.success(request, 'Entrega registrada com sucesso!')

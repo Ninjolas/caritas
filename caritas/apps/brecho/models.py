@@ -11,7 +11,10 @@ class BrechoEvento(models.Model):
     ]
 
     nome = models.CharField(max_length=200)
-    paroquia = models.CharField(max_length=100)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='eventos_brecho'
+    )
     data = models.DateField()
     descricao = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planejado')
@@ -37,10 +40,12 @@ class VendaBrecho(models.Model):
     evento = models.ForeignKey(BrechoEvento, on_delete=models.CASCADE, related_name='vendas')
     item_estoque = models.ForeignKey(
         'estoque.ItemEstoque',
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
         related_name='vendas_brecho',
         limit_choices_to={'categoria': 'roupa'},
     )
+    item_nome = models.CharField(max_length=200, blank=True)
     quantidade = models.IntegerField(default=1)
     preco_unitario = models.DecimalField(max_digits=8, decimal_places=2)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
@@ -49,10 +54,13 @@ class VendaBrecho(models.Model):
 
     def save(self, *args, **kwargs):
         self.valor_total = self.quantidade * self.preco_unitario
+        if self.item_estoque and not self.item_nome:
+            self.item_nome = self.item_estoque.nome
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.quantidade}x {self.item_estoque.nome} — R$ {self.valor_total}"
+        nome = self.item_nome or (self.item_estoque.nome if self.item_estoque else '—')
+        return f"{self.quantidade}x {nome} — R$ {self.valor_total}"
 
     class Meta:
         ordering = ['-criado_em']

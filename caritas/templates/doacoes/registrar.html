@@ -38,15 +38,11 @@
                 {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
                 <div style="display:none">{{ item_form.DELETE }}</div>
                 <div class="row g-2 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label">Nome</label>
-                        {{ item_form.nome }}
-                        {% for error in item_form.nome.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Categoria</label>
-                        {{ item_form.categoria }}
-                        {% for error in item_form.categoria.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
+                    <div class="col-md-5">
+                        <label class="form-label">Produto</label>
+                        {{ item_form.produto }}
+                        {% for error in item_form.produto.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
+                        <div class="info-categoria form-text text-muted" style="font-size:11px"></div>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Quantidade</label>
@@ -58,21 +54,16 @@
                         {{ item_form.unidade }}
                         {% for error in item_form.unidade.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
                     </div>
+                    <div class="col-md-2 campo-validade-wrap" style="display:none">
+                        <label class="form-label">Validade</label>
+                        {{ item_form.data_validade }}
+                        {% for error in item_form.data_validade.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
+                    </div>
                     <div class="col-md-1">
                         <button type="button" class="btn btn-sm btn-outline-danger btn-remover-item mt-4" title="Remover">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
-                </div>
-                <div class="campo-categoria-outro mt-2" style="display:none">
-                    <label class="form-label" style="font-size:13px">Especifique o tipo</label>
-                    {{ item_form.categoria_outro }}
-                    {% for error in item_form.categoria_outro.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
-                </div>
-                <div class="campo-validade mt-2" style="display:none">
-                    <label class="form-label" style="font-size:13px">Data de validade</label>
-                    {{ item_form.data_validade }}
-                    {% for error in item_form.data_validade.errors %}<div class="text-danger" style="font-size:12px">{{ error }}</div>{% endfor %}
                 </div>
             </div>
             {% endfor %}
@@ -92,77 +83,83 @@
 {% block extra_js %}
 <script>
 (function () {
-    var totalFormsEl = document.querySelector('[name$="-TOTAL_FORMS"]');
-    var prefix = totalFormsEl ? totalFormsEl.name.replace('-TOTAL_FORMS', '') : 'itens';
+    const produtos = {{ produtos_json|safe }};
+    const prefix = document.querySelector('[name$="-TOTAL_FORMS"]').name.replace('-TOTAL_FORMS', '');
 
-    function toggleCampos(selectEl) {
-        var itemForm = selectEl.closest('.item-form');
-        if (!itemForm) return;
-        var outro = itemForm.querySelector('.campo-categoria-outro');
-        var validade = itemForm.querySelector('.campo-validade');
-        if (outro) outro.style.display = selectEl.value === 'outro' ? 'block' : 'none';
-        if (validade) validade.style.display = selectEl.value === 'alimento' ? 'block' : 'none';
-    }
+    function bindRow(row) {
+        const select = row.querySelector('.produto-select');
+        const infoEl = row.querySelector('.info-categoria');
+        const unidadeEl = row.querySelector('.unidade-input');
+        const validadeWrap = row.querySelector('.campo-validade-wrap');
 
-    function bindCategoria(selectEl) {
-        toggleCampos(selectEl);
-        selectEl.addEventListener('change', function () { toggleCampos(this); });
-    }
-
-    function bindRemover(btn) {
-        btn.addEventListener('click', function () {
-            var container = document.getElementById('formset-container');
-            var visiveis = container.querySelectorAll('.item-form:not([data-removido])');
-            if (visiveis.length <= 1) {
-                alert('A doação precisa ter pelo menos 1 item.');
-                return;
+        function atualizar() {
+            const pid = select.value;
+            const p = produtos[pid];
+            if (p) {
+                if (infoEl) infoEl.textContent = p.categoria;
+                if (unidadeEl && (!unidadeEl.value || unidadeEl.dataset.auto === 'true')) {
+                    unidadeEl.value = p.unidade;
+                    unidadeEl.dataset.auto = 'true';
+                }
+                if (validadeWrap) validadeWrap.style.display = p.categoria_key === 'alimento' ? '' : 'none';
+            } else {
+                if (infoEl) infoEl.textContent = '';
+                if (validadeWrap) validadeWrap.style.display = 'none';
             }
-            var itemForm = btn.closest('.item-form');
-            var deleteInput = itemForm.querySelector('input[name$="-DELETE"]');
-            if (deleteInput) deleteInput.checked = true;
-            itemForm.setAttribute('data-removido', '1');
-            itemForm.style.display = 'none';
-        });
+        }
+
+        if (unidadeEl) {
+            unidadeEl.addEventListener('input', function() { this.dataset.auto = 'false'; });
+        }
+        if (select) {
+            select.addEventListener('change', atualizar);
+            atualizar();
+        }
+
+        const btnRemover = row.querySelector('.btn-remover-item');
+        if (btnRemover) {
+            btnRemover.addEventListener('click', function () {
+                const container = document.getElementById('formset-container');
+                const visiveis = container.querySelectorAll('.item-form:not([data-removido])');
+                if (visiveis.length <= 1) { alert('A doação precisa ter pelo menos 1 item.'); return; }
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) deleteInput.checked = true;
+                row.setAttribute('data-removido', '1');
+                row.style.display = 'none';
+            });
+        }
     }
 
-    document.querySelectorAll('.categoria-select').forEach(bindCategoria);
-    document.querySelectorAll('.btn-remover-item').forEach(bindRemover);
+    document.querySelectorAll('.item-form').forEach(bindRow);
 
-    var container = document.getElementById('formset-container');
-    var totalForms = document.querySelector('[name="' + prefix + '-TOTAL_FORMS"]');
-    var btnAdicionar = document.getElementById('btn-adicionar-item');
+    const container = document.getElementById('formset-container');
+    const totalForms = document.querySelector('[name="' + prefix + '-TOTAL_FORMS"]');
 
-    btnAdicionar.addEventListener('click', function () {
-        var forms = container.querySelectorAll('.item-form');
-        var count = forms.length;
-        var newForm = forms[forms.length - 1].cloneNode(true);
+    document.getElementById('btn-adicionar-item').addEventListener('click', function () {
+        const forms = container.querySelectorAll('.item-form');
+        const idx = parseInt(totalForms.value);
+        const newForm = forms[forms.length - 1].cloneNode(true);
 
         newForm.removeAttribute('data-removido');
         newForm.style.display = '';
-
         newForm.querySelectorAll('input, select, textarea').forEach(function (el) {
-            el.name = el.name.replace(/-\d+-/, '-' + count + '-');
-            if (el.id) el.id = el.id.replace(/-\d+-/, '-' + count + '-');
+            el.name = el.name.replace(/-\d+-/, '-' + idx + '-');
+            if (el.id) el.id = el.id.replace(/-\d+-/, '-' + idx + '-');
             if (el.type !== 'hidden') el.value = '';
             if (el.type === 'checkbox') el.checked = false;
+            el.dataset.auto = 'false';
         });
         newForm.querySelectorAll('label').forEach(function (label) {
-            if (label.htmlFor) label.htmlFor = label.htmlFor.replace(/-\d+-/, '-' + count + '-');
+            if (label.htmlFor) label.htmlFor = label.htmlFor.replace(/-\d+-/, '-' + idx + '-');
         });
-
-        var campoOutro = newForm.querySelector('.campo-categoria-outro');
-        if (campoOutro) campoOutro.style.display = 'none';
-        var campoValidade = newForm.querySelector('.campo-validade');
-        if (campoValidade) campoValidade.style.display = 'none';
+        const infoEl = newForm.querySelector('.info-categoria');
+        if (infoEl) infoEl.textContent = '';
+        const validadeWrap = newForm.querySelector('.campo-validade-wrap');
+        if (validadeWrap) validadeWrap.style.display = 'none';
 
         container.appendChild(newForm);
-        if (totalForms) totalForms.value = count + 1;
-
-        var newSelect = newForm.querySelector('.categoria-select');
-        if (newSelect) bindCategoria(newSelect);
-
-        var newRemover = newForm.querySelector('.btn-remover-item');
-        if (newRemover) bindRemover(newRemover);
+        totalForms.value = idx + 1;
+        bindRow(newForm);
     });
 })();
 </script>

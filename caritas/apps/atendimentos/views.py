@@ -48,7 +48,7 @@ def registrar(request):
                 try:
                     with transaction.atomic():
                         atendimento = form.save(commit=False)
-                        atendimento.paroquia = paroquia or 'Paróquia Padrão'
+                        atendimento.paroquia = paroquia
                         atendimento.registrado_por = request.user
                         atendimento.save()
 

@@ -28,7 +28,7 @@ def criar_evento(request):
         form = BrechoEventoForm(request.POST)
         if form.is_valid():
             evento = form.save(commit=False)
-            evento.paroquia = request.user.paroquia or 'Paróquia Padrão'
+            evento.paroquia = request.user.paroquia
             evento.criado_por = request.user
             evento.save()
             messages.success(request, 'Evento de brechó criado!')
@@ -66,6 +66,7 @@ def registrar_venda(request, pk):
                         messages.error(request, f'Estoque insuficiente. Disponível: {item.quantidade}.')
                         return render(request, 'brecho/registrar_venda.html', {'form': form, 'evento': evento})
 
+                    venda.item_nome = item.nome
                     venda.save()
                     item.quantidade -= venda.quantidade
                     item.save()

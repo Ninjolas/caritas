@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from apps.accounts.decorators import coordenador_required
 from apps.estoque.models import ItemEstoque
 
-from .forms import DoacaoForm, ItemDoacaoFormSet
+from .forms import DoacaoForm, ItemDoacaoFormSet, get_produtos_json
 from .models import Doacao, ItemDoacao
 
 
@@ -35,7 +35,7 @@ def registrar(request):
             try:
                 with transaction.atomic():
                     doacao = form.save(commit=False)
-                    doacao.paroquia = request.user.paroquia or 'Paróquia Padrão'
+                    doacao.paroquia = request.user.paroquia
                     doacao.registrado_por = request.user
                     doacao.save()
                     itens = formset.save(commit=False)
@@ -44,9 +44,9 @@ def registrar(request):
                         item.save()
                         ItemEstoque.objects.create(
                             paroquia=doacao.paroquia,
+                            produto=item.produto,
                             nome=item.nome,
                             categoria=item.categoria,
-                            categoria_outro=item.categoria_outro,
                             quantidade=item.quantidade,
                             unidade=item.unidade,
                             validade=item.data_validade,
@@ -59,7 +59,11 @@ def registrar(request):
     else:
         form = DoacaoForm()
         formset = ItemDoacaoFormSet()
-    return render(request, 'doacoes/registrar.html', {'form': form, 'formset': formset})
+    return render(request, 'doacoes/registrar.html', {
+        'form': form,
+        'formset': formset,
+        'produtos_json': get_produtos_json(),
+    })
 
 
 @login_required

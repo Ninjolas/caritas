@@ -35,7 +35,10 @@ class Familia(models.Model):
     qtd_criancas = models.IntegerField(default=0)
     data_ultima_visita = models.DateField(null=True, blank=True, verbose_name='Data da última visita domiciliar')
     data_ultimo_atendimento = models.DateField(null=True, blank=True, verbose_name='Data do último atendimento')
-    paroquia_responsavel = models.CharField(max_length=100)
+    paroquia_responsavel = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='familias'
+    )
     criado_por = models.ForeignKey(
         Usuario, on_delete=models.SET_NULL, null=True, related_name='familias_cadastradas'
     )
@@ -43,7 +46,7 @@ class Familia(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.possui_cpf and not self.id_interno:
-            prefixo = self.paroquia_responsavel[:3].upper() if self.paroquia_responsavel else 'SEM'
+            prefixo = self.paroquia_responsavel.nome[:3].upper() if self.paroquia_responsavel else 'SEM'
             self.id_interno = f'INT-{prefixo}-{uuid.uuid4().hex[:8].upper()}'
         super().save(*args, **kwargs)
 
