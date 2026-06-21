@@ -44,10 +44,16 @@
                     <td class="text-end"><strong>R$ {{ venda.valor_total|floatformat:2 }}</strong></td>
                     {% endif %}
                     <td class="text-end">
-                        <a href="{% url 'bazar:comprovante' venda.pk %}"
-                           class="btn btn-outline-secondary btn-sm" title="Ver comprovante">
-                            <i class="bi bi-receipt"></i>
-                        </a>
+                        <div class="d-flex gap-1 justify-content-end">
+                            <a href="{% url 'bazar:comprovante' venda.pk %}"
+                               class="btn btn-outline-secondary btn-sm" title="Ver comprovante">
+                                <i class="bi bi-receipt"></i>
+                            </a>
+                            <a href="{% url 'bazar:comprovante_pdf' venda.pk %}"
+                               class="btn btn-outline-success btn-sm" title="Baixar PDF">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

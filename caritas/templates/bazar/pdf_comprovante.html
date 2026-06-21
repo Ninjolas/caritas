@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {
+        size: A4;
+        margin: 2cm 2.5cm;
+    }
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        color: #111;
+    }
+    .header {
+        text-align: center;
+        border-bottom: 2px solid #1a2d3d;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+    .header h1 {
+        font-size: 20px;
+        font-weight: bold;
+        color: #1a2d3d;
+        margin: 0 0 2px 0;
+    }
+    .header .sub {
+        font-size: 11px;
+        color: #555;
+    }
+    .titulo-doc {
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #1a2d3d;
+        text-align: center;
+        margin-bottom: 16px;
+    }
+    table.meta {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 16px;
+    }
+    table.meta td {
+        padding: 4px 8px;
+        font-size: 11px;
+        vertical-align: top;
+        width: 50%;
+    }
+    table.meta .label {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #777;
+        display: block;
+        margin-bottom: 1px;
+    }
+    table.meta .value {
+        font-weight: bold;
+        color: #111;
+    }
+    table.itens {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+    }
+    table.itens th {
+        background-color: #1a2d3d;
+        color: #fff;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 6px 8px;
+        text-align: left;
+    }
+    table.itens th.right { text-align: right; }
+    table.itens th.center { text-align: center; }
+    table.itens td {
+        padding: 8px;
+        font-size: 12px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+    }
+    table.itens td.right { text-align: right; }
+    table.itens td.center { text-align: center; }
+    table.itens .categoria {
+        font-size: 10px;
+        color: #777;
+        display: block;
+    }
+    .total-box {
+        text-align: right;
+        border-top: 2px solid #1a2d3d;
+        padding-top: 8px;
+        font-size: 15px;
+        font-weight: bold;
+        color: #166534;
+    }
+    .obs-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 11px;
+        color: #555;
+        margin-top: 12px;
+    }
+    .footer {
+        margin-top: 32px;
+        border-top: 1px dashed #ccc;
+        padding-top: 8px;
+        font-size: 10px;
+        color: #aaa;
+        text-align: center;
+    }
+    .assinatura {
+        margin-top: 40px;
+    }
+    .assinatura table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .assinatura td {
+        text-align: center;
+        padding: 0 20px;
+        font-size: 11px;
+        color: #555;
+    }
+    .assinatura .linha {
+        border-top: 1px solid #555;
+        margin-bottom: 4px;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Bazar Cáritas</h1>
+    <div class="sub">{% if venda.paroquia %}{{ venda.paroquia }}{% endif %}</div>
+</div>
+
+<div class="titulo-doc">Nota de Venda / Comprovante</div>
+
+<table class="meta">
+    <tr>
+        <td>
+            <span class="label">Nº Operação</span>
+            <span class="value">{{ venda.numero_operacao }}</span>
+        </td>
+        <td>
+            <span class="label">Data da Venda</span>
+            <span class="value">{{ venda.data|date:"d/m/Y" }}</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <span class="label">Emitido em</span>
+            <span class="value">{{ venda.criado_em|date:"d/m/Y \à\s H:i" }}</span>
+        </td>
+        <td>
+            <span class="label">Responsável</span>
+            <span class="value">
+                {% if venda.registrado_por %}{{ venda.registrado_por.get_full_name|default:venda.registrado_por.username }}{% else %}—{% endif %}
+            </span>
+        </td>
+    </tr>
+</table>
+
+<table class="itens">
+    <thead>
+        <tr>
+            <th style="width:45%">Descrição</th>
+            <th class="center" style="width:12%">Tamanho</th>
+            <th class="center" style="width:10%">Qtd.</th>
+            <th class="right" style="width:16%">Vl. Unit.</th>
+            <th class="right" style="width:17%">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                {{ venda.item.descricao }}
+                {% if venda.item.categoria %}
+                <span class="categoria">{{ venda.item.categoria }}</span>
+                {% endif %}
+            </td>
+            <td class="center">{{ venda.item.get_tamanho_display }}</td>
+            <td class="center">{{ venda.quantidade }}</td>
+            <td class="right">R$ {{ venda.preco_unitario|floatformat:2 }}</td>
+            <td class="right"><strong>R$ {{ venda.valor_total|floatformat:2 }}</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="total-box">
+    TOTAL: R$ {{ venda.valor_total|floatformat:2 }}
+</div>
+
+{% if venda.observacao %}
+<div class="obs-box">
+    <strong>Observação:</strong> {{ venda.observacao }}
+</div>
+{% endif %}
+
+<div class="assinatura">
+    <table>
+        <tr>
+            <td>
+                <div class="linha"></div>
+                Responsável pelo Bazar
+            </td>
+            <td>
+                <div class="linha"></div>
+                Cliente
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="footer">
+    Sistema Cáritas — Documento gerado automaticamente em {{ venda.criado_em|date:"d/m/Y \à\s H:i" }}
+</div>
+
+</body>
+</html>

@@ -4,6 +4,14 @@ set -o errexit
 pip install -r requirements.txt
 
 python manage.py collectstatic --no-input
+
+# Zera todos os dados se RESET_DB=true (remova a variável após o deploy)
+if [ "$RESET_DB" = "true" ]; then
+    echo ">>> RESET_DB detectado: limpando todos os dados do banco..."
+    python manage.py flush --no-input
+    echo ">>> Banco zerado."
+fi
+
 python manage.py migrate
 
 python manage.py shell << 'EOF'

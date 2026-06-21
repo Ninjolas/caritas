@@ -1,9 +1,15 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from io import BytesIO
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import get_template
 from django.utils import timezone
+from xhtml2pdf import pisa
+
 from apps.accounts.decorators import bazar_required, coordenador_bazar_required
 from .models import CategoriaBazar, ItemEstoqueBazar, EntradaBazar, ItemEntradaBazar, Venda, EmpresaParceira
 from .forms import (CategoriaBazarForm, EntradaBazarForm, ItemEntradaBazarFormSet, VendaForm,
@@ -194,6 +200,26 @@ def vendas_registrar(request):
 def comprovante(request, pk):
     venda = get_object_or_404(Venda, pk=pk)
     return render(request, 'bazar/comprovante.html', {'venda': venda})
+
+
+@login_required
+@bazar_required
+def comprovante_pdf(request, pk):
+    venda = get_object_or_404(Venda, pk=pk)
+    template = get_template('bazar/pdf_comprovante.html')
+    html = template.render({'venda': venda})
+
+    buffer = BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=buffer, encoding='utf-8')
+
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF.', status=500)
+
+    buffer.seek(0)
+    filename = f"nota-venda-{venda.numero_operacao or venda.pk}.pdf"
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 
 # ── Empresas Parceiras ─────────────────────────────────────────────────────────

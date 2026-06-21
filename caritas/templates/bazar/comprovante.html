@@ -106,8 +106,11 @@
 
 <div class="comprovante-wrap">
     <div class="btn-acoes">
-        <button onclick="window.print()" class="btn btn-primary btn-sm">
-            <i class="bi bi-printer me-1"></i> Imprimir / Salvar PDF
+        <a href="{% url 'bazar:comprovante_pdf' venda.pk %}" class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Baixar PDF
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-printer me-1"></i> Imprimir
         </button>
         <a href="{% url 'bazar:vendas_listagem' %}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Voltar
