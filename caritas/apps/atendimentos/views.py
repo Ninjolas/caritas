@@ -106,6 +106,10 @@ def registrar(request):
                 atendimento.paroquia = paroquia
                 atendimento.registrado_por = request.user
                 atendimento.save()
+                if tipo == 'encaminhamento' and atendimento.paroquia_destino:
+                    familia = atendimento.familia
+                    familia.paroquia_responsavel = atendimento.paroquia_destino
+                    familia.save()
                 messages.success(request, 'Atendimento registrado com sucesso!')
                 return redirect('atendimentos:listagem')
     else:

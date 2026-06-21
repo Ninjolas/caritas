@@ -8,20 +8,26 @@ from apps.estoque.models import ItemEstoque
 class AtendimentoForm(forms.ModelForm):
     class Meta:
         model = Atendimento
-        fields = ['familia', 'tipo', 'data', 'descricao']
+        fields = ['familia', 'tipo', 'tipo_outro', 'data', 'paroquia_destino', 'descricao']
         widgets = {
             'data': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'descricao': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
             'tipo': forms.Select(attrs={'class': 'form-select', 'id': 'id_tipo'}),
+            'tipo_outro': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Descreva o tipo de atendimento'}),
             'familia': forms.Select(attrs={'class': 'form-select'}),
+            'paroquia_destino': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, paroquia=None, **kwargs):
         super().__init__(*args, **kwargs)
+        from apps.accounts.models import Paroquia
         if paroquia:
             self.fields['familia'].queryset = Familia.objects.filter(
                 paroquia_responsavel=paroquia
             ).order_by('responsavel_nome')
+        self.fields['paroquia_destino'].queryset = Paroquia.objects.filter(ativa=True).order_by('nome')
+        self.fields['paroquia_destino'].required = False
+        self.fields['tipo_outro'].required = False
 
 
 class ItemAtendimentoForm(forms.Form):

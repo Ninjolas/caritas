@@ -10,6 +10,12 @@ from apps.doacoes.models import Doacao
 from apps.estoque.models import ItemEstoque
 from apps.familias.models import Familia
 
+MESES_PT = {
+    1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+    5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+    9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro',
+}
+
 
 TIPO_ATENDIMENTO_LABELS = dict([
     ('assistencia_social', 'Assistência Social'),
@@ -62,7 +68,7 @@ def index(request):
     contexto = {
         'is_admin': is_admin,
         'paroquia': paroquia,
-        'mes_atual': hoje.strftime('%B de %Y'),
+        'mes_atual': f"{MESES_PT[hoje.month]} de {hoje.year}",
         'total_familias': total_familias,
         'familias_bolsa': familias_bolsa,
         'total_estoque_itens': total_estoque_itens,

@@ -17,11 +17,17 @@ class Atendimento(models.Model):
 
     familia = models.ForeignKey(Familia, on_delete=models.CASCADE, related_name='atendimentos')
     tipo = models.CharField(max_length=30, choices=TIPO_CHOICES)
+    tipo_outro = models.CharField(max_length=200, blank=True, default='', verbose_name='Especifique')
     data = models.DateField()
     descricao = models.TextField(blank=True)
     paroquia = models.ForeignKey(
         'accounts.Paroquia', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='atendimentos'
+    )
+    paroquia_destino = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='encaminhamentos_recebidos',
+        verbose_name='Paróquia de destino'
     )
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
     criado_em = models.DateTimeField(auto_now_add=True)

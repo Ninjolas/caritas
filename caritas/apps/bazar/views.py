@@ -8,6 +8,12 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
 from django.utils import timezone
+
+MESES_PT = {
+    1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+    5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+    9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro',
+}
 from xhtml2pdf import pisa
 
 import json
@@ -276,6 +282,6 @@ def relatorio(request):
             total_vendido=Sum('vendas__quantidade')
         ).order_by('-total_vendido')[:5],
         'vendas_mes': vendas_mes.select_related('item'),
-        'mes_atual': hoje.strftime('%B de %Y'),
+        'mes_atual': f"{MESES_PT[hoje.month]} de {hoje.year}",
     }
     return render(request, 'bazar/relatorios/index.html', contexto)

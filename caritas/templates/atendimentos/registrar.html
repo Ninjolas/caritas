@@ -13,17 +13,43 @@
 
     <fieldset class="form-section">
         <legend>Dados do Atendimento</legend>
-        {% for field in form %}
+
         <div class="mb-3">
-            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-                {% for error in field.errors %}
-                <div class="text-danger small mt-1">{{ error }}</div>
-                {% endfor %}
-            {% endif %}
+            <label class="form-label" for="{{ form.familia.id_for_label }}">{{ form.familia.label }}</label>
+            {{ form.familia }}
+            {% for e in form.familia.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
         </div>
-        {% endfor %}
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.tipo.id_for_label }}">{{ form.tipo.label }}</label>
+            {{ form.tipo }}
+            {% for e in form.tipo.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3" id="campo-tipo-outro" style="display:none">
+            <label class="form-label" for="{{ form.tipo_outro.id_for_label }}">Especifique *</label>
+            {{ form.tipo_outro }}
+            {% for e in form.tipo_outro.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3" id="campo-paroquia-destino" style="display:none">
+            <label class="form-label" for="{{ form.paroquia_destino.id_for_label }}">Paróquia de destino *</label>
+            {{ form.paroquia_destino }}
+            <div class="form-text" style="font-size:12px">A família será transferida para esta paróquia ao salvar.</div>
+            {% for e in form.paroquia_destino.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.data.id_for_label }}">{{ form.data.label }}</label>
+            {{ form.data }}
+            {% for e in form.data.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.descricao.id_for_label }}">{{ form.descricao.label }}</label>
+            {{ form.descricao }}
+            {% for e in form.descricao.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
     </fieldset>
 
     <fieldset class="form-section" id="secao-itens" style="display:none">
@@ -82,6 +108,9 @@
     var ITENS_POR_TIPO = {{ itens_json|safe }};
     var tipoSelect = document.getElementById('id_tipo');
     var secaoItens = document.getElementById('secao-itens');
+    var campoTipoOutro = document.getElementById('campo-tipo-outro');
+    var campoParoquiaDestino = document.getElementById('campo-paroquia-destino');
+    var inputTipoOutro = campoTipoOutro ? campoTipoOutro.querySelector('input') : null;
     var container = document.getElementById('itens-container');
     var totalForms = document.querySelector('[name="itens-TOTAL_FORMS"]');
     var btnAdd = document.getElementById('btn-add-item');
@@ -109,6 +138,9 @@
         } else {
             secaoItens.style.display = 'none';
         }
+        if (campoTipoOutro) campoTipoOutro.style.display = tipo === 'outro' ? '' : 'none';
+        if (inputTipoOutro) inputTipoOutro.required = tipo === 'outro';
+        if (campoParoquiaDestino) campoParoquiaDestino.style.display = tipo === 'encaminhamento' ? '' : 'none';
     }
 
     if (tipoSelect) {
