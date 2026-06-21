@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
+from django.utils import timezone
 from apps.accounts.decorators import coordenador_required, modulo_paroquia_required
+from apps.financeiro.models import MovimentacaoFinanceira
 from .models import BrechoEvento, VendaBrecho
 from .forms import BrechoEventoForm, VendaBrechoForm
 
@@ -70,6 +72,15 @@ def registrar_venda(request, pk):
                     venda.save()
                     item.quantidade -= venda.quantidade
                     item.save()
+                    MovimentacaoFinanceira.objects.create(
+                        origem='paroquia',
+                        paroquia=evento.paroquia,
+                        tipo='entrada_vendas',
+                        valor=venda.valor_total,
+                        data=timezone.now().date(),
+                        descricao=f'Venda no brechó "{evento.nome}": {venda.quantidade}x {venda.item_nome} — R$ {venda.preco_unitario} cada',
+                        registrado_por=request.user,
+                    )
                     messages.success(request, 'Venda registrada e estoque atualizado!')
                     return redirect('brecho:detalhe', pk=pk)
             except Exception as e:

@@ -18,7 +18,7 @@ class Atendimento(models.Model):
     familia = models.ForeignKey(Familia, on_delete=models.CASCADE, related_name='atendimentos')
     tipo = models.CharField(max_length=30, choices=TIPO_CHOICES)
     data = models.DateField()
-    descricao = models.TextField()
+    descricao = models.TextField(blank=True)
     paroquia = models.ForeignKey(
         'accounts.Paroquia', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='atendimentos'

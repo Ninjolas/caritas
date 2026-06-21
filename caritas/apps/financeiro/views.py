@@ -7,6 +7,12 @@ from apps.accounts.decorators import coordenador_required
 from .models import MovimentacaoFinanceira
 from .forms import MovimentacaoFinanceiraForm
 
+MESES_PT = {
+    1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+    5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+    9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro',
+}
+
 
 @login_required
 @coordenador_required
@@ -64,6 +70,6 @@ def relatorio(request):
         'total_entradas': total_entradas,
         'total_saidas': total_saidas,
         'saldo': total_entradas - total_saidas,
-        'mes_atual': hoje.strftime('%B de %Y'),
+        'mes_atual': f"{MESES_PT[mes]} de {ano}",
     }
     return render(request, 'financeiro/relatorio.html', contexto)
