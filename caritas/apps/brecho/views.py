@@ -7,10 +7,17 @@ from .models import BrechoEvento, VendaBrecho
 from .forms import BrechoEventoForm, VendaBrechoForm
 
 
+def _get_eventos_qs(user):
+    qs = BrechoEvento.objects.all()
+    if user.paroquia:
+        qs = qs.filter(paroquia=user.paroquia)
+    return qs
+
+
 @login_required
 @modulo_paroquia_required
 def listagem(request):
-    eventos = BrechoEvento.objects.filter(paroquia=request.user.paroquia)
+    eventos = _get_eventos_qs(request.user)
     return render(request, 'brecho/listagem.html', {'eventos': eventos})
 
 
@@ -33,14 +40,14 @@ def criar_evento(request):
 
 @login_required
 def detalhe(request, pk):
-    evento = get_object_or_404(BrechoEvento, pk=pk, paroquia=request.user.paroquia)
+    evento = get_object_or_404(_get_eventos_qs(request.user), pk=pk)
     vendas = evento.vendas.select_related('item_estoque', 'registrado_por')
     return render(request, 'brecho/detalhe.html', {'evento': evento, 'vendas': vendas})
 
 
 @login_required
 def registrar_venda(request, pk):
-    evento = get_object_or_404(BrechoEvento, pk=pk, paroquia=request.user.paroquia)
+    evento = get_object_or_404(_get_eventos_qs(request.user), pk=pk)
     if evento.status == 'encerrado':
         messages.error(request, 'Este brechó já foi encerrado.')
         return redirect('brecho:detalhe', pk=pk)
@@ -74,7 +81,7 @@ def registrar_venda(request, pk):
 @login_required
 @coordenador_required
 def encerrar_evento(request, pk):
-    evento = get_object_or_404(BrechoEvento, pk=pk, paroquia=request.user.paroquia)
+    evento = get_object_or_404(_get_eventos_qs(request.user), pk=pk)
     evento.status = 'encerrado'
     evento.save()
     messages.success(request, f'Brechó "{evento.nome}" encerrado.')
