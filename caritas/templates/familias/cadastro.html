@@ -36,7 +36,7 @@
                 {% if form.nome_mae.errors %}<div class="text-danger" style="font-size:12px">{{ form.nome_mae.errors }}</div>{% endif %}
             </div>
             <div class="col-md-6">
-                <label class="form-label">Nome do Pai</label>
+                <label class="form-label">Nome do Pai *</label>
                 {{ form.nome_pai }}
             </div>
             <div class="col-md-4">
@@ -141,7 +141,7 @@
                         {{ dep_form.genero }}
                     </div>
                     <div class="col-md-1">
-                        <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removerDependente(this)" title="Remover">
+                        <button type="button" class="btn btn-sm btn-outline-danger w-100 btn-remover-dependente" onclick="removerDependente(this)" title="Remover" style="visibility:hidden">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
@@ -192,9 +192,21 @@
         document.getElementById('id_dependentes-TOTAL_FORMS').value = forms.length;
     }
 
+    function atualizarBotoesRemover() {
+        const container = document.getElementById('formset-dependentes');
+        const forms = container.querySelectorAll('.dependente-form');
+        forms.forEach(function (form) {
+            const btnRemover = form.querySelector('.btn-remover-dependente');
+            if (btnRemover) btnRemover.style.visibility = forms.length <= 1 ? 'hidden' : 'visible';
+        });
+    }
+
     function removerDependente(btn) {
+        const container = document.getElementById('formset-dependentes');
+        if (container.querySelectorAll('.dependente-form').length <= 1) return;
         btn.closest('.dependente-form').remove();
         renumerarForms();
+        atualizarBotoesRemover();
     }
 
     document.getElementById('btn-adicionar-dependente').addEventListener('click', function () {
@@ -218,6 +230,7 @@
 
         container.appendChild(newForm);
         document.getElementById('id_dependentes-TOTAL_FORMS').value = currentCount + 1;
+        atualizarBotoesRemover();
     });
 </script>
 {% endblock %}

@@ -109,7 +109,11 @@ def registrar(request):
                 messages.success(request, 'Atendimento registrado com sucesso!')
                 return redirect('atendimentos:listagem')
     else:
-        form = AtendimentoForm(paroquia=paroquia)
+        initial = {}
+        familia_pk = request.GET.get('familia')
+        if familia_pk:
+            initial['familia'] = familia_pk
+        form = AtendimentoForm(paroquia=paroquia, initial=initial)
         formset = ItemAtendimentoFormSet(prefix='itens', paroquia=paroquia)
 
     return render(request, 'atendimentos/registrar.html', {

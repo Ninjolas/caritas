@@ -114,8 +114,11 @@
         </div>
     </div>
 
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         {% if familia.paroquia_responsavel == user.paroquia or user.perfil == 'administrador' %}
+        <a href="{% url 'atendimentos:registrar' %}?familia={{ familia.pk }}" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Registrar Atendimento
+        </a>
         <a href="{% url 'familias:editar_familia' familia.pk %}" class="btn btn-primary btn-sm">
             <i class="bi bi-pencil me-1"></i> Editar
         </a>
