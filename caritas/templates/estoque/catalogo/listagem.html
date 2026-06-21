@@ -16,9 +16,13 @@
     {% endif %}
 </div>
 
+<div class="mb-3">
+    <input type="text" id="busca" class="form-control" placeholder="Buscar por nome, categoria..." style="max-width:360px">
+</div>
+
 <div class="card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0" id="tabela-lista">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -71,4 +75,15 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('busca').addEventListener('input', function () {
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('#tabela-lista tbody tr').forEach(function (tr) {
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+</script>
 {% endblock %}

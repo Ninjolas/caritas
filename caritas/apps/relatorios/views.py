@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django.db.models import Sum, Count
 from django.shortcuts import render
@@ -65,6 +66,26 @@ def index(request):
         for r in atendimentos_por_tipo_raw
     ]
 
+    # Histórico dos últimos 6 meses
+    abs_month = hoje.year * 12 + (hoje.month - 1)
+    hist_labels, hist_atendimentos, hist_doacoes = [], [], []
+    for i in range(5, -1, -1):
+        t = abs_month - i
+        a_h, m_h = t // 12, (t % 12) + 1
+        if is_admin:
+            at_c = Atendimento.objects.filter(data__month=m_h, data__year=a_h).count()
+            do_c = Doacao.objects.filter(data__month=m_h, data__year=a_h).count()
+        else:
+            at_c = Atendimento.objects.filter(paroquia=paroquia, data__month=m_h, data__year=a_h).count()
+            do_c = Doacao.objects.filter(paroquia=paroquia, data__month=m_h, data__year=a_h).count()
+        hist_labels.append(f"{MESES_PT[m_h][:3]}/{str(a_h)[2:]}")
+        hist_atendimentos.append(at_c)
+        hist_doacoes.append(do_c)
+
+    # Dados do gráfico de pizza por tipo
+    tipo_labels = [r['label'] for r in atendimentos_por_tipo]
+    tipo_totais = [r['total'] for r in atendimentos_por_tipo]
+
     contexto = {
         'is_admin': is_admin,
         'paroquia': paroquia,
@@ -78,5 +99,10 @@ def index(request):
         'doacoes_mes': doacoes_mes,
         'atendimentos_mes': atendimentos_qs,
         'atendimentos_por_tipo': atendimentos_por_tipo,
+        'hist_labels': json.dumps(hist_labels),
+        'hist_atendimentos': json.dumps(hist_atendimentos),
+        'hist_doacoes': json.dumps(hist_doacoes),
+        'tipo_labels': json.dumps(tipo_labels),
+        'tipo_totais': json.dumps(tipo_totais),
     }
     return render(request, 'relatorios/index.html', contexto)

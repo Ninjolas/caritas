@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -65,11 +66,30 @@ def relatorio(request):
     total_entradas = qs.filter(tipo__startswith='entrada').aggregate(total=Sum('valor'))['total'] or 0
     total_saidas = qs.filter(tipo__startswith='saida').aggregate(total=Sum('valor'))['total'] or 0
 
+    # Histórico dos últimos 6 meses
+    abs_month = ano * 12 + (mes - 1)
+    hist_labels, hist_entradas, hist_saidas = [], [], []
+    for i in range(5, -1, -1):
+        t = abs_month - i
+        a_h, m_h = t // 12, (t % 12) + 1
+        if request.user.perfil == 'administrador':
+            qs_h = MovimentacaoFinanceira.objects.filter(data__month=m_h, data__year=a_h)
+        else:
+            qs_h = MovimentacaoFinanceira.objects.filter(origem='paroquia', paroquia=paroquia, data__month=m_h, data__year=a_h)
+        ent_h = qs_h.filter(tipo__startswith='entrada').aggregate(t=Sum('valor'))['t'] or 0
+        sai_h = qs_h.filter(tipo__startswith='saida').aggregate(t=Sum('valor'))['t'] or 0
+        hist_labels.append(f"{MESES_PT[m_h][:3]}/{str(a_h)[2:]}")
+        hist_entradas.append(float(ent_h))
+        hist_saidas.append(float(sai_h))
+
     contexto = {
         'movimentacoes': qs,
         'total_entradas': total_entradas,
         'total_saidas': total_saidas,
         'saldo': total_entradas - total_saidas,
         'mes_atual': f"{MESES_PT[mes]} de {ano}",
+        'hist_labels': json.dumps(hist_labels),
+        'hist_entradas': json.dumps(hist_entradas),
+        'hist_saidas': json.dumps(hist_saidas),
     }
     return render(request, 'financeiro/relatorio.html', contexto)

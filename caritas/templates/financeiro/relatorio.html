@@ -41,6 +41,14 @@
     </div>
 </div>
 
+<!-- Gráfico histórico -->
+<div class="card mb-4">
+    <div class="card-header">Entradas e Saídas — Últimos 6 meses</div>
+    <div class="card-body" style="padding:1.25rem">
+        <canvas id="grafico-financeiro" height="100"></canvas>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">Movimentações de {{ mes_atual }}</div>
     <div class="card-body p-0">
@@ -78,4 +86,61 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var labels = {{ hist_labels|safe }};
+    var entradas = {{ hist_entradas|safe }};
+    var saidas = {{ hist_saidas|safe }};
+
+    new Chart(document.getElementById('grafico-financeiro'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Entradas',
+                    data: entradas,
+                    backgroundColor: 'rgba(22,163,74,0.7)',
+                    borderColor: '#16a34a',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Saídas',
+                    data: saidas,
+                    backgroundColor: 'rgba(220,38,38,0.65)',
+                    borderColor: '#dc2626',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function (ctx) {
+                            return ctx.dataset.label + ': R$ ' + ctx.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (v) { return 'R$ ' + v.toFixed(0); }
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
 {% endblock %}

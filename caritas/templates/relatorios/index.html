@@ -51,8 +51,32 @@
     </div>
 </div>
 
+<!-- Gráficos histórico -->
 <div class="row g-3 mb-4">
-    <!-- Atendimentos por tipo -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header">Atendimentos e Doações — Últimos 6 meses</div>
+            <div class="card-body" style="padding:1.25rem">
+                <canvas id="grafico-historico" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">Atendimentos por Tipo — {{ mes_atual }}</div>
+            <div class="card-body d-flex align-items-center justify-content-center" style="padding:1.25rem">
+                {% if atendimentos_por_tipo %}
+                <canvas id="grafico-tipos" style="max-height:220px"></canvas>
+                {% else %}
+                <p class="text-muted text-center mb-0">Nenhum atendimento neste mês.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Atendimentos por tipo (tabela) -->
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header">Atendimentos por Tipo — {{ mes_atual }}</div>
@@ -134,4 +158,69 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var labels = {{ hist_labels|safe }};
+    var atendimentos = {{ hist_atendimentos|safe }};
+    var doacoes = {{ hist_doacoes|safe }};
+
+    new Chart(document.getElementById('grafico-historico'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Atendimentos',
+                    data: atendimentos,
+                    backgroundColor: 'rgba(124,58,237,0.7)',
+                    borderColor: '#7c3aed',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Doações recebidas',
+                    data: doacoes,
+                    backgroundColor: 'rgba(30,136,229,0.65)',
+                    borderColor: '#1e88e5',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    var tipoLabels = {{ tipo_labels|safe }};
+    var tipoTotais = {{ tipo_totais|safe }};
+    var canvas = document.getElementById('grafico-tipos');
+    if (canvas && tipoLabels.length > 0) {
+        var cores = ['#7c3aed','#1e88e5','#16a34a','#f59e0b','#ef4444','#6366f1'];
+        new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+                labels: tipoLabels,
+                datasets: [{
+                    data: tipoTotais,
+                    backgroundColor: cores.slice(0, tipoLabels.length),
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 12 } } }
+                }
+            }
+        });
+    }
+})();
+</script>
 {% endblock %}
