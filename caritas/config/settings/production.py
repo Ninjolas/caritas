@@ -23,6 +23,9 @@ MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Proxy Render (HTTPS termina no proxy, Django recebe HTTP interno)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Segurança
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True

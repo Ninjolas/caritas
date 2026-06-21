@@ -47,10 +47,8 @@ def criar_usuario(request):
         if form.is_valid():
             usuario = form.save(commit=False)
             if perfil == 'coordenador':
-                usuario.perfil = 'voluntario'
                 usuario.paroquia = request.user.paroquia
             elif perfil == 'coordenador_bazar':
-                usuario.perfil = 'voluntario_bazar'
                 usuario.paroquia = None
             usuario.save()
             messages.success(request, f'Usuário {usuario.username} criado com sucesso!')
