@@ -1,6 +1,6 @@
 from django.db import models
 from apps.accounts.models import Usuario
-from apps.estoque.models import ItemEstoque
+from apps.estoque.models import CATEGORIA_CHOICES
 
 
 class Doacao(models.Model):
@@ -23,7 +23,7 @@ class Doacao(models.Model):
 class ItemDoacao(models.Model):
     doacao = models.ForeignKey(Doacao, on_delete=models.CASCADE, related_name='itens')
     nome = models.CharField(max_length=200)
-    categoria = models.CharField(max_length=20, choices=ItemEstoque.CATEGORIA_CHOICES)
+    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
     categoria_outro = models.CharField(max_length=100, blank=True, default='')
     quantidade = models.IntegerField()
     unidade = models.CharField(max_length=50, default='unidade')
