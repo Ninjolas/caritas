@@ -44,12 +44,17 @@
     var paroquiaSel = document.getElementById('id_paroquia');
     if (!perfilSel || !paroquiaWrapper) return;
 
+    var perfilWrapper = perfilSel.closest('[class*="col-"]');
     var BAZAR = ['coordenador_bazar', 'voluntario_bazar'];
 
     function atualizar() {
         var isBazar = BAZAR.indexOf(perfilSel.value) !== -1;
         paroquiaWrapper.style.display = isBazar ? 'none' : '';
         if (isBazar && paroquiaSel) paroquiaSel.value = '';
+        if (perfilWrapper) {
+            perfilWrapper.classList.toggle('col-md-6', !isBazar);
+            perfilWrapper.classList.toggle('col-md-12', isBazar);
+        }
     }
 
     perfilSel.addEventListener('change', atualizar);
