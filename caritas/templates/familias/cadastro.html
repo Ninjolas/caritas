@@ -127,7 +127,7 @@
         <div id="formset-dependentes">
             {% for dep_form in formset %}
             <div class="border rounded p-3 mb-3 dependente-form" style="background:#f8fafc">
-                <div class="row g-3">
+                <div class="row g-3 align-items-end">
                     <div class="col-md-5">
                         <label class="form-label">Nome</label>
                         {{ dep_form.nome }}
@@ -136,9 +136,14 @@
                         <label class="form-label">Idade</label>
                         {{ dep_form.idade }}
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Gênero</label>
                         {{ dep_form.genero }}
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removerDependente(this)" title="Remover">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -172,20 +177,47 @@
     bolsaFamilia.addEventListener('change', toggleBeneficio);
     toggleBeneficio();
 
-    document.getElementById('btn-adicionar-dependente').addEventListener('click', function () {
-        const totalForms = document.getElementById('id_dependentes-TOTAL_FORMS');
-        const currentCount = parseInt(totalForms.value);
+    function renumerarForms() {
         const container = document.getElementById('formset-dependentes');
-        const newForm = container.querySelector('.dependente-form').cloneNode(true);
+        const forms = container.querySelectorAll('.dependente-form');
+        forms.forEach(function (form, index) {
+            form.querySelectorAll('input, select, textarea').forEach(function (el) {
+                if (el.name) el.name = el.name.replace(/dependentes-\d+-/, 'dependentes-' + index + '-');
+                if (el.id) el.id = el.id.replace(/dependentes-\d+-/, 'dependentes-' + index + '-');
+            });
+            form.querySelectorAll('label[for]').forEach(function (label) {
+                label.htmlFor = label.htmlFor.replace(/dependentes-\d+-/, 'dependentes-' + index + '-');
+            });
+        });
+        document.getElementById('id_dependentes-TOTAL_FORMS').value = forms.length;
+    }
 
-        newForm.querySelectorAll('input, select').forEach(function (input) {
-            input.name = input.name.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
-            input.id = input.id.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
-            input.value = '';
+    function removerDependente(btn) {
+        btn.closest('.dependente-form').remove();
+        renumerarForms();
+    }
+
+    document.getElementById('btn-adicionar-dependente').addEventListener('click', function () {
+        const container = document.getElementById('formset-dependentes');
+        const currentCount = parseInt(document.getElementById('id_dependentes-TOTAL_FORMS').value);
+        const template = container.querySelector('.dependente-form');
+        const newForm = template.cloneNode(true);
+
+        newForm.querySelectorAll('input, select, textarea').forEach(function (el) {
+            if (el.name) el.name = el.name.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
+            if (el.id) el.id = el.id.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
+            if (el.tagName === 'SELECT') {
+                el.selectedIndex = 0;
+            } else {
+                el.value = '';
+            }
+        });
+        newForm.querySelectorAll('label[for]').forEach(function (label) {
+            label.htmlFor = label.htmlFor.replace(/dependentes-\d+-/, 'dependentes-' + currentCount + '-');
         });
 
         container.appendChild(newForm);
-        totalForms.value = currentCount + 1;
+        document.getElementById('id_dependentes-TOTAL_FORMS').value = currentCount + 1;
     });
 </script>
 {% endblock %}

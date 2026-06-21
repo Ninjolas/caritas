@@ -94,6 +94,17 @@ def remover_doacao(request, pk):
         raise PermissionDenied
 
     if request.method == 'POST':
-        doacao.delete()
+        with transaction.atomic():
+            for item in doacao.itens.select_related('produto').all():
+                filtro = {'paroquia': doacao.paroquia, 'validade': item.data_validade}
+                if item.produto:
+                    filtro['produto'] = item.produto
+                else:
+                    filtro['nome'] = item.nome
+                item_estoque = ItemEstoque.objects.filter(**filtro).first()
+                if item_estoque:
+                    item_estoque.quantidade -= item.quantidade
+                    item_estoque.save()
+            doacao.delete()
         messages.success(request, 'Doação removida com sucesso.')
     return redirect('doacoes:listagem')

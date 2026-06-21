@@ -14,12 +14,12 @@ class Familia(models.Model):
         ('superior', 'Superior'),
     ]
 
-    id_interno = models.CharField(max_length=50, unique=True, blank=True)
+    id_interno = models.CharField(max_length=50, unique=True, blank=True, null=True, default=None)
     possui_cpf = models.BooleanField(default=True)
     cpf = models.CharField(max_length=14, blank=True, null=True)
     responsavel_nome = models.CharField(max_length=200)
     nome_mae = models.CharField(max_length=200, verbose_name='Nome da mãe')
-    nome_pai = models.CharField(max_length=200, blank=True, verbose_name='Nome do pai')
+    nome_pai = models.CharField(max_length=200, verbose_name='Nome do pai')
     data_nascimento = models.DateField(null=True, blank=True, verbose_name='Data de nascimento')
     nacionalidade = models.CharField(max_length=100)
     endereco = models.CharField(max_length=300)
@@ -48,6 +48,8 @@ class Familia(models.Model):
         if not self.possui_cpf and not self.id_interno:
             prefixo = self.paroquia_responsavel.nome[:3].upper() if self.paroquia_responsavel else 'SEM'
             self.id_interno = f'INT-{prefixo}-{uuid.uuid4().hex[:8].upper()}'
+        if not self.id_interno:
+            self.id_interno = None
         super().save(*args, **kwargs)
 
     class Meta:
