@@ -11,7 +11,7 @@
             <legend>Dados do usuário</legend>
             <div class="row g-3">
                 {% for field in form %}
-                <div class="col-md-6">
+                <div class="col-md-6{% if field.html_name == 'paroquia' %}" id="wrapper-paroquia"{% else %}"{% endif %}>
                     <label class="form-label" for="{{ field.id_for_label }}">
                         {{ field.label }}{% if field.field.required %} *{% endif %}
                     </label>
@@ -34,4 +34,26 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var perfilSel = document.getElementById('id_perfil');
+    var paroquiaWrapper = document.getElementById('wrapper-paroquia');
+    var paroquiaSel = document.getElementById('id_paroquia');
+    if (!perfilSel || !paroquiaWrapper) return;
+
+    var BAZAR = ['coordenador_bazar', 'voluntario_bazar'];
+
+    function atualizar() {
+        var isBazar = BAZAR.indexOf(perfilSel.value) !== -1;
+        paroquiaWrapper.style.display = isBazar ? 'none' : '';
+        if (isBazar && paroquiaSel) paroquiaSel.value = '';
+    }
+
+    perfilSel.addEventListener('change', atualizar);
+    atualizar();
+})();
+</script>
 {% endblock %}

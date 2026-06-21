@@ -74,7 +74,10 @@ class UsuarioCreateForm(UserCreationForm):
     def save(self, commit=True):
         usuario = super().save(commit=False)
         usuario.perfil = self.cleaned_data.get('perfil', 'voluntario')
-        usuario.paroquia = self.cleaned_data.get('paroquia')
+        if usuario.perfil in ('coordenador_bazar', 'voluntario_bazar'):
+            usuario.paroquia = None
+        else:
+            usuario.paroquia = self.cleaned_data.get('paroquia')
         if commit:
             usuario.save()
         return usuario
@@ -114,7 +117,9 @@ class UsuarioEditForm(forms.ModelForm):
         usuario = super().save(commit=False)
         if 'perfil' in self.cleaned_data:
             usuario.perfil = self.cleaned_data['perfil']
-        if 'paroquia' in self.cleaned_data:
+        if usuario.perfil in ('coordenador_bazar', 'voluntario_bazar'):
+            usuario.paroquia = None
+        elif 'paroquia' in self.cleaned_data:
             usuario.paroquia = self.cleaned_data.get('paroquia')
         if commit:
             usuario.save()
