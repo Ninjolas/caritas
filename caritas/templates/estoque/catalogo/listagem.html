@@ -42,10 +42,17 @@
                         {% endif %}
                     </td>
                     {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
-                    <td>
+                    <td class="text-end" style="white-space:nowrap">
                         <a href="{% url 'estoque:catalogo_editar' produto.pk %}" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i>
                         </a>
+                        <form method="post" action="{% url 'estoque:catalogo_remover' produto.pk %}" class="d-inline"
+                              onsubmit="return confirm('Remover {{ produto.nome }} do catálogo?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
                     </td>
                     {% endif %}
                 </tr>

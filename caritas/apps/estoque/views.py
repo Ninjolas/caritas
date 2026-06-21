@@ -108,3 +108,18 @@ def catalogo_form(request, pk=None):
     else:
         form = ProdutoCatalogoForm(instance=produto)
     return render(request, 'estoque/catalogo/form.html', {'form': form, 'produto': produto})
+
+
+@login_required
+@coordenador_required
+def catalogo_remover(request, pk):
+    produto = get_object_or_404(ProdutoCatalogo, pk=pk)
+    if request.user.perfil != 'administrador' and produto.paroquia != request.user.paroquia:
+        raise PermissionDenied
+    if request.method == 'POST':
+        try:
+            produto.delete()
+            messages.success(request, 'Produto removido do catálogo.')
+        except Exception:
+            messages.error(request, 'Não é possível remover este produto pois ele está vinculado a registros existentes.')
+    return redirect('estoque:catalogo')

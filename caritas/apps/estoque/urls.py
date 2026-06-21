@@ -11,4 +11,5 @@ urlpatterns = [
     path('catalogo/', views.catalogo_listagem, name='catalogo'),
     path('catalogo/novo/', views.catalogo_form, name='catalogo_criar'),
     path('catalogo/<int:pk>/editar/', views.catalogo_form, name='catalogo_editar'),
+    path('catalogo/<int:pk>/remover/', views.catalogo_remover, name='catalogo_remover'),
 ]
