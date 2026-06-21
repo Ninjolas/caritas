@@ -51,13 +51,23 @@ class UsuarioCreateForm(UserCreationForm):
 
         if solicitante:
             if solicitante.perfil == 'coordenador':
-                self.fields['perfil'].choices = [('voluntario', 'Voluntário')]
+                self.fields['perfil'].choices = [
+                    ('coordenador', 'Coordenador'),
+                    ('voluntario', 'Voluntário'),
+                ]
                 self.fields['paroquia'].widget = forms.HiddenInput()
                 if not self.data:
                     self.initial['paroquia'] = solicitante.paroquia
             elif solicitante.perfil == 'coordenador_bazar':
-                self.fields['perfil'].choices = [('voluntario_bazar', 'Voluntário do Bazar')]
+                self.fields['perfil'].choices = [
+                    ('coordenador_bazar', 'Coordenador do Bazar'),
+                    ('voluntario_bazar', 'Voluntário do Bazar'),
+                ]
                 self.fields.pop('paroquia', None)
+            elif solicitante.perfil == 'administrador':
+                self.fields['perfil'].choices = [
+                    c for c in Usuario.PERFIL_CHOICES if c[0] != 'administrador'
+                ]
 
         _apply_form_control(self)
 
