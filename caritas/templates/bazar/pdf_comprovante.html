@@ -137,7 +137,6 @@
 
 <div class="header">
     <h1>Bazar Cáritas</h1>
-    <div class="sub">{% if venda.paroquia %}{{ venda.paroquia }}{% endif %}</div>
 </div>
 
 <div class="titulo-doc">Nota de Venda / Comprovante</div>
@@ -181,8 +180,8 @@
         <tr>
             <td>
                 {{ venda.item.descricao }}
-                {% if venda.item.categoria %}
-                <span class="categoria">{{ venda.item.categoria }}</span>
+                {% if venda.item.catalogo %}
+                <span class="categoria">{{ venda.item.catalogo }}</span>
                 {% endif %}
             </td>
             <td class="center">{{ venda.item.get_tamanho_display }}</td>

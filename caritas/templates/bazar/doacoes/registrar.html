@@ -36,7 +36,6 @@
                         {% if form.tipo_doador.errors %}{% for e in form.tipo_doador.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
                     </div>
 
-                    {# Pessoa Física #}
                     <div class="col-md-6" id="wrap-doador-nome">
                         <label class="form-label">Nome do doador</label>
                         {{ form.doador_nome }}
@@ -46,14 +45,12 @@
                         {{ form.doador_contato }}
                     </div>
 
-                    {# Empresa #}
                     <div class="col-md-6" id="wrap-empresa" style="display:none">
                         <label class="form-label">Empresa Parceira *</label>
                         {{ form.empresa }}
                         {% if form.empresa.errors %}{% for e in form.empresa.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
                     </div>
 
-                    {# Somente doação financeira #}
                     <div class="col-md-6" id="wrap-valor" style="display:none">
                         <label class="form-label">Valor (R$)</label>
                         {{ form.valor }}
@@ -69,56 +66,54 @@
             </fieldset>
 
             {# ── Itens doados ────────────────────────────────────────────── #}
-            <fieldset class="form-section" id="secao-itens" style="display:none">
-                <legend>Itens Doados</legend>
+            <div id="secao-itens" style="display:none">
                 {{ formset.management_form }}
 
                 <div id="formset-container">
                     {% for fi in formset %}
-                    <div class="item-form border rounded p-3 mb-3 position-relative">
-                        {# campos ocultos do formset (id, etc.) #}
-                        {% for hf in fi.hidden_fields %}<div class="d-none">{{ hf }}</div>{% endfor %}
-                        <div class="row g-2">
-                            <div class="col-md-5">
-                                <label class="form-label small">{{ fi.catalogo.label }}</label>
-                                {{ fi.catalogo }}
-                                {% if fi.catalogo.errors %}<div class="text-danger small">{{ fi.catalogo.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small">{{ fi.tamanho.label }}</label>
-                                {{ fi.tamanho }}
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small">{{ fi.estado.label }}</label>
-                                {{ fi.estado }}
-                            </div>
-                            <div class="col-md-5">
-                                <label class="form-label small">{{ fi.descricao.label }}</label>
-                                {{ fi.descricao }}
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small">{{ fi.quantidade.label }}</label>
-                                {{ fi.quantidade }}
-                                {% if fi.quantidade.errors %}<div class="text-danger small">{{ fi.quantidade.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small">{{ fi.preco_sugerido.label }}</label>
-                                {{ fi.preco_sugerido }}
+                    <div class="item-form card mb-3">
+                        <div class="card-body position-relative">
+                            <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover" style="display:none">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            {% for hf in fi.hidden_fields %}<div class="d-none">{{ hf }}</div>{% endfor %}
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label small">{{ fi.catalogo.label }}</label>
+                                    {{ fi.catalogo }}
+                                    {% if fi.catalogo.errors %}<div class="text-danger small">{{ fi.catalogo.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">{{ fi.tamanho.label }}</label>
+                                    {{ fi.tamanho }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">{{ fi.estado.label }}</label>
+                                    {{ fi.estado }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">{{ fi.descricao.label }}</label>
+                                    {{ fi.descricao }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">{{ fi.quantidade.label }}</label>
+                                    {{ fi.quantidade }}
+                                    {% if fi.quantidade.errors %}<div class="text-danger small">{{ fi.quantidade.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">{{ fi.preco_sugerido.label }}</label>
+                                    {{ fi.preco_sugerido }}
+                                </div>
                             </div>
                         </div>
-                        {% if not forloop.first %}
-                        <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover">
-                            <i class="bi bi-x"></i>
-                        </button>
-                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
 
-                <button type="button" id="btn-add-item" class="btn btn-outline-primary btn-sm mt-1">
+                <button type="button" id="btn-add-item" class="btn btn-outline-primary btn-sm mb-4">
                     <i class="bi bi-plus me-1"></i> Adicionar Item
                 </button>
-            </fieldset>
+            </div>
 
             {% if form.non_field_errors %}
             <div class="alert alert-danger py-2 mb-3">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
@@ -132,39 +127,41 @@
     </div>
 </div>
 
-{# Template oculto — campos com __prefix__ para clonar via JS #}
+{# Template oculto para clonar via JS — campos com __prefix__ #}
 <div id="empty-item-form" style="display:none" aria-hidden="true">
-    <div class="item-form border rounded p-3 mb-3 position-relative">
-        <div class="d-none">{{ formset.empty_form.id }}</div>
-        <div class="row g-2">
-            <div class="col-md-5">
-                <label class="form-label small">{{ formset.empty_form.catalogo.label }}</label>
-                {{ formset.empty_form.catalogo }}
-            </div>
-            <div class="col-md-4">
-                <label class="form-label small">{{ formset.empty_form.tamanho.label }}</label>
-                {{ formset.empty_form.tamanho }}
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">{{ formset.empty_form.estado.label }}</label>
-                {{ formset.empty_form.estado }}
-            </div>
-            <div class="col-md-5">
-                <label class="form-label small">{{ formset.empty_form.descricao.label }}</label>
-                {{ formset.empty_form.descricao }}
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">{{ formset.empty_form.quantidade.label }}</label>
-                {{ formset.empty_form.quantidade }}
-            </div>
-            <div class="col-md-4">
-                <label class="form-label small">{{ formset.empty_form.preco_sugerido.label }}</label>
-                {{ formset.empty_form.preco_sugerido }}
+    <div class="item-form card mb-3">
+        <div class="card-body position-relative">
+            <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <div class="d-none">{{ formset.empty_form.id }}</div>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label class="form-label small">{{ formset.empty_form.catalogo.label }}</label>
+                    {{ formset.empty_form.catalogo }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">{{ formset.empty_form.tamanho.label }}</label>
+                    {{ formset.empty_form.tamanho }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">{{ formset.empty_form.estado.label }}</label>
+                    {{ formset.empty_form.estado }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">{{ formset.empty_form.descricao.label }}</label>
+                    {{ formset.empty_form.descricao }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">{{ formset.empty_form.quantidade.label }}</label>
+                    {{ formset.empty_form.quantidade }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">{{ formset.empty_form.preco_sugerido.label }}</label>
+                    {{ formset.empty_form.preco_sugerido }}
+                </div>
             </div>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover">
-            <i class="bi bi-x"></i>
-        </button>
     </div>
 </div>
 {% endblock %}
@@ -172,14 +169,14 @@
 {% block extra_js %}
 <script>
 (function () {
-    // ── Visibilidade por tipo ──────────────────────────────────────────────────
-    var tipoEntrada  = document.getElementById('id_tipo_entrada');
-    var tipoDoador   = document.getElementById('id_tipo_doador');
-    var secaoItens   = document.getElementById('secao-itens');
-    var wrapNome     = document.getElementById('wrap-doador-nome');
-    var wrapContato  = document.getElementById('wrap-doador-contato');
-    var wrapEmpresa  = document.getElementById('wrap-empresa');
-    var wrapValor    = document.getElementById('wrap-valor');
+    // ── Visibilidade por tipo ─────────────────────────────────────────────────
+    var tipoEntrada = document.getElementById('id_tipo_entrada');
+    var tipoDoador  = document.getElementById('id_tipo_doador');
+    var secaoItens  = document.getElementById('secao-itens');
+    var wrapNome    = document.getElementById('wrap-doador-nome');
+    var wrapContato = document.getElementById('wrap-doador-contato');
+    var wrapEmpresa = document.getElementById('wrap-empresa');
+    var wrapValor   = document.getElementById('wrap-valor');
 
     function atualizarEntrada() {
         var tipo = tipoEntrada ? tipoEntrada.value : '';
@@ -188,9 +185,9 @@
     }
 
     function atualizarDoador() {
-        var tipo   = tipoDoador ? tipoDoador.value : '';
-        var isPF   = tipo === 'pessoa_fisica';
-        var isEmp  = tipo === 'empresa';
+        var tipo  = tipoDoador ? tipoDoador.value : '';
+        var isPF  = tipo === 'pessoa_fisica';
+        var isEmp = tipo === 'empresa';
         if (wrapNome)    wrapNome.style.display    = isPF  ? '' : 'none';
         if (wrapContato) wrapContato.style.display = isPF  ? '' : 'none';
         if (wrapEmpresa) wrapEmpresa.style.display = isEmp ? '' : 'none';
@@ -199,7 +196,7 @@
     if (tipoEntrada) { tipoEntrada.addEventListener('change', atualizarEntrada); atualizarEntrada(); }
     if (tipoDoador)  { tipoDoador.addEventListener('change', atualizarDoador);   atualizarDoador(); }
 
-    // ── Formset dinâmico ──────────────────────────────────────────────────────
+    // ── Formset dinâmico ─────────────────────────────────────────────────────
     var emptyTemplate = document.getElementById('empty-item-form');
     var container     = document.getElementById('formset-container');
     var totalForms    = document.getElementById('id_form-TOTAL_FORMS');
@@ -207,19 +204,28 @@
 
     if (!emptyTemplate || !container || !totalForms || !btnAdd) return;
 
+    function sincronizarBotoesRemover() {
+        var cards = container.querySelectorAll('.item-form');
+        cards.forEach(function (div) {
+            var btn = div.querySelector('.btn-remover');
+            if (btn) btn.style.display = cards.length > 1 ? '' : 'none';
+        });
+    }
+
     function reindexar() {
         container.querySelectorAll('.item-form').forEach(function (div, i) {
             div.querySelectorAll('[name]').forEach(function (el) {
-                el.name = el.name.replace(/form-\d+-/, 'form-' + i + '-');
+                el.name = el.name.replace(/form-(?:\d+|__prefix__)-/, 'form-' + i + '-');
             });
             div.querySelectorAll('[id]').forEach(function (el) {
-                el.id = el.id.replace(/(?:form-\d+-|form-__prefix__-)/, 'form-' + i + '-');
+                el.id = el.id.replace(/form-(?:\d+|__prefix__)-/, 'form-' + i + '-');
             });
             div.querySelectorAll('[for]').forEach(function (el) {
-                el.htmlFor = el.htmlFor.replace(/(?:form-\d+-|form-__prefix__-)/, 'form-' + i + '-');
+                el.htmlFor = el.htmlFor.replace(/form-(?:\d+|__prefix__)-/, 'form-' + i + '-');
             });
         });
         totalForms.value = container.querySelectorAll('.item-form').length;
+        sincronizarBotoesRemover();
     }
 
     function bindRemover(div) {
@@ -236,7 +242,6 @@
         var idx     = parseInt(totalForms.value);
         var newItem = emptyTemplate.firstElementChild.cloneNode(true);
 
-        // Substituir __prefix__ pelo índice real
         newItem.querySelectorAll('[name]').forEach(function (el) {
             el.name = el.name.replace(/__prefix__/g, idx);
         });
@@ -250,12 +255,13 @@
         container.appendChild(newItem);
         totalForms.value = idx + 1;
         bindRemover(newItem);
+        sincronizarBotoesRemover();
     });
 
-    // Vincular botões de remoção nos itens existentes (a partir do 2°)
     container.querySelectorAll('.item-form').forEach(function (div) {
         bindRemover(div);
     });
+    sincronizarBotoesRemover();
 })();
 </script>
 {% endblock %}

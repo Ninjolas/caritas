@@ -138,10 +138,6 @@
                 <div class="value">{{ venda.criado_em|date:"d/m/Y H:i" }}</div>
             </div>
             <div>
-                <div class="label">Paróquia</div>
-                <div class="value">{{ venda.paroquia|default:"—" }}</div>
-            </div>
-            <div class="col-span-2">
                 <div class="label">Responsável</div>
                 <div class="value">
                     {% if venda.registrado_por %}
@@ -165,8 +161,8 @@
                     <tr>
                         <td>
                             {{ venda.item.descricao }}
-                            {% if venda.item.categoria %}
-                            <br><span style="font-size:11px;color:#6b7280">{{ venda.item.categoria }}</span>
+                            {% if venda.item.catalogo %}
+                            <br><span style="font-size:11px;color:#6b7280">{{ venda.item.catalogo }}</span>
                             {% endif %}
                         </td>
                         <td style="text-align:center">{{ venda.quantidade }}</td>
