@@ -42,13 +42,18 @@ class ItemMontagem(models.Model):
         help_text='Quantidade total retirada do estoque para todas as cestas'
     )
 
+    def save(self, *args, **kwargs):
+        if self.item_estoque and not self.item_nome:
+            self.item_nome = self.item_estoque.nome
+        super().save(*args, **kwargs)
+
     def __str__(self):
         nome = self.item_nome or (self.item_estoque.nome if self.item_estoque else '—')
         return f"{self.quantidade_total}x {nome}"
 
 
 class EntregaCesta(models.Model):
-    familia = models.ForeignKey(Familia, on_delete=models.PROTECT, related_name='cestas_recebidas')
+    familia = models.ForeignKey(Familia, on_delete=models.CASCADE, related_name='cestas_recebidas')
     paroquia = models.ForeignKey(
         'accounts.Paroquia', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='entregas_cesta'
