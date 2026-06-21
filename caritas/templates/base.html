@@ -142,8 +142,8 @@
             <i class="bi bi-cart"></i> Vendas
         </a>
         {% if user.perfil == 'coordenador_bazar' or user.perfil == 'administrador' %}
-        <a href="{% url 'bazar:categorias_listagem' %}" class="nav-link {% if 'bazar/categorias' in request.path %}active{% endif %}">
-            <i class="bi bi-tags"></i> Categorias
+        <a href="{% url 'bazar:catalogo_listagem' %}" class="nav-link {% if 'bazar/catalogo' in request.path %}active{% endif %}">
+            <i class="bi bi-tags"></i> Catálogo
         </a>
         <a href="{% url 'bazar:empresas_listagem' %}" class="nav-link {% if 'bazar/empresas' in request.path %}active{% endif %}">
             <i class="bi bi-building"></i> Empresas Parceiras

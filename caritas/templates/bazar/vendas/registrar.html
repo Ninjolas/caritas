@@ -17,8 +17,8 @@
 
                 <div class="row g-2 mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">{{ form.categoria_filtro.label }}</label>
-                        {{ form.categoria_filtro }}
+                        <label class="form-label">{{ form.catalogo_filtro.label }}</label>
+                        {{ form.catalogo_filtro }}
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">{{ form.tamanho_filtro.label }}</label>
@@ -27,7 +27,7 @@
                 </div>
 
                 {% for field in form %}
-                {% if field.name not in 'categoria_filtro,tamanho_filtro' %}
+                {% if field.name not in 'catalogo_filtro,tamanho_filtro' %}
                 <div class="mb-3">
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -60,7 +60,7 @@
 <script>
 (function () {
     const itens = {{ itens_json|safe }};
-    const categoriaSelect = document.getElementById('id_categoria_filtro');
+    const categoriaSelect = document.getElementById('id_catalogo_filtro');
     const tamanhoSelect = document.getElementById('id_tamanho_filtro');
     const itemSelect = document.getElementById('id_item');
     const estoqueInfo = document.getElementById('estoque-info');

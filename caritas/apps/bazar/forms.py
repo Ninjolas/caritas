@@ -1,43 +1,17 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import CategoriaBazar, EntradaBazar, ItemEntradaBazar, Venda, ItemEstoqueBazar, EmpresaParceira
+from .models import CatalogoBazar, EntradaBazar, ItemEntradaBazar, Venda, ItemEstoqueBazar, EmpresaParceira
 
 
-def _categoria_choices():
-    """Select com optgroups: categorias raiz e suas subcategorias."""
-    choices = [('', '---------')]
-    raizes = CategoriaBazar.objects.filter(pai=None, ativa=True).prefetch_related('subcategorias')
-    for raiz in raizes:
-        subs = raiz.subcategorias.filter(ativa=True)
-        if subs.exists():
-            grupo = [(sub.pk, sub.nome) for sub in subs]
-            choices.append((raiz.nome, grupo))
-        else:
-            choices.append((raiz.pk, raiz.nome))
-    return choices
-
-
-class CategoriaWidget(forms.Select):
-    def optgroups(self, name, value, attrs=None):
-        return super().optgroups(name, value, attrs)
-
-
-class CategoriaBazarForm(forms.ModelForm):
-    pai = forms.ModelChoiceField(
-        queryset=CategoriaBazar.objects.filter(pai=None, ativa=True),
-        required=False,
-        empty_label='--- Categoria raiz ---',
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        label='Categoria pai (opcional)',
-    )
-
+class CatalogoBazarForm(forms.ModelForm):
     class Meta:
-        model = CategoriaBazar
-        fields = ['nome', 'pai', 'ativa']
-        labels = {'nome': 'Nome', 'ativa': 'Ativa'}
+        model = CatalogoBazar
+        fields = ['nome', 'genero', 'ativo']
+        labels = {'nome': 'Tipo de roupa', 'genero': 'Gênero', 'ativo': 'Ativo'}
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
-            'ativa': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'genero': forms.Select(attrs={'class': 'form-select'}),
+            'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 
@@ -71,17 +45,17 @@ class EntradaBazarForm(forms.ModelForm):
 
 
 class ItemEntradaBazarForm(forms.ModelForm):
-    categoria = forms.ModelChoiceField(
-        queryset=CategoriaBazar.objects.filter(ativa=True),
+    catalogo = forms.ModelChoiceField(
+        queryset=CatalogoBazar.objects.filter(ativo=True),
         required=False,
         empty_label='--- Selecione ---',
         widget=forms.Select(attrs={'class': 'form-select'}),
-        label='Categoria',
+        label='Catálogo',
     )
 
     class Meta:
         model = ItemEntradaBazar
-        fields = ['descricao', 'categoria', 'tamanho', 'estado', 'quantidade', 'preco_sugerido']
+        fields = ['descricao', 'catalogo', 'tamanho', 'estado', 'quantidade', 'preco_sugerido']
         widgets = {
             'descricao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
             'tamanho': forms.Select(attrs={'class': 'form-select'}),
@@ -103,12 +77,12 @@ ItemEntradaBazarFormSet = inlineformset_factory(
 
 
 class VendaForm(forms.ModelForm):
-    categoria_filtro = forms.ModelChoiceField(
-        queryset=CategoriaBazar.objects.filter(ativa=True),
+    catalogo_filtro = forms.ModelChoiceField(
+        queryset=CatalogoBazar.objects.filter(ativo=True),
         required=False,
-        empty_label='--- Todas as categorias ---',
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria_filtro'}),
-        label='Categoria',
+        empty_label='--- Todos os catálogos ---',
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_catalogo_filtro'}),
+        label='Catálogo',
     )
     tamanho_filtro = forms.ChoiceField(
         choices=[('', '--- Todos os tamanhos ---')] + list(ItemEstoqueBazar.TAMANHO_CHOICES),
@@ -117,7 +91,7 @@ class VendaForm(forms.ModelForm):
         label='Tamanho',
     )
     item = forms.ModelChoiceField(
-        queryset=ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('categoria'),
+        queryset=ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('catalogo'),
         empty_label='--- Selecione ---',
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_item'}),
         label='Item',
@@ -125,7 +99,7 @@ class VendaForm(forms.ModelForm):
 
     class Meta:
         model = Venda
-        fields = ['categoria_filtro', 'tamanho_filtro', 'item', 'quantidade', 'preco_unitario', 'data', 'observacao']
+        fields = ['catalogo_filtro', 'tamanho_filtro', 'item', 'quantidade', 'preco_unitario', 'data', 'observacao']
         widgets = {
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'preco_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
@@ -137,7 +111,7 @@ class VendaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         def _label(obj):
-            partes = [str(obj.categoria) if obj.categoria else '—', obj.get_tamanho_display(), obj.get_estado_display()]
+            partes = [str(obj.catalogo) if obj.catalogo else '—', obj.get_tamanho_display(), obj.get_estado_display()]
             if obj.descricao:
                 partes.append(obj.descricao)
             return f"{' — '.join(partes)} ({obj.quantidade} un.)"
@@ -149,7 +123,7 @@ class VendaForm(forms.ModelForm):
         item = cleaned.get('item')
         qtd = cleaned.get('quantidade')
         if item and qtd and qtd > item.quantidade:
-            nome = str(item.categoria) if item.categoria else item.descricao or 'item'
+            nome = str(item.catalogo) if item.catalogo else item.descricao or 'item'
             raise forms.ValidationError(
                 f'Estoque insuficiente para "{nome}". Disponível: {item.quantidade}.'
             )
@@ -157,17 +131,17 @@ class VendaForm(forms.ModelForm):
 
 
 class ItemEstoqueBazarForm(forms.ModelForm):
-    categoria = forms.ModelChoiceField(
-        queryset=CategoriaBazar.objects.filter(ativa=True),
+    catalogo = forms.ModelChoiceField(
+        queryset=CatalogoBazar.objects.filter(ativo=True),
         required=False,
         empty_label='--- Selecione ---',
         widget=forms.Select(attrs={'class': 'form-select'}),
-        label='Categoria',
+        label='Catálogo',
     )
 
     class Meta:
         model = ItemEstoqueBazar
-        fields = ['descricao', 'categoria', 'tamanho', 'estado', 'quantidade', 'preco_sugerido']
+        fields = ['descricao', 'catalogo', 'tamanho', 'estado', 'quantidade', 'preco_sugerido']
         widgets = {
             'descricao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
             'tamanho': forms.Select(attrs={'class': 'form-select'}),

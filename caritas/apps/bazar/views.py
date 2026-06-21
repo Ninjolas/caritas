@@ -19,8 +19,8 @@ from xhtml2pdf import pisa
 import json
 
 from apps.accounts.decorators import bazar_required, coordenador_bazar_required
-from .models import CategoriaBazar, ItemEstoqueBazar, EntradaBazar, ItemEntradaBazar, Venda, EmpresaParceira
-from .forms import (CategoriaBazarForm, EntradaBazarForm, ItemEntradaBazarFormSet, VendaForm,
+from .models import CatalogoBazar, ItemEstoqueBazar, EntradaBazar, ItemEntradaBazar, Venda, EmpresaParceira
+from .forms import (CatalogoBazarForm, EntradaBazarForm, ItemEntradaBazarFormSet, VendaForm,
                     ItemEstoqueBazarForm, EmpresaParceiraForm)
 
 
@@ -51,39 +51,39 @@ def dashboard(request):
     return render(request, 'bazar/dashboard.html', contexto)
 
 
-# ── Categorias ─────────────────────────────────────────────────────────────────
+# ── Catálogo ───────────────────────────────────────────────────────────────────
 
 @login_required
 @coordenador_bazar_required
-def categorias_listagem(request):
-    raizes = CategoriaBazar.objects.filter(pai=None).prefetch_related('subcategorias')
-    return render(request, 'bazar/categorias/listagem.html', {'raizes': raizes})
+def catalogo_listagem(request):
+    catalogo = CatalogoBazar.objects.all()
+    return render(request, 'bazar/catalogo/listagem.html', {'catalogo': catalogo})
 
 
 @login_required
 @coordenador_bazar_required
-def categoria_form(request, pk=None):
-    categoria = get_object_or_404(CategoriaBazar, pk=pk) if pk else None
+def catalogo_form(request, pk=None):
+    item = get_object_or_404(CatalogoBazar, pk=pk) if pk else None
     if request.method == 'POST':
-        form = CategoriaBazarForm(request.POST, instance=categoria)
+        form = CatalogoBazarForm(request.POST, instance=item)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Categoria salva com sucesso!')
-            return redirect('bazar:categorias_listagem')
+            messages.success(request, 'Catálogo salvo com sucesso!')
+            return redirect('bazar:catalogo_listagem')
     else:
-        form = CategoriaBazarForm(instance=categoria)
-    titulo = f'Editar {categoria.nome}' if categoria else 'Nova Categoria'
-    return render(request, 'bazar/categorias/form.html', {'form': form, 'titulo': titulo})
+        form = CatalogoBazarForm(instance=item)
+    titulo = f'Editar {item.nome}' if item else 'Novo Item do Catálogo'
+    return render(request, 'bazar/catalogo/form.html', {'form': form, 'titulo': titulo})
 
 
 @login_required
 @coordenador_bazar_required
-def categoria_remover(request, pk):
-    categoria = get_object_or_404(CategoriaBazar, pk=pk)
+def catalogo_remover(request, pk):
+    item = get_object_or_404(CatalogoBazar, pk=pk)
     if request.method == 'POST':
-        categoria.delete()
-        messages.success(request, 'Categoria removida.')
-    return redirect('bazar:categorias_listagem')
+        item.delete()
+        messages.success(request, 'Item removido do catálogo.')
+    return redirect('bazar:catalogo_listagem')
 
 
 # ── Estoque ────────────────────────────────────────────────────────────────────
@@ -91,7 +91,7 @@ def categoria_remover(request, pk):
 @login_required
 @bazar_required
 def estoque_listagem(request):
-    itens = ItemEstoqueBazar.objects.select_related('categoria', 'categoria__pai').all()
+    itens = ItemEstoqueBazar.objects.select_related('catalogo').all()
     return render(request, 'bazar/estoque/listagem.html', {'itens': itens})
 
 
@@ -141,7 +141,7 @@ def doacoes_registrar(request):
                                 item.save()
                                 ItemEstoqueBazar.objects.create(
                                     descricao=item.descricao,
-                                    categoria=item.categoria,
+                                    catalogo=item.catalogo,
                                     tamanho=item.tamanho,
                                     estado=item.estado,
                                     quantidade=item.quantidade,
@@ -200,9 +200,9 @@ def vendas_registrar(request):
                 messages.error(request, f'Erro ao registrar venda: {str(e)}')
     else:
         form = VendaForm()
-    itens_qs = ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('categoria')
+    itens_qs = ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('catalogo')
     itens_json = json.dumps({
-        str(i.pk): {'cat': i.categoria_id, 'tam': i.tamanho, 'qty': i.quantidade}
+        str(i.pk): {'cat': i.catalogo_id, 'tam': i.tamanho, 'qty': i.quantidade}
         for i in itens_qs
     })
     return render(request, 'bazar/vendas/registrar.html', {'form': form, 'itens_json': itens_json})

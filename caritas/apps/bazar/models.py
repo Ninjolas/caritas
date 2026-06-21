@@ -2,26 +2,28 @@ from django.db import models
 from apps.accounts.models import Usuario
 
 
-class CategoriaBazar(models.Model):
-    nome = models.CharField(max_length=100)
-    pai = models.ForeignKey(
-        'self', on_delete=models.CASCADE,
-        null=True, blank=True, related_name='subcategorias'
-    )
-    ativa = models.BooleanField(default=True)
+GENERO_CHOICES = [
+    ('masculino', 'Masculino'),
+    ('feminino', 'Feminino'),
+    ('infantil', 'Infantil'),
+    ('unissex', 'Unissex'),
+]
+
+
+class CatalogoBazar(models.Model):
+    nome = models.CharField(max_length=200, verbose_name='Tipo de roupa')
+    genero = models.CharField(max_length=20, choices=GENERO_CHOICES, verbose_name='Gênero')
+    ativo = models.BooleanField(default=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        if self.pai:
-            return f"{self.pai.nome} › {self.nome}"
-        return self.nome
-
-    def is_raiz(self):
-        return self.pai is None
+        return f"{self.nome} — {self.get_genero_display()}"
 
     class Meta:
-        ordering = ['pai__nome', 'nome']
-        verbose_name = 'Categoria do Bazar'
-        verbose_name_plural = 'Categorias do Bazar'
+        ordering = ['nome', 'genero']
+        unique_together = [['nome', 'genero']]
+        verbose_name = 'Item do Catálogo'
+        verbose_name_plural = 'Catálogo do Bazar'
 
 
 class EmpresaParceira(models.Model):
@@ -52,9 +54,9 @@ class ItemEstoqueBazar(models.Model):
     ]
 
     descricao = models.CharField(max_length=200, blank=True)
-    categoria = models.ForeignKey(
-        CategoriaBazar, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='itens_estoque'
+    catalogo = models.ForeignKey(
+        CatalogoBazar, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='itens_estoque', verbose_name='Catálogo'
     )
     tamanho = models.CharField(max_length=10, choices=TAMANHO_CHOICES, default='unico')
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='bom')
@@ -64,11 +66,11 @@ class ItemEstoqueBazar(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        cat = str(self.categoria) if self.categoria else '—'
-        return f"{self.descricao} — {self.get_tamanho_display()} ({self.quantidade} un.)"
+        cat = str(self.catalogo) if self.catalogo else '—'
+        return f"{cat} — {self.get_tamanho_display()} ({self.quantidade} un.)"
 
     class Meta:
-        ordering = ['categoria__nome', 'tamanho']
+        ordering = ['catalogo__nome', 'tamanho']
         verbose_name = 'Item do Estoque do Bazar'
         verbose_name_plural = 'Itens do Estoque do Bazar'
 
@@ -107,9 +109,9 @@ class EntradaBazar(models.Model):
 class ItemEntradaBazar(models.Model):
     entrada = models.ForeignKey(EntradaBazar, on_delete=models.CASCADE, related_name='itens')
     descricao = models.CharField(max_length=200, blank=True)
-    categoria = models.ForeignKey(
-        CategoriaBazar, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='itens_entrada'
+    catalogo = models.ForeignKey(
+        CatalogoBazar, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='itens_entrada', verbose_name='Catálogo'
     )
     tamanho = models.CharField(max_length=10, choices=ItemEstoqueBazar.TAMANHO_CHOICES, default='unico')
     estado = models.CharField(max_length=10, choices=ItemEstoqueBazar.ESTADO_CHOICES, default='bom')
@@ -140,7 +142,7 @@ class Venda(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Venda de {self.quantidade}x {self.item.descricao} em {self.data}"
+        return f"Venda de {self.quantidade}x {self.item} em {self.data}"
 
     class Meta:
         ordering = ['-data']

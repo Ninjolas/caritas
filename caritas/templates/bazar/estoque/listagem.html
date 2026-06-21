@@ -24,7 +24,7 @@
             <thead>
                 <tr>
                     <th>Descrição</th>
-                    <th>Categoria</th>
+                    <th>Catálogo</th>
                     <th>Tamanho</th>
                     <th>Estado</th>
                     <th class="text-center">Qtd.</th>
@@ -35,7 +35,7 @@
                 {% for item in itens %}
                 <tr>
                     <td>{{ item.descricao }}</td>
-                    <td>{{ item.categoria }}</td>
+                    <td>{{ item.catalogo }}</td>
                     <td>{{ item.get_tamanho_display }}</td>
                     <td>{{ item.get_estado_display }}</td>
                     <td class="text-center">

@@ -6,11 +6,11 @@ app_name = 'bazar'
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
 
-    # Categorias
-    path('categorias/', views.categorias_listagem, name='categorias_listagem'),
-    path('categorias/nova/', views.categoria_form, name='categoria_nova'),
-    path('categorias/<int:pk>/editar/', views.categoria_form, name='categoria_editar'),
-    path('categorias/<int:pk>/remover/', views.categoria_remover, name='categoria_remover'),
+    # Catálogo
+    path('catalogo/', views.catalogo_listagem, name='catalogo_listagem'),
+    path('catalogo/novo/', views.catalogo_form, name='catalogo_novo'),
+    path('catalogo/<int:pk>/editar/', views.catalogo_form, name='catalogo_editar'),
+    path('catalogo/<int:pk>/remover/', views.catalogo_remover, name='catalogo_remover'),
 
     # Estoque
     path('estoque/', views.estoque_listagem, name='estoque_listagem'),
