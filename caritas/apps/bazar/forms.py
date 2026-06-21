@@ -84,12 +84,6 @@ class VendaForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_catalogo_filtro'}),
         label='Catálogo',
     )
-    tamanho_filtro = forms.ChoiceField(
-        choices=[('', '--- Todos os tamanhos ---')] + list(ItemEstoqueBazar.TAMANHO_CHOICES),
-        required=False,
-        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_tamanho_filtro'}),
-        label='Tamanho',
-    )
     item = forms.ModelChoiceField(
         queryset=ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('catalogo'),
         empty_label='--- Selecione ---',
@@ -99,7 +93,7 @@ class VendaForm(forms.ModelForm):
 
     class Meta:
         model = Venda
-        fields = ['catalogo_filtro', 'tamanho_filtro', 'item', 'quantidade', 'preco_unitario', 'data', 'observacao']
+        fields = ['catalogo_filtro', 'item', 'quantidade', 'preco_unitario', 'data', 'observacao']
         widgets = {
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'preco_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),

@@ -15,19 +15,13 @@
             <fieldset class="form-section">
                 <legend>Dados da Venda</legend>
 
-                <div class="row g-2 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">{{ form.catalogo_filtro.label }}</label>
-                        {{ form.catalogo_filtro }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">{{ form.tamanho_filtro.label }}</label>
-                        {{ form.tamanho_filtro }}
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.catalogo_filtro.label }}</label>
+                    {{ form.catalogo_filtro }}
                 </div>
 
                 {% for field in form %}
-                {% if field.name not in 'catalogo_filtro,tamanho_filtro' %}
+                {% if field.name != 'catalogo_filtro' %}
                 <div class="mb-3">
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -61,32 +55,31 @@
 (function () {
     const itens = {{ itens_json|safe }};
     const categoriaSelect = document.getElementById('id_catalogo_filtro');
-    const tamanhoSelect = document.getElementById('id_tamanho_filtro');
-    const itemSelect = document.getElementById('id_item');
-    const estoqueInfo = document.getElementById('estoque-info');
-    const qtdInput = document.getElementById('id_quantidade');
+    const itemSelect      = document.getElementById('id_item');
+    const estoqueInfo     = document.getElementById('estoque-info');
+    const qtdInput        = document.getElementById('id_quantidade');
+
+    const precoInput      = document.getElementById('id_preco_unitario');
 
     const todasOptions = Array.from(itemSelect.options).map(o => ({
         value: o.value,
-        text: o.text,
-        cat: itens[o.value] ? String(itens[o.value].cat) : null,
-        tam: itens[o.value] ? itens[o.value].tam : null,
-        qty: itens[o.value] ? itens[o.value].qty : null,
+        text:  o.text,
+        cat:   itens[o.value] ? String(itens[o.value].cat) : null,
+        qty:   itens[o.value] ? itens[o.value].qty : null,
+        preco: itens[o.value] ? itens[o.value].preco : null,
     }));
 
     function filtrar() {
-        const catId = categoriaSelect.value ? String(categoriaSelect.value) : null;
-        const tam = tamanhoSelect.value || null;
+        const catId      = categoriaSelect.value ? String(categoriaSelect.value) : null;
         const valorAtual = itemSelect.value;
 
         itemSelect.innerHTML = '';
-        todasOptions.forEach(o => {
+        todasOptions.forEach(function (o) {
             const catOk = !o.value || !catId || o.cat === catId;
-            const tamOk = !o.value || !tam || o.tam === tam;
-            if (catOk && tamOk) {
-                const opt = document.createElement('option');
-                opt.value = o.value;
-                opt.text = o.text;
+            if (catOk) {
+                const opt   = document.createElement('option');
+                opt.value   = o.value;
+                opt.text    = o.text;
                 itemSelect.appendChild(opt);
             }
         });
@@ -102,18 +95,21 @@
     function atualizarEstoque() {
         const data = itens[itemSelect.value];
         if (data) {
-            estoqueInfo.textContent = `Disponível: ${data.qty} unidade(s)`;
-            estoqueInfo.className = data.qty === 0 ? 'form-text text-danger mt-1' : 'form-text text-success mt-1';
-            if (qtdInput) qtdInput.setAttribute('max', data.qty);
+            estoqueInfo.textContent = 'Disponível: ' + data.qty + ' unidade(s)';
+            estoqueInfo.className   = data.qty === 0
+                ? 'form-text text-danger mt-1'
+                : 'form-text text-success mt-1';
+            if (qtdInput)  qtdInput.setAttribute('max', data.qty);
+            if (precoInput && data.preco != null) precoInput.value = data.preco.toFixed(2);
         } else {
             estoqueInfo.textContent = '';
-            if (qtdInput) qtdInput.removeAttribute('max');
+            if (qtdInput)  qtdInput.removeAttribute('max');
+            if (precoInput) precoInput.value = '';
         }
     }
 
     if (categoriaSelect) categoriaSelect.addEventListener('change', filtrar);
-    if (tamanhoSelect) tamanhoSelect.addEventListener('change', filtrar);
-    if (itemSelect) itemSelect.addEventListener('change', atualizarEstoque);
+    if (itemSelect)       itemSelect.addEventListener('change', atualizarEstoque);
     if (qtdInput && itemSelect) {
         qtdInput.addEventListener('input', function () {
             const max = parseInt(qtdInput.getAttribute('max'));

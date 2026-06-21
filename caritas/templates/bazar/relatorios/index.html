@@ -7,9 +7,9 @@
 {% endblock %}
 
 {% block content %}
-<p class="text-muted mb-4">Resumo financeiro de <strong>{{ mes_atual }}</strong></p>
+<p class="text-muted mb-4">Resumo de <strong>{{ mes_atual }}</strong></p>
 
-<!-- Cards resumo financeiro -->
+<!-- Cards resumo -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
         <div class="metric-card d-flex align-items-center gap-3">
@@ -49,6 +49,14 @@
     </div>
 </div>
 
+<!-- Gráfico histórico -->
+<div class="card mb-4">
+    <div class="card-header">Vendas e Doações Financeiras — Últimos 6 meses</div>
+    <div class="card-body" style="padding:1.25rem">
+        <canvas id="grafico-bazar" height="100"></canvas>
+    </div>
+</div>
+
 <div class="row g-3">
     <!-- Top 5 itens mais vendidos -->
     <div class="col-lg-5">
@@ -77,7 +85,7 @@
         </div>
     </div>
 
-    <!-- Tabela de vendas do mês -->
+    <!-- Vendas do mês -->
     <div class="col-lg-7">
         <div class="card h-100">
             <div class="card-header">Vendas do Mês — {{ mes_atual }}</div>
@@ -110,4 +118,61 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var labels   = {{ hist_labels|safe }};
+    var vendas   = {{ hist_vendas|safe }};
+    var doacoes  = {{ hist_doacoes|safe }};
+
+    new Chart(document.getElementById('grafico-bazar'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Receita de Vendas',
+                    data: vendas,
+                    backgroundColor: 'rgba(22,163,74,0.7)',
+                    borderColor: '#16a34a',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Doações Financeiras',
+                    data: doacoes,
+                    backgroundColor: 'rgba(109,40,217,0.65)',
+                    borderColor: '#6d28d9',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function (ctx) {
+                            return ctx.dataset.label + ': R$ ' + ctx.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (v) { return 'R$ ' + v.toFixed(0); }
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
 {% endblock %}

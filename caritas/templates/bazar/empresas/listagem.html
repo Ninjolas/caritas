@@ -14,11 +14,17 @@
     </a>
 </div>
 
+{% if empresas %}
+<div class="mb-3">
+    <input type="text" id="busca" class="form-control" placeholder="Buscar por nome, CNPJ, contato..." style="max-width:380px">
+</div>
+{% endif %}
+
 <div class="card">
     <div class="card-header">Lista de Empresas</div>
     <div class="card-body p-0">
         {% if empresas %}
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0" id="tabela-lista">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -64,4 +70,19 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var busca = document.getElementById('busca');
+var tabela = document.getElementById('tabela-lista');
+if (busca && tabela) {
+    busca.addEventListener('input', function () {
+        var q = this.value.toLowerCase();
+        tabela.querySelectorAll('tbody tr').forEach(function (tr) {
+            tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+}
+</script>
 {% endblock %}

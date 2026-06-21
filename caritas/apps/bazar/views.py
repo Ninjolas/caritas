@@ -202,7 +202,7 @@ def vendas_registrar(request):
         form = VendaForm()
     itens_qs = ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('catalogo')
     itens_json = json.dumps({
-        str(i.pk): {'cat': i.catalogo_id, 'tam': i.tamanho, 'qty': i.quantidade}
+        str(i.pk): {'cat': i.catalogo_id, 'qty': i.quantidade, 'preco': float(i.preco_sugerido)}
         for i in itens_qs
     })
     return render(request, 'bazar/vendas/registrar.html', {'form': form, 'itens_json': itens_json})
@@ -273,6 +273,21 @@ def relatorio(request):
     vendas_mes = Venda.objects.filter(data__month=mes, data__year=ano)
     entradas_mes = EntradaBazar.objects.filter(data__month=mes, data__year=ano)
 
+    # Histórico dos últimos 6 meses
+    abs_month = ano * 12 + (mes - 1)
+    hist_labels, hist_vendas, hist_doacoes = [], [], []
+    for i in range(5, -1, -1):
+        t = abs_month - i
+        a_h, m_h = t // 12, (t % 12) + 1
+        ven_h = Venda.objects.filter(data__month=m_h, data__year=a_h).aggregate(
+            total=Sum('valor_total'))['total'] or 0
+        ent_h = EntradaBazar.objects.filter(
+            data__month=m_h, data__year=a_h, tipo_entrada='doacao_financeira'
+        ).aggregate(total=Sum('valor'))['total'] or 0
+        hist_labels.append(f"{MESES_PT[m_h][:3]}/{str(a_h)[2:]}")
+        hist_vendas.append(float(ven_h))
+        hist_doacoes.append(float(ent_h))
+
     contexto = {
         'receita_vendas': vendas_mes.aggregate(total=Sum('valor_total'))['total'] or 0,
         'qtd_vendas': vendas_mes.count(),
@@ -283,5 +298,8 @@ def relatorio(request):
         ).order_by('-total_vendido')[:5],
         'vendas_mes': vendas_mes.select_related('item'),
         'mes_atual': f"{MESES_PT[hoje.month]} de {hoje.year}",
+        'hist_labels': json.dumps(hist_labels),
+        'hist_vendas': json.dumps(hist_vendas),
+        'hist_doacoes': json.dumps(hist_doacoes),
     }
     return render(request, 'bazar/relatorios/index.html', contexto)
