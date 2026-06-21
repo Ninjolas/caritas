@@ -14,18 +14,73 @@
             {% csrf_token %}
             <fieldset class="form-section">
                 <legend>Dados da Entrada</legend>
-                {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                    {% endif %}
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de entrada *</label>
+                        {{ form.tipo_entrada }}
+                        {% if form.tipo_entrada.errors %}
+                            {% for e in form.tipo_entrada.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Data *</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}
+                            {% for e in form.data.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de doador *</label>
+                        {{ form.tipo_doador }}
+                        {% if form.tipo_doador.errors %}
+                            {% for e in form.tipo_doador.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6" id="wrap-doador-nome">
+                        <label class="form-label">Nome do doador</label>
+                        {{ form.doador_nome }}
+                        {% if form.doador_nome.errors %}
+                            {% for e in form.doador_nome.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6" id="wrap-doador-contato">
+                        <label class="form-label">Contato</label>
+                        {{ form.doador_contato }}
+                        {% if form.doador_contato.errors %}
+                            {% for e in form.doador_contato.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6" id="wrap-empresa" style="display:none">
+                        <label class="form-label">Empresa Parceira *</label>
+                        {{ form.empresa }}
+                        {% if form.empresa.errors %}
+                            {% for e in form.empresa.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6" id="wrap-valor" style="display:none">
+                        <label class="form-label">Valor (R$)</label>
+                        {{ form.valor }}
+                        {% if form.valor.errors %}
+                            {% for e in form.valor.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Observação</label>
+                        {{ form.observacao }}
+                    </div>
+
                 </div>
-                {% endfor %}
             </fieldset>
 
-            <fieldset class="form-section" id="secao-itens">
+            <fieldset class="form-section" id="secao-itens" style="display:none">
                 <legend>Itens Doados</legend>
                 {{ formset.management_form }}
                 <div id="formset-container">
@@ -33,7 +88,7 @@
                     <div class="item-form border rounded p-3 mb-3 position-relative">
                         <div class="row g-2">
                             {% for field in form_item %}
-                            {% if field.name != 'DELETE' %}
+                            {% if field.name != 'DELETE' and field.name != 'id' %}
                             <div class="col-md-4 mb-2">
                                 <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 {{ field }}
@@ -59,6 +114,12 @@
                 </button>
             </fieldset>
 
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 mb-3">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Salvar</button>
                 <a href="{% url 'bazar:doacoes_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
@@ -71,39 +132,51 @@
 {% block extra_js %}
 <script>
 (function () {
-    const tipoEntrada = document.getElementById('id_tipo_entrada');
-    const secaoItens = document.getElementById('secao-itens');
-    const valorField = document.querySelector('[name="valor"]');
+    const tipoEntrada  = document.getElementById('id_tipo_entrada');
+    const tipoDoador   = document.getElementById('id_tipo_doador');
+    const secaoItens   = document.getElementById('secao-itens');
+    const wrapNome     = document.getElementById('wrap-doador-nome');
+    const wrapContato  = document.getElementById('wrap-doador-contato');
+    const wrapEmpresa  = document.getElementById('wrap-empresa');
+    const wrapValor    = document.getElementById('wrap-valor');
 
-    function atualizarSecoes() {
+    function atualizarEntrada() {
         const tipo = tipoEntrada ? tipoEntrada.value : '';
         if (secaoItens) secaoItens.style.display = tipo === 'doacao_item' ? '' : 'none';
+        if (wrapValor)  wrapValor.style.display  = tipo === 'doacao_financeira' ? '' : 'none';
     }
 
-    if (tipoEntrada) {
-        tipoEntrada.addEventListener('change', atualizarSecoes);
-        atualizarSecoes();
+    function atualizarDoador() {
+        const tipo = tipoDoador ? tipoDoador.value : '';
+        const isPF  = tipo === 'pessoa_fisica';
+        const isEmp = tipo === 'empresa';
+        if (wrapNome)    wrapNome.style.display    = isPF  ? '' : 'none';
+        if (wrapContato) wrapContato.style.display = isPF  ? '' : 'none';
+        if (wrapEmpresa) wrapEmpresa.style.display = isEmp ? '' : 'none';
     }
 
-    // Clonar formulário de item
-    const btnAdd = document.getElementById('btn-add-item');
-    const container = document.getElementById('formset-container');
+    if (tipoEntrada) { tipoEntrada.addEventListener('change', atualizarEntrada); atualizarEntrada(); }
+    if (tipoDoador)  { tipoDoador.addEventListener('change', atualizarDoador);   atualizarDoador(); }
+
+    // ── Formset dinâmico ──────────────────────────────────────────────────────
+    const btnAdd     = document.getElementById('btn-add-item');
+    const container  = document.getElementById('formset-container');
     const totalForms = document.getElementById('id_form-TOTAL_FORMS');
 
     if (btnAdd && container && totalForms) {
         btnAdd.addEventListener('click', function () {
-            const forms = container.querySelectorAll('.item-form');
+            const forms   = container.querySelectorAll('.item-form');
             const lastForm = forms[forms.length - 1];
-            const newForm = lastForm.cloneNode(true);
-            const idx = parseInt(totalForms.value);
+            const newForm  = lastForm.cloneNode(true);
+            const idx      = parseInt(totalForms.value);
 
             newForm.innerHTML = newForm.innerHTML.replace(/form-(\d+)-/g, `form-${idx}-`);
             newForm.querySelectorAll('input, select, textarea').forEach(el => {
                 if (el.type !== 'hidden') el.value = '';
             });
 
-            const btnRemover = newForm.querySelector('.btn-remover');
-            if (!btnRemover) {
+            const existingBtn = newForm.querySelector('.btn-remover');
+            if (!existingBtn) {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover';
@@ -117,11 +190,26 @@
         });
     }
 
+    function reindexar() {
+        container.querySelectorAll('.item-form').forEach(function (div, i) {
+            div.querySelectorAll('[name]').forEach(function (el) {
+                el.name = el.name.replace(/form-\d+-/, 'form-' + i + '-');
+            });
+            div.querySelectorAll('[id]').forEach(function (el) {
+                el.id = el.id.replace(/form-\d+-/, 'form-' + i + '-');
+            });
+            div.querySelectorAll('[for]').forEach(function (el) {
+                el.htmlFor = el.htmlFor.replace(/form-\d+-/, 'form-' + i + '-');
+            });
+        });
+        totalForms.value = container.querySelectorAll('.item-form').length;
+    }
+
     function bindRemover(btn) {
         if (btn) {
             btn.addEventListener('click', function () {
                 btn.closest('.item-form').remove();
-                totalForms.value = container.querySelectorAll('.item-form').length;
+                reindexar();
             });
         }
     }
