@@ -83,7 +83,7 @@ class ItemEntradaBazarForm(forms.ModelForm):
         model = ItemEntradaBazar
         fields = ['descricao', 'categoria', 'tamanho', 'estado', 'quantidade', 'preco_sugerido']
         widgets = {
-            'descricao': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
             'tamanho': forms.Select(attrs={'class': 'form-select'}),
             'estado': forms.Select(attrs={'class': 'form-select'}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
@@ -99,16 +99,23 @@ ItemEntradaBazarFormSet = inlineformset_factory(
 
 
 class VendaForm(forms.ModelForm):
+    categoria_filtro = forms.ModelChoiceField(
+        queryset=CategoriaBazar.objects.filter(ativa=True),
+        required=False,
+        empty_label='--- Todas as categorias ---',
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria_filtro'}),
+        label='Filtrar por categoria',
+    )
     item = forms.ModelChoiceField(
         queryset=ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('categoria'),
         empty_label='--- Selecione ---',
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_item'}),
         label='Item',
     )
 
     class Meta:
         model = Venda
-        fields = ['item', 'quantidade', 'preco_unitario', 'data', 'observacao']
+        fields = ['categoria_filtro', 'item', 'quantidade', 'preco_unitario', 'data', 'observacao']
         widgets = {
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'preco_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
@@ -140,7 +147,7 @@ class ItemEstoqueBazarForm(forms.ModelForm):
         model = ItemEstoqueBazar
         fields = ['descricao', 'categoria', 'tamanho', 'estado', 'quantidade', 'preco_sugerido']
         widgets = {
-            'descricao': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
             'tamanho': forms.Select(attrs={'class': 'form-select'}),
             'estado': forms.Select(attrs={'class': 'form-select'}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),

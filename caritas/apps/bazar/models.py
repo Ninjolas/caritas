@@ -51,7 +51,7 @@ class ItemEstoqueBazar(models.Model):
         ('novo', 'Novo'), ('bom', 'Bom estado'), ('regular', 'Regular'),
     ]
 
-    descricao = models.CharField(max_length=200)
+    descricao = models.CharField(max_length=200, blank=True)
     categoria = models.ForeignKey(
         CategoriaBazar, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='itens_estoque'
@@ -106,7 +106,7 @@ class EntradaBazar(models.Model):
 
 class ItemEntradaBazar(models.Model):
     entrada = models.ForeignKey(EntradaBazar, on_delete=models.CASCADE, related_name='itens')
-    descricao = models.CharField(max_length=200)
+    descricao = models.CharField(max_length=200, blank=True)
     categoria = models.ForeignKey(
         CategoriaBazar, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='itens_entrada'

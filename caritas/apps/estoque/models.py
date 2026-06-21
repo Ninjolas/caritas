@@ -57,6 +57,20 @@ class ItemEstoque(models.Model):
         if self.produto:
             self.nome = self.produto.nome
             self.categoria = self.produto.categoria
+
+        # Merge com item existente de mesmo produto, paróquia e validade
+        if not self.pk and self.produto:
+            existente = ItemEstoque.objects.filter(
+                produto=self.produto,
+                paroquia=self.paroquia,
+                validade=self.validade,
+            ).first()
+            if existente:
+                existente.quantidade += self.quantidade
+                existente.save()
+                self.pk = existente.pk
+                return
+
         super().save(*args, **kwargs)
         if self.quantidade <= 0:
             try:

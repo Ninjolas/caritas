@@ -14,7 +14,16 @@
             {% csrf_token %}
             <fieldset class="form-section">
                 <legend>Dados da Venda</legend>
+
+                {# Campo de filtro por categoria — não é campo do model, renderizado manualmente #}
+                <div class="mb-3">
+                    <label class="form-label" for="id_categoria_filtro">{{ form.categoria_filtro.label }}</label>
+                    {{ form.categoria_filtro }}
+                </div>
+
+                {# Demais campos do form, exceto categoria_filtro que já renderizamos #}
                 {% for field in form %}
+                {% if field.name != 'categoria_filtro' %}
                 <div class="mb-3">
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -25,7 +34,9 @@
                         {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
                     {% endif %}
                 </div>
+                {% endif %}
                 {% endfor %}
+
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger py-2">
                     {% for error in form.non_field_errors %}{{ error }}{% endfor %}
@@ -44,51 +55,67 @@
 {% block extra_js %}
 <script>
 (function () {
+    const itens = {{ itens_json|safe }};
+    const categoriaSelect = document.getElementById('id_categoria_filtro');
     const itemSelect = document.getElementById('id_item');
     const estoqueInfo = document.getElementById('estoque-info');
     const qtdInput = document.getElementById('id_quantidade');
     const precoInput = document.getElementById('id_preco_unitario');
 
-    // Build maps: id → { qty, price } from option text
-    // Option text: "Descrição — TAM (N un.)" + data-price may not exist,
-    // so we parse qty from "(N un.)" and set max accordingly.
-    const itemData = {};
-    Array.from(itemSelect.options).forEach(opt => {
-        const qtyMatch = opt.text.match(/\((\d+) un\.\)/);
-        if (qtyMatch) {
-            itemData[opt.value] = { qty: parseInt(qtyMatch[1], 10) };
-        }
-    });
+    // Salva todas as options originais
+    const todasOptions = Array.from(itemSelect.options).map(o => ({
+        value: o.value,
+        text: o.text,
+        categoriaId: itens[o.value] ? String(itens[o.value]) : null,
+    }));
 
-    function atualizar() {
-        const data = itemData[itemSelect.value];
-        if (!data) {
+    function filtrarItens() {
+        const catId = categoriaSelect.value ? String(categoriaSelect.value) : null;
+        const valorAtual = itemSelect.value;
+
+        itemSelect.innerHTML = '';
+        todasOptions.forEach(o => {
+            if (!o.value || !catId || o.categoriaId === catId) {
+                const opt = document.createElement('option');
+                opt.value = o.value;
+                opt.text = o.text;
+                itemSelect.appendChild(opt);
+            }
+        });
+
+        // Mantém seleção se ainda disponível
+        if (valorAtual && Array.from(itemSelect.options).some(o => o.value === valorAtual)) {
+            itemSelect.value = valorAtual;
+        } else {
+            itemSelect.value = '';
+        }
+        atualizarEstoque();
+    }
+
+    function atualizarEstoque() {
+        const text = itemSelect.options[itemSelect.selectedIndex]?.text || '';
+        const qtyMatch = text.match(/\((\d+) un\.\)/);
+        if (qtyMatch) {
+            const qty = parseInt(qtyMatch[1], 10);
+            estoqueInfo.textContent = `Disponível em estoque: ${qty} unidade(s)`;
+            estoqueInfo.className = qty === 0 ? 'form-text text-danger mt-1' : 'form-text text-success mt-1';
+            if (qtdInput) qtdInput.setAttribute('max', qty);
+        } else {
             estoqueInfo.textContent = '';
             if (qtdInput) qtdInput.removeAttribute('max');
-            return;
-        }
-        const { qty } = data;
-        estoqueInfo.textContent = `Disponível em estoque: ${qty} unidade(s)`;
-        estoqueInfo.className = qty === 0
-            ? 'form-text text-danger mt-1'
-            : 'form-text text-success mt-1';
-        if (qtdInput) {
-            qtdInput.setAttribute('max', qty);
-            if (parseInt(qtdInput.value) > qty) qtdInput.value = qty;
         }
     }
 
-    if (itemSelect) {
-        itemSelect.addEventListener('change', atualizar);
-        atualizar();
-    }
-
+    if (categoriaSelect) categoriaSelect.addEventListener('change', filtrarItens);
+    if (itemSelect) itemSelect.addEventListener('change', atualizarEstoque);
     if (qtdInput && itemSelect) {
         qtdInput.addEventListener('input', function () {
-            const data = itemData[itemSelect.value];
-            if (data && parseInt(this.value) > data.qty) this.value = data.qty;
+            const max = parseInt(qtdInput.getAttribute('max'));
+            if (max && parseInt(this.value) > max) this.value = max;
         });
     }
+
+    filtrarItens();
 })();
 </script>
 {% endblock %}

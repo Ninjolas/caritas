@@ -77,7 +77,7 @@ def registrar(request):
                     messages.error(request, str(e))
             else:
                 atendimento = form.save(commit=False)
-                atendimento.paroquia = paroquia or 'Paróquia Padrão'
+                atendimento.paroquia = paroquia
                 atendimento.registrado_por = request.user
                 atendimento.save()
                 messages.success(request, 'Atendimento registrado com sucesso!')

@@ -10,6 +10,8 @@ from django.template.loader import get_template
 from django.utils import timezone
 from xhtml2pdf import pisa
 
+import json
+
 from apps.accounts.decorators import bazar_required, coordenador_bazar_required
 from .models import CategoriaBazar, ItemEstoqueBazar, EntradaBazar, ItemEntradaBazar, Venda, EmpresaParceira
 from .forms import (CategoriaBazarForm, EntradaBazarForm, ItemEntradaBazarFormSet, VendaForm,
@@ -192,7 +194,11 @@ def vendas_registrar(request):
                 messages.error(request, f'Erro ao registrar venda: {str(e)}')
     else:
         form = VendaForm()
-    return render(request, 'bazar/vendas/registrar.html', {'form': form})
+    itens_json = json.dumps({
+        str(i.pk): i.categoria_id
+        for i in ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('categoria')
+    })
+    return render(request, 'bazar/vendas/registrar.html', {'form': form, 'itens_json': itens_json})
 
 
 @login_required

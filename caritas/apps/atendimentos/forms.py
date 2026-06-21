@@ -42,7 +42,16 @@ class ItemAtendimentoForm(forms.Form):
         qs = ItemEstoque.objects.filter(paroquia=paroquia, quantidade__gt=0) if paroquia else ItemEstoque.objects.none()
         if categoria:
             qs = qs.filter(categoria=categoria)
-        self.fields['item_estoque'].queryset = qs.order_by('nome')
+        self.fields['item_estoque'].queryset = qs.order_by('nome', 'validade')
+
+        def _label(obj):
+            label = obj.nome
+            if obj.validade:
+                label += f' — vence {obj.validade.strftime("%d/%m/%Y")}'
+            label += f' ({obj.quantidade} {obj.unidade})'
+            return label
+
+        self.fields['item_estoque'].label_from_instance = _label
 
 
 class _BaseItemAtendimentoFormSet(BaseFormSet):
