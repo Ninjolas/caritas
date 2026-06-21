@@ -6,16 +6,24 @@ from .models import ItemEstoque, ProdutoCatalogo
 class ProdutoCatalogoForm(forms.ModelForm):
     class Meta:
         model = ProdutoCatalogo
-        fields = ['nome', 'categoria', 'unidade_padrao', 'ativo']
+        fields = ['nome', 'categoria', 'genero', 'tamanho', 'tipo_calcado', 'tamanho_calcado', 'unidade_padrao', 'ativo']
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Arroz, Feijão, Camisa...'}),
-            'categoria': forms.Select(attrs={'class': 'form-select'}),
-            'unidade_padrao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: kg, unidade, caixa'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Arroz, Camiseta, Tênis...'}),
+            'categoria': forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria'}),
+            'genero': forms.Select(attrs={'class': 'form-select'}),
+            'tamanho': forms.Select(attrs={'class': 'form-select'}),
+            'tipo_calcado': forms.Select(attrs={'class': 'form-select'}),
+            'tamanho_calcado': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 38, 39, 40'}),
+            'unidade_padrao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: kg, peça, caixa'}),
             'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
-            'nome': 'Nome do produto',
+            'nome': 'Nome',
             'categoria': 'Categoria',
+            'genero': 'Gênero',
+            'tamanho': 'Tamanho',
+            'tipo_calcado': 'Tipo (subcategoria)',
+            'tamanho_calcado': 'Número',
             'unidade_padrao': 'Unidade padrão',
             'ativo': 'Ativo no catálogo',
         }

@@ -14,22 +14,61 @@
         <fieldset class="form-section">
             <legend>Dados do produto</legend>
 
-            {% for field in form %}
-            <div class="mb-3 {% if field.field.widget.input_type == 'checkbox' %}form-check{% endif %}">
-                {% if field.field.widget.input_type == 'checkbox' %}
-                    {{ field }}
-                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {% else %}
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                {% endif %}
-                {% for e in field.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
+                {{ form.nome }}
+                {% for e in form.nome.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
             </div>
-            {% endfor %}
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.categoria.id_for_label }}">{{ form.categoria.label }}</label>
+                {{ form.categoria }}
+                {% for e in form.categoria.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+            </div>
+
+            {# Campos de roupa #}
+            <div id="campos-roupa" style="display:none">
+                <div class="mb-3">
+                    <label class="form-label">{{ form.genero.label }}</label>
+                    {{ form.genero }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.tamanho.label }}</label>
+                    {{ form.tamanho }}
+                </div>
+            </div>
+
+            {# Campos de calçado #}
+            <div id="campos-calcado" style="display:none">
+                <div class="mb-3">
+                    <label class="form-label">{{ form.genero.label }}</label>
+                    {{ form.genero }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.tipo_calcado.label }}</label>
+                    {{ form.tipo_calcado }}
+                    <div class="form-text" style="font-size:11px">Subcategoria do calçado</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.tamanho_calcado.label }}</label>
+                    {{ form.tamanho_calcado }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.unidade_padrao.id_for_label }}">{{ form.unidade_padrao.label }}</label>
+                {{ form.unidade_padrao }}
+                {% for e in form.unidade_padrao.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3 form-check">
+                {{ form.ativo }}
+                <label class="form-check-label" for="{{ form.ativo.id_for_label }}">{{ form.ativo.label }}</label>
+            </div>
 
             <div class="alert alert-light" style="font-size:13px">
                 <i class="bi bi-info-circle me-1"></i>
-                O nome será normalizado automaticamente (ex: "arroz" → "Arroz").
+                O nome será normalizado automaticamente (ex: "camiseta" → "Camiseta").
             </div>
         </fieldset>
         <div class="d-flex gap-2">
@@ -40,4 +79,23 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const categoriaSelect = document.getElementById('id_categoria');
+    const camposRoupa = document.getElementById('campos-roupa');
+    const camposCalcado = document.getElementById('campos-calcado');
+
+    function atualizar() {
+        const cat = categoriaSelect.value;
+        camposRoupa.style.display = cat === 'roupa' ? '' : 'none';
+        camposCalcado.style.display = cat === 'calcado' ? '' : 'none';
+    }
+
+    categoriaSelect.addEventListener('change', atualizar);
+    atualizar();
+})();
+</script>
 {% endblock %}
