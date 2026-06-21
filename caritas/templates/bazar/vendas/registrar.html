@@ -15,15 +15,19 @@
             <fieldset class="form-section">
                 <legend>Dados da Venda</legend>
 
-                {# Campo de filtro por categoria — não é campo do model, renderizado manualmente #}
-                <div class="mb-3">
-                    <label class="form-label" for="id_categoria_filtro">{{ form.categoria_filtro.label }}</label>
-                    {{ form.categoria_filtro }}
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.categoria_filtro.label }}</label>
+                        {{ form.categoria_filtro }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">{{ form.tamanho_filtro.label }}</label>
+                        {{ form.tamanho_filtro }}
+                    </div>
                 </div>
 
-                {# Demais campos do form, exceto categoria_filtro que já renderizamos #}
                 {% for field in form %}
-                {% if field.name != 'categoria_filtro' %}
+                {% if field.name not in 'categoria_filtro,tamanho_filtro' %}
                 <div class="mb-3">
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -57,25 +61,29 @@
 (function () {
     const itens = {{ itens_json|safe }};
     const categoriaSelect = document.getElementById('id_categoria_filtro');
+    const tamanhoSelect = document.getElementById('id_tamanho_filtro');
     const itemSelect = document.getElementById('id_item');
     const estoqueInfo = document.getElementById('estoque-info');
     const qtdInput = document.getElementById('id_quantidade');
-    const precoInput = document.getElementById('id_preco_unitario');
 
-    // Salva todas as options originais
     const todasOptions = Array.from(itemSelect.options).map(o => ({
         value: o.value,
         text: o.text,
-        categoriaId: itens[o.value] ? String(itens[o.value]) : null,
+        cat: itens[o.value] ? String(itens[o.value].cat) : null,
+        tam: itens[o.value] ? itens[o.value].tam : null,
+        qty: itens[o.value] ? itens[o.value].qty : null,
     }));
 
-    function filtrarItens() {
+    function filtrar() {
         const catId = categoriaSelect.value ? String(categoriaSelect.value) : null;
+        const tam = tamanhoSelect.value || null;
         const valorAtual = itemSelect.value;
 
         itemSelect.innerHTML = '';
         todasOptions.forEach(o => {
-            if (!o.value || !catId || o.categoriaId === catId) {
+            const catOk = !o.value || !catId || o.cat === catId;
+            const tamOk = !o.value || !tam || o.tam === tam;
+            if (catOk && tamOk) {
                 const opt = document.createElement('option');
                 opt.value = o.value;
                 opt.text = o.text;
@@ -83,7 +91,6 @@
             }
         });
 
-        // Mantém seleção se ainda disponível
         if (valorAtual && Array.from(itemSelect.options).some(o => o.value === valorAtual)) {
             itemSelect.value = valorAtual;
         } else {
@@ -93,20 +100,19 @@
     }
 
     function atualizarEstoque() {
-        const text = itemSelect.options[itemSelect.selectedIndex]?.text || '';
-        const qtyMatch = text.match(/\((\d+) un\.\)/);
-        if (qtyMatch) {
-            const qty = parseInt(qtyMatch[1], 10);
-            estoqueInfo.textContent = `Disponível em estoque: ${qty} unidade(s)`;
-            estoqueInfo.className = qty === 0 ? 'form-text text-danger mt-1' : 'form-text text-success mt-1';
-            if (qtdInput) qtdInput.setAttribute('max', qty);
+        const data = itens[itemSelect.value];
+        if (data) {
+            estoqueInfo.textContent = `Disponível: ${data.qty} unidade(s)`;
+            estoqueInfo.className = data.qty === 0 ? 'form-text text-danger mt-1' : 'form-text text-success mt-1';
+            if (qtdInput) qtdInput.setAttribute('max', data.qty);
         } else {
             estoqueInfo.textContent = '';
             if (qtdInput) qtdInput.removeAttribute('max');
         }
     }
 
-    if (categoriaSelect) categoriaSelect.addEventListener('change', filtrarItens);
+    if (categoriaSelect) categoriaSelect.addEventListener('change', filtrar);
+    if (tamanhoSelect) tamanhoSelect.addEventListener('change', filtrar);
     if (itemSelect) itemSelect.addEventListener('change', atualizarEstoque);
     if (qtdInput && itemSelect) {
         qtdInput.addEventListener('input', function () {
@@ -115,7 +121,7 @@
         });
     }
 
-    filtrarItens();
+    filtrar();
 })();
 </script>
 {% endblock %}

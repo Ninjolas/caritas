@@ -1,11 +1,35 @@
+import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 
 from apps.accounts.decorators import modulo_paroquia_required
+from apps.estoque.models import ItemEstoque
 from .models import Atendimento, TIPOS_COM_ITENS
 from .forms import AtendimentoForm, ItemAtendimentoFormSet
+
+TIPO_CATEGORIA_MAP = {
+    'doacao_roupas': 'roupa',
+    'doacao_cesta_basica': 'alimento',
+}
+
+
+def _build_itens_json(paroquia):
+    """JSON com opções de itens agrupadas por tipo de atendimento para filtro JS."""
+    todos = ItemEstoque.objects.filter(paroquia=paroquia, quantidade__gt=0).order_by('nome', 'validade')
+
+    def label(obj):
+        l = obj.nome
+        if obj.validade:
+            l += f' — vence {obj.validade.strftime("%d/%m/%Y")}'
+        l += f' ({obj.quantidade} {obj.unidade})'
+        return l
+
+    result = {}
+    for tipo, cat in TIPO_CATEGORIA_MAP.items():
+        result[tipo] = [{'v': str(i.pk), 't': label(i)} for i in todos.filter(categoria=cat)]
+    return json.dumps(result)
 
 
 @login_required
@@ -21,10 +45,12 @@ def listagem(request):
 @modulo_paroquia_required
 def registrar(request):
     paroquia = request.user.paroquia
+    tipo_post = request.POST.get('tipo') if request.method == 'POST' else None
+    categoria = TIPO_CATEGORIA_MAP.get(tipo_post)
 
     if request.method == 'POST':
         form = AtendimentoForm(request.POST, paroquia=paroquia)
-        formset = ItemAtendimentoFormSet(request.POST, prefix='itens', paroquia=paroquia)
+        formset = ItemAtendimentoFormSet(request.POST, prefix='itens', paroquia=paroquia, categoria=categoria)
 
         if form.is_valid():
             tipo = form.cleaned_data['tipo']
@@ -90,4 +116,6 @@ def registrar(request):
         'form': form,
         'formset': formset,
         'tipos_com_itens': TIPOS_COM_ITENS,
+        'itens_json': _build_itens_json(paroquia),
+        'tipo_categoria_json': json.dumps(TIPO_CATEGORIA_MAP),
     })

@@ -194,9 +194,10 @@ def vendas_registrar(request):
                 messages.error(request, f'Erro ao registrar venda: {str(e)}')
     else:
         form = VendaForm()
+    itens_qs = ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('categoria')
     itens_json = json.dumps({
-        str(i.pk): i.categoria_id
-        for i in ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('categoria')
+        str(i.pk): {'cat': i.categoria_id, 'tam': i.tamanho, 'qty': i.quantidade}
+        for i in itens_qs
     })
     return render(request, 'bazar/vendas/registrar.html', {'form': form, 'itens_json': itens_json})
 

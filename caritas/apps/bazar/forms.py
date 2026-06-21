@@ -90,6 +90,10 @@ class ItemEntradaBazarForm(forms.ModelForm):
             'preco_sugerido': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['descricao'].required = False
+
 
 ItemEntradaBazarFormSet = inlineformset_factory(
     EntradaBazar, ItemEntradaBazar,
@@ -104,7 +108,13 @@ class VendaForm(forms.ModelForm):
         required=False,
         empty_label='--- Todas as categorias ---',
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria_filtro'}),
-        label='Filtrar por categoria',
+        label='Categoria',
+    )
+    tamanho_filtro = forms.ChoiceField(
+        choices=[('', '--- Todos os tamanhos ---')] + list(ItemEstoqueBazar.TAMANHO_CHOICES),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_tamanho_filtro'}),
+        label='Tamanho',
     )
     item = forms.ModelChoiceField(
         queryset=ItemEstoqueBazar.objects.filter(quantidade__gt=0).select_related('categoria'),
@@ -115,7 +125,7 @@ class VendaForm(forms.ModelForm):
 
     class Meta:
         model = Venda
-        fields = ['categoria_filtro', 'item', 'quantidade', 'preco_unitario', 'data', 'observacao']
+        fields = ['categoria_filtro', 'tamanho_filtro', 'item', 'quantidade', 'preco_unitario', 'data', 'observacao']
         widgets = {
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'preco_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
@@ -123,13 +133,25 @@ class VendaForm(forms.ModelForm):
             'observacao': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        def _label(obj):
+            partes = [str(obj.categoria) if obj.categoria else '—', obj.get_tamanho_display(), obj.get_estado_display()]
+            if obj.descricao:
+                partes.append(obj.descricao)
+            return f"{' — '.join(partes)} ({obj.quantidade} un.)"
+
+        self.fields['item'].label_from_instance = _label
+
     def clean(self):
         cleaned = super().clean()
         item = cleaned.get('item')
         qtd = cleaned.get('quantidade')
         if item and qtd and qtd > item.quantidade:
+            nome = str(item.categoria) if item.categoria else item.descricao or 'item'
             raise forms.ValidationError(
-                f'Estoque insuficiente para "{item.descricao}". Disponível: {item.quantidade}.'
+                f'Estoque insuficiente para "{nome}". Disponível: {item.quantidade}.'
             )
         return cleaned
 
