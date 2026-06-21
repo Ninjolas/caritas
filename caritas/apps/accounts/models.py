@@ -4,6 +4,11 @@ from django.db import models
 
 class Paroquia(models.Model):
     nome = models.CharField(max_length=150, unique=True)
+    cidade = models.CharField(max_length=100)
+    bairro = models.CharField(max_length=100, blank=True)
+    endereco = models.CharField(max_length=200, blank=True)
+    telefone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
     ativa = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
 

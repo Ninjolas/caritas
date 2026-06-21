@@ -66,9 +66,9 @@ def registrar_venda(request, pk):
                         messages.error(request, f'Estoque insuficiente. Disponível: {item.quantidade}.')
                         return render(request, 'brecho/registrar_venda.html', {'form': form, 'evento': evento})
 
+                    venda.save()
                     item.quantidade -= venda.quantidade
                     item.save()
-                    venda.save()
                     messages.success(request, 'Venda registrada e estoque atualizado!')
                     return redirect('brecho:detalhe', pk=pk)
             except Exception as e:

@@ -14,21 +14,11 @@
             <legend>{{ item.nome }}</legend>
 
             <div class="mb-3">
-                <label class="form-label" for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
-                {{ form.nome }}
-                {% for e in form.nome.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="{{ form.categoria.id_for_label }}">{{ form.categoria.label }}</label>
-                {{ form.categoria }}
-                {% for e in form.categoria.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
-            </div>
-
-            <div class="mb-3" id="campo-categoria-outro" style="display:none">
-                <label class="form-label" for="{{ form.categoria_outro.id_for_label }}">{{ form.categoria_outro.label }}</label>
-                {{ form.categoria_outro }}
-                {% for e in form.categoria_outro.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+                <label class="form-label text-muted" style="font-size:12px">Produto</label>
+                <div class="form-control-plaintext" style="font-size:14px;padding:6px 0">
+                    <strong>{{ item.nome }}</strong>
+                    <span class="text-muted ms-2">— {{ item.get_categoria_display }}</span>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -57,20 +47,4 @@
         </div>
     </form>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-(function () {
-    const categoriaSelect = document.getElementById('id_categoria');
-    const campoOutro = document.getElementById('campo-categoria-outro');
-
-    function toggleOutro() {
-        campoOutro.style.display = categoriaSelect.value === 'outro' ? 'block' : 'none';
-    }
-
-    categoriaSelect.addEventListener('change', toggleOutro);
-    toggleOutro();
-})();
-</script>
 {% endblock %}

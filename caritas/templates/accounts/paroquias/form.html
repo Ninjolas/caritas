@@ -14,7 +14,15 @@
             <legend>Dados da Paróquia</legend>
             <div class="row g-3">
                 {% for field in form %}
+                {% if field.field.widget.input_type == 'checkbox' %}
                 <div class="col-12">
+                    <div class="form-check mt-2">
+                        {{ field }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 {% if field.name == 'cidade' or field.name == 'bairro' %}col-md-6{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">
                         {{ field.label }}{% if field.field.required %} *{% endif %}
                     </label>
@@ -23,6 +31,7 @@
                     <div class="text-danger" style="font-size:12px;margin-top:4px">{{ field.errors }}</div>
                     {% endif %}
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </fieldset>

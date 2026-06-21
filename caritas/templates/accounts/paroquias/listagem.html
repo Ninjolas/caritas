@@ -17,6 +17,8 @@
             <thead>
                 <tr>
                     <th>Nome</th>
+                    <th>Cidade</th>
+                    <th>Contato</th>
                     <th>Status</th>
                     <th>Ações</th>
                 </tr>
@@ -24,7 +26,16 @@
             <tbody>
                 {% for p in paroquias %}
                 <tr>
-                    <td><strong>{{ p.nome }}</strong></td>
+                    <td>
+                        <strong>{{ p.nome }}</strong>
+                        {% if p.bairro %}<br><small class="text-muted">{{ p.bairro }}</small>{% endif %}
+                    </td>
+                    <td>{{ p.cidade|default:"—" }}</td>
+                    <td>
+                        {% if p.telefone %}<div>{{ p.telefone }}</div>{% endif %}
+                        {% if p.email %}<div class="text-muted" style="font-size:12px">{{ p.email }}</div>{% endif %}
+                        {% if not p.telefone and not p.email %}—{% endif %}
+                    </td>
                     <td>
                         {% if p.ativa %}
                         <span class="badge" style="background:#dcfce7;color:#166534">Ativa</span>
@@ -49,7 +60,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="3" class="text-center text-muted py-5">
+                    <td colspan="5" class="text-center text-muted py-5">
                         <i class="bi bi-building" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
                         Nenhuma paróquia cadastrada.
                     </td>

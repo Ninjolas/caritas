@@ -14,21 +14,18 @@
             <legend>Dados do item</legend>
 
             <div class="mb-3">
-                <label class="form-label" for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
-                {{ form.nome }}
-                {% for e in form.nome.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+                <label class="form-label" for="{{ form.produto.id_for_label }}">{{ form.produto.label }}</label>
+                {{ form.produto }}
+                <div class="form-text">
+                    Não encontrou o produto?
+                    <a href="{% url 'estoque:catalogo_criar' %}" target="_blank">Adicionar ao catálogo</a>
+                </div>
+                {% for e in form.produto.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
             </div>
 
             <div class="mb-3">
-                <label class="form-label" for="{{ form.categoria.id_for_label }}">{{ form.categoria.label }}</label>
-                {{ form.categoria }}
-                {% for e in form.categoria.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
-            </div>
-
-            <div class="mb-3" id="campo-categoria-outro" style="display:none">
-                <label class="form-label" for="{{ form.categoria_outro.id_for_label }}">{{ form.categoria_outro.label }}</label>
-                {{ form.categoria_outro }}
-                {% for e in form.categoria_outro.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+                <label class="form-label text-muted" style="font-size:12px">Categoria</label>
+                <div id="info-categoria" class="form-control-plaintext text-muted" style="font-size:14px;padding:6px 12px;background:#f8f9fa;border-radius:6px">—</div>
             </div>
 
             <div class="mb-3">
@@ -62,15 +59,30 @@
 {% block extra_js %}
 <script>
 (function () {
-    const categoriaSelect = document.getElementById('id_categoria');
-    const campoOutro = document.getElementById('campo-categoria-outro');
+    const produtoSelect = document.getElementById('id_produto');
+    const infoCategoria = document.getElementById('info-categoria');
+    const unidadeInput = document.getElementById('id_unidade');
+    const produtos = {{ produtos_json|safe }};
 
-    function toggleOutro() {
-        campoOutro.style.display = categoriaSelect.value === 'outro' ? 'block' : 'none';
+    function atualizar() {
+        const pid = produtoSelect.value;
+        if (pid && produtos[pid]) {
+            infoCategoria.textContent = produtos[pid].categoria;
+            if (!unidadeInput.value || unidadeInput.dataset.preenchidoAuto === 'true') {
+                unidadeInput.value = produtos[pid].unidade;
+                unidadeInput.dataset.preenchidoAuto = 'true';
+            }
+        } else {
+            infoCategoria.textContent = '—';
+        }
     }
 
-    categoriaSelect.addEventListener('change', toggleOutro);
-    toggleOutro();
+    unidadeInput.addEventListener('input', function () {
+        this.dataset.preenchidoAuto = 'false';
+    });
+
+    produtoSelect.addEventListener('change', atualizar);
+    atualizar();
 })();
 </script>
 {% endblock %}

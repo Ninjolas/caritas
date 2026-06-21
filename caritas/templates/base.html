@@ -98,10 +98,13 @@
             <i class="bi bi-box-seam"></i> Estoque
         </a>
         <a href="{% url 'doacoes:listagem' %}" class="nav-link {% if 'doacoes' in request.path and 'bazar' not in request.path %}active{% endif %}">
-            <i class="bi bi-gift"></i> Doações
+            <i class="bi bi-gift"></i> Doações Recebidas
         </a>
         <a href="{% url 'atendimentos:listagem' %}" class="nav-link {% if 'atendimentos' in request.path %}active{% endif %}">
             <i class="bi bi-calendar-check"></i> Atendimentos
+        </a>
+        <a href="{% url 'estoque:catalogo' %}" class="nav-link {% if 'catalogo' in request.path %}active{% endif %}">
+            <i class="bi bi-journal-bookmark"></i> Catálogo
         </a>
         <a href="{% url 'brecho:listagem' %}" class="nav-link {% if 'brecho' in request.path %}active{% endif %}">
             <i class="bi bi-bag-heart"></i> Brechó

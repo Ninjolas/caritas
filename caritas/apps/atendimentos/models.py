@@ -2,13 +2,12 @@ from django.db import models
 from apps.accounts.models import Usuario
 from apps.familias.models import Familia
 
-TIPOS_COM_ITENS = ['doacao_alimentos', 'doacao_roupas', 'doacao_cesta_basica']
+TIPOS_COM_ITENS = ['doacao_roupas', 'doacao_cesta_basica']
 
 
 class Atendimento(models.Model):
     TIPO_CHOICES = [
         ('assistencia_social', 'Assistência Social'),
-        ('doacao_alimentos', 'Doação de Alimentos'),
         ('doacao_roupas', 'Doação de Roupas'),
         ('doacao_cesta_basica', 'Doação de Cesta Básica'),
         ('encaminhamento', 'Encaminhamento'),

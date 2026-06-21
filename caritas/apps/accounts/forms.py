@@ -118,9 +118,22 @@ class UsuarioEditForm(forms.ModelForm):
 class ParoquiaForm(forms.ModelForm):
     class Meta:
         model = Paroquia
-        fields = ['nome', 'ativa']
-        labels = {'nome': 'Nome da Paróquia', 'ativa': 'Ativa'}
+        fields = ['nome', 'cidade', 'bairro', 'endereco', 'telefone', 'email', 'ativa']
+        labels = {
+            'nome': 'Nome da Paróquia',
+            'cidade': 'Cidade',
+            'bairro': 'Bairro (opcional)',
+            'endereco': 'Endereço (opcional)',
+            'telefone': 'Telefone (opcional)',
+            'email': 'E-mail (opcional)',
+            'ativa': 'Ativa',
+        }
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'cidade': forms.TextInput(attrs={'class': 'form-control'}),
+            'bairro': forms.TextInput(attrs={'class': 'form-control'}),
+            'endereco': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rua, número'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(00) 00000-0000'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'ativa': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

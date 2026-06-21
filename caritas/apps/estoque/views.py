@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounts.decorators import coordenador_required, modulo_paroquia_required
 
-from .forms import ItemEstoqueForm
-from .models import ItemEstoque
+from .forms import ItemEstoqueForm, ItemEstoqueEditarForm, ProdutoCatalogoForm
+from .models import ItemEstoque, ProdutoCatalogo
 
 
 @login_required
@@ -39,7 +39,10 @@ def entrada(request):
             return redirect('estoque:listagem')
     else:
         form = ItemEstoqueForm()
-    return render(request, 'estoque/entrada.html', {'form': form})
+    return render(request, 'estoque/entrada.html', {
+        'form': form,
+        'produtos_json': form.get_produtos_json(),
+    })
 
 
 @login_required
@@ -50,13 +53,13 @@ def editar_item(request, pk):
         raise PermissionDenied
 
     if request.method == 'POST':
-        form = ItemEstoqueForm(request.POST, instance=item)
+        form = ItemEstoqueEditarForm(request.POST, instance=item)
         if form.is_valid():
             form.save()
             messages.success(request, 'Item atualizado com sucesso!')
             return redirect('estoque:listagem')
     else:
-        form = ItemEstoqueForm(instance=item)
+        form = ItemEstoqueEditarForm(instance=item)
     return render(request, 'estoque/editar_item.html', {'form': form, 'item': item})
 
 
@@ -68,6 +71,32 @@ def remover_item(request, pk):
         raise PermissionDenied
 
     if request.method == 'POST':
-        item.delete()
-        messages.success(request, 'Item removido do estoque.')
+        try:
+            item.delete()
+            messages.success(request, 'Item removido do estoque.')
+        except Exception:
+            messages.error(request, 'Não é possível remover este item pois ele está vinculado a registros existentes (vendas ou atendimentos).')
     return redirect('estoque:listagem')
+
+
+@login_required
+@modulo_paroquia_required
+def catalogo_listagem(request):
+    produtos = ProdutoCatalogo.objects.all()
+    return render(request, 'estoque/catalogo/listagem.html', {'produtos': produtos})
+
+
+@login_required
+@coordenador_required
+def catalogo_form(request, pk=None):
+    produto = get_object_or_404(ProdutoCatalogo, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = ProdutoCatalogoForm(request.POST, instance=produto)
+        if form.is_valid():
+            form.save()
+            acao = 'atualizado' if pk else 'adicionado ao catálogo'
+            messages.success(request, f'Produto {acao} com sucesso!')
+            return redirect('estoque:catalogo')
+    else:
+        form = ProdutoCatalogoForm(instance=produto)
+    return render(request, 'estoque/catalogo/form.html', {'form': form, 'produto': produto})
