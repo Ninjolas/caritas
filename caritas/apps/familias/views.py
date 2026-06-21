@@ -91,9 +91,13 @@ def remover_familia(request, pk):
     if request.user.perfil != 'administrador' and familia.paroquia_responsavel != request.user.paroquia:
         raise PermissionDenied
     if request.method == 'POST':
-        familia.delete()
-        messages.success(request, 'Família removida com sucesso.')
-        return redirect('familias:listar_familias')
+        try:
+            familia.delete()
+            messages.success(request, 'Família removida com sucesso.')
+            return redirect('familias:listar_familias')
+        except Exception:
+            messages.error(request, 'Não foi possível remover a família. Pode haver registros vinculados impedindo a exclusão.')
+            return redirect('familias:detalhe_familia', pk=pk)
     return redirect('familias:detalhe_familia', pk=pk)
 
 

@@ -41,7 +41,10 @@ class ItemAtendimentoForm(forms.Form):
         super().__init__(*args, **kwargs)
         qs = ItemEstoque.objects.filter(paroquia=paroquia, quantidade__gt=0) if paroquia else ItemEstoque.objects.none()
         if categoria:
-            qs = qs.filter(categoria=categoria)
+            if isinstance(categoria, list):
+                qs = qs.filter(categoria__in=categoria)
+            else:
+                qs = qs.filter(categoria=categoria)
         self.fields['item_estoque'].queryset = qs.order_by('nome', 'validade')
 
         def _label(obj):

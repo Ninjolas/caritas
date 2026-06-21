@@ -10,8 +10,8 @@ from .models import Atendimento, TIPOS_COM_ITENS
 from .forms import AtendimentoForm, ItemAtendimentoFormSet
 
 TIPO_CATEGORIA_MAP = {
-    'doacao_roupas': 'roupa',
-    'doacao_cesta_basica': 'alimento',
+    'doacao_roupas': ['roupa', 'calcado'],
+    'doacao_cesta_basica': ['alimento'],
 }
 
 
@@ -27,8 +27,8 @@ def _build_itens_json(paroquia):
         return l
 
     result = {}
-    for tipo, cat in TIPO_CATEGORIA_MAP.items():
-        result[tipo] = [{'v': str(i.pk), 't': label(i)} for i in todos.filter(categoria=cat)]
+    for tipo, cats in TIPO_CATEGORIA_MAP.items():
+        result[tipo] = [{'v': str(i.pk), 't': label(i)} for i in todos.filter(categoria__in=cats)]
     return json.dumps(result)
 
 
