@@ -40,17 +40,24 @@ class ItemEstoqueForm(forms.ModelForm):
             'validade': 'Data de validade (opcional)',
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, paroquia=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['produto'].queryset = ProdutoCatalogo.objects.filter(ativo=True)
+        qs = ProdutoCatalogo.objects.filter(ativo=True)
+        if paroquia:
+            qs = qs.filter(paroquia=paroquia)
+        self.fields['produto'].queryset = qs
         self.fields['produto'].empty_label = 'Selecione um produto do catálogo...'
         self.fields['validade'].required = False
         self.fields['produto'].required = True
+        self._paroquia = paroquia
 
     def get_produtos_json(self):
+        qs = ProdutoCatalogo.objects.filter(ativo=True)
+        if self._paroquia:
+            qs = qs.filter(paroquia=self._paroquia)
         data = {
             p.id: {'unidade': p.unidade_padrao, 'categoria': p.get_categoria_display()}
-            for p in ProdutoCatalogo.objects.filter(ativo=True)
+            for p in qs
         }
         return json.dumps(data)
 

@@ -28,14 +28,16 @@ def listagem(request):
 
 @login_required
 def registrar(request):
+    paroquia = request.user.paroquia
+    form_kwargs = {'paroquia': paroquia}
     if request.method == 'POST':
         form = DoacaoForm(request.POST)
-        formset = ItemDoacaoFormSet(request.POST)
+        formset = ItemDoacaoFormSet(request.POST, form_kwargs=form_kwargs)
         if form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
                     doacao = form.save(commit=False)
-                    doacao.paroquia = request.user.paroquia
+                    doacao.paroquia = paroquia
                     doacao.registrado_por = request.user
                     doacao.save()
                     itens = formset.save(commit=False)
@@ -58,11 +60,11 @@ def registrar(request):
                 messages.error(request, f'Erro ao registrar doação: {str(e)}')
     else:
         form = DoacaoForm()
-        formset = ItemDoacaoFormSet()
+        formset = ItemDoacaoFormSet(form_kwargs=form_kwargs)
     return render(request, 'doacoes/registrar.html', {
         'form': form,
         'formset': formset,
-        'produtos_json': get_produtos_json(),
+        'produtos_json': get_produtos_json(paroquia),
     })
 
 

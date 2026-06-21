@@ -10,14 +10,17 @@ CATEGORIA_CHOICES = [
 
 
 class ProdutoCatalogo(models.Model):
-    nome = models.CharField(max_length=200, unique=True)
+    paroquia = models.ForeignKey(
+        'accounts.Paroquia', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='catalogo_produtos'
+    )
+    nome = models.CharField(max_length=200)
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
     unidade_padrao = models.CharField(max_length=50, default='unidade')
     ativo = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        # Normaliza nome para evitar duplicatas por caixa ou espaço extra
         self.nome = ' '.join(self.nome.strip().split()).title()
         super().save(*args, **kwargs)
 
@@ -26,6 +29,7 @@ class ProdutoCatalogo(models.Model):
 
     class Meta:
         ordering = ['categoria', 'nome']
+        unique_together = [['nome', 'paroquia']]
         verbose_name = 'Produto'
         verbose_name_plural = 'Catálogo de Produtos'
 

@@ -28,17 +28,18 @@ def listagem(request):
 @login_required
 @coordenador_required
 def entrada(request):
+    paroquia = request.user.paroquia
     if request.method == 'POST':
-        form = ItemEstoqueForm(request.POST)
+        form = ItemEstoqueForm(request.POST, paroquia=paroquia)
         if form.is_valid():
             item = form.save(commit=False)
-            item.paroquia = request.user.paroquia
+            item.paroquia = paroquia
             item.registrado_por = request.user
             item.save()
             messages.success(request, 'Item registrado no estoque com sucesso!')
             return redirect('estoque:listagem')
     else:
-        form = ItemEstoqueForm()
+        form = ItemEstoqueForm(paroquia=paroquia)
     return render(request, 'estoque/entrada.html', {
         'form': form,
         'produtos_json': form.get_produtos_json(),
@@ -82,8 +83,12 @@ def remover_item(request, pk):
 @login_required
 @modulo_paroquia_required
 def catalogo_listagem(request):
-    produtos = ProdutoCatalogo.objects.all()
-    return render(request, 'estoque/catalogo/listagem.html', {'produtos': produtos})
+    is_admin = request.user.perfil == 'administrador'
+    if is_admin:
+        produtos = ProdutoCatalogo.objects.all()
+    else:
+        produtos = ProdutoCatalogo.objects.filter(paroquia=request.user.paroquia)
+    return render(request, 'estoque/catalogo/listagem.html', {'produtos': produtos, 'is_admin': is_admin})
 
 
 @login_required
@@ -93,7 +98,10 @@ def catalogo_form(request, pk=None):
     if request.method == 'POST':
         form = ProdutoCatalogoForm(request.POST, instance=produto)
         if form.is_valid():
-            form.save()
+            novo = form.save(commit=False)
+            if not pk:
+                novo.paroquia = request.user.paroquia
+            novo.save()
             acao = 'atualizado' if pk else 'adicionado ao catálogo'
             messages.success(request, f'Produto {acao} com sucesso!')
             return redirect('estoque:catalogo')

@@ -25,7 +25,7 @@ class DoacaoForm(forms.ModelForm):
 
 class ItemDoacaoForm(forms.ModelForm):
     produto = forms.ModelChoiceField(
-        queryset=ProdutoCatalogo.objects.filter(ativo=True).order_by('categoria', 'nome'),
+        queryset=ProdutoCatalogo.objects.none(),
         empty_label='--- Selecione ---',
         widget=forms.Select(attrs={'class': 'form-select produto-select'}),
         label='Produto',
@@ -43,17 +43,24 @@ class ItemDoacaoForm(forms.ModelForm):
             'data_validade': 'Validade',
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, paroquia=None, **kwargs):
         super().__init__(*args, **kwargs)
+        qs = ProdutoCatalogo.objects.filter(ativo=True).order_by('categoria', 'nome')
+        if paroquia:
+            qs = qs.filter(paroquia=paroquia)
+        self.fields['produto'].queryset = qs
         self.fields['data_validade'].required = False
         if not kwargs.get('instance'):
             self.initial['quantidade'] = None
             self.initial['unidade'] = ''
 
 
-def get_produtos_json():
+def get_produtos_json(paroquia=None):
+    qs = ProdutoCatalogo.objects.filter(ativo=True)
+    if paroquia:
+        qs = qs.filter(paroquia=paroquia)
     data = {}
-    for p in ProdutoCatalogo.objects.filter(ativo=True):
+    for p in qs:
         data[str(p.pk)] = {
             'unidade': p.unidade_padrao,
             'categoria': p.get_categoria_display(),
