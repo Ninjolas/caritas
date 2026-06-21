@@ -6,20 +6,22 @@ from .models import ItemEstoque, ProdutoCatalogo
 class ProdutoCatalogoForm(forms.ModelForm):
     class Meta:
         model = ProdutoCatalogo
-        fields = ['nome', 'categoria', 'genero', 'tamanho', 'tipo_calcado', 'tamanho_calcado', 'unidade_padrao', 'ativo']
+        fields = ['nome', 'categoria', 'categoria_outro', 'genero', 'tamanho', 'tipo_calcado', 'tamanho_calcado', 'unidade_padrao', 'ativo']
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Arroz, Camiseta, Tênis...'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Arroz, Camiseta, Paracetamol...'}),
             'categoria': forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria'}),
+            'categoria_outro': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Higiene pessoal, Material escolar...'}),
             'genero': forms.Select(attrs={'class': 'form-select'}),
             'tamanho': forms.Select(attrs={'class': 'form-select'}),
             'tipo_calcado': forms.Select(attrs={'class': 'form-select'}),
             'tamanho_calcado': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: 38, 39, 40'}),
-            'unidade_padrao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: kg, peça, caixa'}),
+            'unidade_padrao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: kg, comprimido, caixa, peça'}),
             'ativo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'nome': 'Nome',
             'categoria': 'Categoria',
+            'categoria_outro': 'Especifique o tipo',
             'genero': 'Gênero',
             'tamanho': 'Tamanho',
             'tipo_calcado': 'Tipo (subcategoria)',

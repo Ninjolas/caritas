@@ -55,8 +55,17 @@
                 </div>
             </div>
 
+            {# Campo de outro #}
+            <div id="campos-outro" style="display:none">
+                <div class="mb-3">
+                    <label class="form-label">{{ form.categoria_outro.label }} *</label>
+                    {{ form.categoria_outro }}
+                    {% for e in form.categoria_outro.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+                </div>
+            </div>
+
             <div class="mb-3">
-                <label class="form-label" for="{{ form.unidade_padrao.id_for_label }}">{{ form.unidade_padrao.label }}</label>
+                <label class="form-label" for="{{ form.unidade_padrao.id_for_label }}">{{ form.unidade_padrao.label }} *</label>
                 {{ form.unidade_padrao }}
                 {% for e in form.unidade_padrao.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
             </div>
@@ -87,11 +96,15 @@
     const categoriaSelect = document.getElementById('id_categoria');
     const camposRoupa = document.getElementById('campos-roupa');
     const camposCalcado = document.getElementById('campos-calcado');
+    const camposOutro = document.getElementById('campos-outro');
+    const campoOutroInput = camposOutro.querySelector('input');
 
     function atualizar() {
         const cat = categoriaSelect.value;
         camposRoupa.style.display = cat === 'roupa' ? '' : 'none';
         camposCalcado.style.display = cat === 'calcado' ? '' : 'none';
+        camposOutro.style.display = cat === 'outro' ? '' : 'none';
+        if (campoOutroInput) campoOutroInput.required = cat === 'outro';
     }
 
     categoriaSelect.addEventListener('change', atualizar);

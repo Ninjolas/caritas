@@ -45,6 +45,7 @@ class ProdutoCatalogo(models.Model):
     # Campos de calçado (tipo = subcategoria)
     tipo_calcado = models.CharField(max_length=20, choices=TIPO_CALCADO_CHOICES, blank=True)
     tamanho_calcado = models.CharField(max_length=10, blank=True, help_text='Ex: 38, 39, 40')
+    categoria_outro = models.CharField(max_length=100, blank=True, default='', verbose_name='Descrição (outro)')
     unidade_padrao = models.CharField(max_length=50, default='unidade')
     ativo = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
