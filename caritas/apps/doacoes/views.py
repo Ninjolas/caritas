@@ -40,8 +40,11 @@ def registrar(request):
                     doacao.paroquia = paroquia
                     doacao.registrado_por = request.user
                     doacao.save()
-                    itens = formset.save(commit=False)
-                    for item in itens:
+                    for item_form in formset.forms:
+                        dados = item_form.cleaned_data
+                        if not dados or dados.get('DELETE'):
+                            continue
+                        item = item_form.save(commit=False)
                         item.doacao = doacao
                         item.save()
                         ItemEstoque.objects.create(
