@@ -10,4 +10,5 @@ urlpatterns = [
     path('familias/cadastrar/', views.cadastrar_familia, name='cadastrar_familia'),
     path('familias/<int:pk>/', views.detalhe_familia, name='detalhe_familia'),
     path('familias/<int:pk>/editar/', views.editar_familia, name='editar_familia'),
+    path('familias/<int:pk>/remover/', views.remover_familia, name='remover_familia'),
 ]

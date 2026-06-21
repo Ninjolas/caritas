@@ -86,6 +86,18 @@ def editar_familia(request, pk):
 
 
 @login_required
+def remover_familia(request, pk):
+    familia = get_object_or_404(Familia, pk=pk)
+    if request.user.perfil != 'administrador' and familia.paroquia_responsavel != request.user.paroquia:
+        raise PermissionDenied
+    if request.method == 'POST':
+        familia.delete()
+        messages.success(request, 'Família removida com sucesso.')
+        return redirect('familias:listar_familias')
+    return redirect('familias:detalhe_familia', pk=pk)
+
+
+@login_required
 def cadastrar_familia(request):
     DependenteFormSet = formset_factory(DependenteForm, min_num=0, max_num=10, extra=1)
 
