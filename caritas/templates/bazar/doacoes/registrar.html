@@ -12,6 +12,8 @@
     <div class="col-lg-9">
         <form method="post" id="form-entrada">
             {% csrf_token %}
+
+            {# ── Dados da entrada ────────────────────────────────────────── #}
             <fieldset class="form-section">
                 <legend>Dados da Entrada</legend>
                 <div class="row g-3">
@@ -19,57 +21,43 @@
                     <div class="col-md-6">
                         <label class="form-label">Tipo de entrada *</label>
                         {{ form.tipo_entrada }}
-                        {% if form.tipo_entrada.errors %}
-                            {% for e in form.tipo_entrada.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
-                        {% endif %}
+                        {% if form.tipo_entrada.errors %}{% for e in form.tipo_entrada.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Data *</label>
                         {{ form.data }}
-                        {% if form.data.errors %}
-                            {% for e in form.data.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
-                        {% endif %}
+                        {% if form.data.errors %}{% for e in form.data.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Tipo de doador *</label>
                         {{ form.tipo_doador }}
-                        {% if form.tipo_doador.errors %}
-                            {% for e in form.tipo_doador.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
-                        {% endif %}
+                        {% if form.tipo_doador.errors %}{% for e in form.tipo_doador.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
                     </div>
 
+                    {# Pessoa Física #}
                     <div class="col-md-6" id="wrap-doador-nome">
                         <label class="form-label">Nome do doador</label>
                         {{ form.doador_nome }}
-                        {% if form.doador_nome.errors %}
-                            {% for e in form.doador_nome.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
-                        {% endif %}
                     </div>
-
                     <div class="col-md-6" id="wrap-doador-contato">
                         <label class="form-label">Contato</label>
                         {{ form.doador_contato }}
-                        {% if form.doador_contato.errors %}
-                            {% for e in form.doador_contato.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
-                        {% endif %}
                     </div>
 
+                    {# Empresa #}
                     <div class="col-md-6" id="wrap-empresa" style="display:none">
                         <label class="form-label">Empresa Parceira *</label>
                         {{ form.empresa }}
-                        {% if form.empresa.errors %}
-                            {% for e in form.empresa.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
-                        {% endif %}
+                        {% if form.empresa.errors %}{% for e in form.empresa.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
                     </div>
 
+                    {# Somente doação financeira #}
                     <div class="col-md-6" id="wrap-valor" style="display:none">
                         <label class="form-label">Valor (R$)</label>
                         {{ form.valor }}
-                        {% if form.valor.errors %}
-                            {% for e in form.valor.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
-                        {% endif %}
+                        {% if form.valor.errors %}{% for e in form.valor.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}{% endif %}
                     </div>
 
                     <div class="col-12">
@@ -80,28 +68,45 @@
                 </div>
             </fieldset>
 
+            {# ── Itens doados ────────────────────────────────────────────── #}
             <fieldset class="form-section" id="secao-itens" style="display:none">
                 <legend>Itens Doados</legend>
                 {{ formset.management_form }}
+
                 <div id="formset-container">
-                    {% for form_item in formset %}
+                    {% for fi in formset %}
                     <div class="item-form border rounded p-3 mb-3 position-relative">
+                        {# campos ocultos do formset (id, etc.) #}
+                        {% for hf in fi.hidden_fields %}<div class="d-none">{{ hf }}</div>{% endfor %}
                         <div class="row g-2">
-                            {% for field in form_item %}
-                            {% if field.name != 'DELETE' and field.name != 'id' %}
-                            <div class="col-md-4 mb-2">
-                                <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.errors %}
-                                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-                                {% endif %}
+                            <div class="col-md-5">
+                                <label class="form-label small">{{ fi.catalogo.label }}</label>
+                                {{ fi.catalogo }}
+                                {% if fi.catalogo.errors %}<div class="text-danger small">{{ fi.catalogo.errors }}</div>{% endif %}
                             </div>
-                            {% else %}
-                            <div class="d-none">{{ field }}</div>
-                            {% endif %}
-                            {% endfor %}
+                            <div class="col-md-4">
+                                <label class="form-label small">{{ fi.tamanho.label }}</label>
+                                {{ fi.tamanho }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">{{ fi.estado.label }}</label>
+                                {{ fi.estado }}
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small">{{ fi.descricao.label }}</label>
+                                {{ fi.descricao }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">{{ fi.quantidade.label }}</label>
+                                {{ fi.quantidade }}
+                                {% if fi.quantidade.errors %}<div class="text-danger small">{{ fi.quantidade.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">{{ fi.preco_sugerido.label }}</label>
+                                {{ fi.preco_sugerido }}
+                            </div>
                         </div>
-                        {% if forloop.counter > 1 %}
+                        {% if not forloop.first %}
                         <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover">
                             <i class="bi bi-x"></i>
                         </button>
@@ -109,15 +114,14 @@
                     </div>
                     {% endfor %}
                 </div>
-                <button type="button" id="btn-add-item" class="btn btn-outline-primary btn-sm">
+
+                <button type="button" id="btn-add-item" class="btn btn-outline-primary btn-sm mt-1">
                     <i class="bi bi-plus me-1"></i> Adicionar Item
                 </button>
             </fieldset>
 
             {% if form.non_field_errors %}
-            <div class="alert alert-danger py-2 mb-3">
-                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-            </div>
+            <div class="alert alert-danger py-2 mb-3">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
             {% endif %}
 
             <div class="d-flex gap-2">
@@ -127,29 +131,66 @@
         </form>
     </div>
 </div>
+
+{# Template oculto — campos com __prefix__ para clonar via JS #}
+<div id="empty-item-form" style="display:none" aria-hidden="true">
+    <div class="item-form border rounded p-3 mb-3 position-relative">
+        <div class="d-none">{{ formset.empty_form.id }}</div>
+        <div class="row g-2">
+            <div class="col-md-5">
+                <label class="form-label small">{{ formset.empty_form.catalogo.label }}</label>
+                {{ formset.empty_form.catalogo }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">{{ formset.empty_form.tamanho.label }}</label>
+                {{ formset.empty_form.tamanho }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">{{ formset.empty_form.estado.label }}</label>
+                {{ formset.empty_form.estado }}
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small">{{ formset.empty_form.descricao.label }}</label>
+                {{ formset.empty_form.descricao }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">{{ formset.empty_form.quantidade.label }}</label>
+                {{ formset.empty_form.quantidade }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">{{ formset.empty_form.preco_sugerido.label }}</label>
+                {{ formset.empty_form.preco_sugerido }}
+            </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover">
+            <i class="bi bi-x"></i>
+        </button>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (function () {
-    const tipoEntrada  = document.getElementById('id_tipo_entrada');
-    const tipoDoador   = document.getElementById('id_tipo_doador');
-    const secaoItens   = document.getElementById('secao-itens');
-    const wrapNome     = document.getElementById('wrap-doador-nome');
-    const wrapContato  = document.getElementById('wrap-doador-contato');
-    const wrapEmpresa  = document.getElementById('wrap-empresa');
-    const wrapValor    = document.getElementById('wrap-valor');
+    // ── Visibilidade por tipo ──────────────────────────────────────────────────
+    var tipoEntrada  = document.getElementById('id_tipo_entrada');
+    var tipoDoador   = document.getElementById('id_tipo_doador');
+    var secaoItens   = document.getElementById('secao-itens');
+    var wrapNome     = document.getElementById('wrap-doador-nome');
+    var wrapContato  = document.getElementById('wrap-doador-contato');
+    var wrapEmpresa  = document.getElementById('wrap-empresa');
+    var wrapValor    = document.getElementById('wrap-valor');
 
     function atualizarEntrada() {
-        const tipo = tipoEntrada ? tipoEntrada.value : '';
-        if (secaoItens) secaoItens.style.display = tipo === 'doacao_item' ? '' : 'none';
-        if (wrapValor)  wrapValor.style.display  = tipo === 'doacao_financeira' ? '' : 'none';
+        var tipo = tipoEntrada ? tipoEntrada.value : '';
+        if (secaoItens) secaoItens.style.display = (tipo === 'doacao_item') ? '' : 'none';
+        if (wrapValor)  wrapValor.style.display  = (tipo === 'doacao_financeira') ? '' : 'none';
     }
 
     function atualizarDoador() {
-        const tipo = tipoDoador ? tipoDoador.value : '';
-        const isPF  = tipo === 'pessoa_fisica';
-        const isEmp = tipo === 'empresa';
+        var tipo   = tipoDoador ? tipoDoador.value : '';
+        var isPF   = tipo === 'pessoa_fisica';
+        var isEmp  = tipo === 'empresa';
         if (wrapNome)    wrapNome.style.display    = isPF  ? '' : 'none';
         if (wrapContato) wrapContato.style.display = isPF  ? '' : 'none';
         if (wrapEmpresa) wrapEmpresa.style.display = isEmp ? '' : 'none';
@@ -159,36 +200,12 @@
     if (tipoDoador)  { tipoDoador.addEventListener('change', atualizarDoador);   atualizarDoador(); }
 
     // ── Formset dinâmico ──────────────────────────────────────────────────────
-    const btnAdd     = document.getElementById('btn-add-item');
-    const container  = document.getElementById('formset-container');
-    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    var emptyTemplate = document.getElementById('empty-item-form');
+    var container     = document.getElementById('formset-container');
+    var totalForms    = document.getElementById('id_form-TOTAL_FORMS');
+    var btnAdd        = document.getElementById('btn-add-item');
 
-    if (btnAdd && container && totalForms) {
-        btnAdd.addEventListener('click', function () {
-            const forms   = container.querySelectorAll('.item-form');
-            const lastForm = forms[forms.length - 1];
-            const newForm  = lastForm.cloneNode(true);
-            const idx      = parseInt(totalForms.value);
-
-            newForm.innerHTML = newForm.innerHTML.replace(/form-(\d+)-/g, `form-${idx}-`);
-            newForm.querySelectorAll('input, select, textarea').forEach(el => {
-                if (el.type !== 'hidden') el.value = '';
-            });
-
-            const existingBtn = newForm.querySelector('.btn-remover');
-            if (!existingBtn) {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 btn-remover';
-                btn.innerHTML = '<i class="bi bi-x"></i>';
-                newForm.appendChild(btn);
-            }
-
-            container.appendChild(newForm);
-            totalForms.value = idx + 1;
-            bindRemover(newForm.querySelector('.btn-remover'));
-        });
-    }
+    if (!emptyTemplate || !container || !totalForms || !btnAdd) return;
 
     function reindexar() {
         container.querySelectorAll('.item-form').forEach(function (div, i) {
@@ -196,25 +213,49 @@
                 el.name = el.name.replace(/form-\d+-/, 'form-' + i + '-');
             });
             div.querySelectorAll('[id]').forEach(function (el) {
-                el.id = el.id.replace(/form-\d+-/, 'form-' + i + '-');
+                el.id = el.id.replace(/(?:form-\d+-|form-__prefix__-)/, 'form-' + i + '-');
             });
             div.querySelectorAll('[for]').forEach(function (el) {
-                el.htmlFor = el.htmlFor.replace(/form-\d+-/, 'form-' + i + '-');
+                el.htmlFor = el.htmlFor.replace(/(?:form-\d+-|form-__prefix__-)/, 'form-' + i + '-');
             });
         });
         totalForms.value = container.querySelectorAll('.item-form').length;
     }
 
-    function bindRemover(btn) {
+    function bindRemover(div) {
+        var btn = div.querySelector('.btn-remover');
         if (btn) {
             btn.addEventListener('click', function () {
-                btn.closest('.item-form').remove();
+                div.remove();
                 reindexar();
             });
         }
     }
 
-    document.querySelectorAll('.btn-remover').forEach(bindRemover);
+    btnAdd.addEventListener('click', function () {
+        var idx     = parseInt(totalForms.value);
+        var newItem = emptyTemplate.firstElementChild.cloneNode(true);
+
+        // Substituir __prefix__ pelo índice real
+        newItem.querySelectorAll('[name]').forEach(function (el) {
+            el.name = el.name.replace(/__prefix__/g, idx);
+        });
+        newItem.querySelectorAll('[id]').forEach(function (el) {
+            el.id = el.id.replace(/__prefix__/g, idx);
+        });
+        newItem.querySelectorAll('[for]').forEach(function (el) {
+            el.htmlFor = el.htmlFor.replace(/__prefix__/g, idx);
+        });
+
+        container.appendChild(newItem);
+        totalForms.value = idx + 1;
+        bindRemover(newItem);
+    });
+
+    // Vincular botões de remoção nos itens existentes (a partir do 2°)
+    container.querySelectorAll('.item-form').forEach(function (div) {
+        bindRemover(div);
+    });
 })();
 </script>
 {% endblock %}
