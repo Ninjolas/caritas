@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{% if modelo %}Editar{% else %}Novo{% endif %} Modelo — Sistema Cáritas{% endblock %}
+{% block page_title %}{% if modelo %}Editar{% else %}Novo{% endif %} Modelo de Cesta{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:listagem' %}">Cesta Básica</a></li>
+<li class="breadcrumb-item"><a href="{% url 'cestas:modelo_listagem' %}">Modelos</a></li>
+<li class="breadcrumb-item active">{% if modelo %}Editar{% else %}Novo{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:700px">
+<form method="post">
+{% csrf_token %}
+
+<fieldset class="form-section">
+    <legend>Dados do Modelo</legend>
+    <div class="mb-3">
+        <label class="form-label">Nome do modelo *</label>
+        {{ form.nome }}
+        {% for e in form.nome.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+    </div>
+</fieldset>
+
+<fieldset class="form-section">
+    <legend class="d-flex justify-content-between align-items-center w-100">
+        <span>Itens do Modelo</span>
+        <button type="button" id="btn-add" class="btn btn-outline-secondary btn-sm" style="font-size:12px">
+            <i class="bi bi-plus me-1"></i> Adicionar Item
+        </button>
+    </legend>
+    {{ formset.management_form }}
+    <div id="formset-container">
+        {% for f in formset %}
+        <div class="item-row border rounded p-3 mb-2{% if f.DELETE.value %} d-none{% endif %}">
+            {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small">{{ f.nome.label }}</label>
+                    {{ f.nome }}
+                    {% for e in f.nome.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">{{ f.quantidade.label }}</label>
+                    {{ f.quantidade }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">{{ f.unidade.label }}</label>
+                    {{ f.unidade }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remover w-100" title="Remover">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="d-none">{{ f.DELETE }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</fieldset>
+
+<div class="d-flex gap-2">
+    <button type="submit" class="btn" style="background:#1a5276;color:#fff">
+        <i class="bi bi-check-circle me-1"></i> Salvar Modelo
+    </button>
+    <a href="{% url 'cestas:modelo_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+</div>
+</form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const container = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_itens-TOTAL_FORMS');
+    const btnAdd = document.getElementById('btn-add');
+
+    function bindRow(row) {
+        row.querySelector('.btn-remover')?.addEventListener('click', function () {
+            const visible = container.querySelectorAll('.item-row:not(.d-none)');
+            if (visible.length <= 1) { alert('É necessário ao menos 1 item.'); return; }
+            const del = row.querySelector('input[name$="-DELETE"]');
+            if (del) { del.checked = true; row.classList.add('d-none'); }
+            else row.remove();
+        });
+    }
+
+    container.querySelectorAll('.item-row').forEach(bindRow);
+
+    btnAdd?.addEventListener('click', function () {
+        const rows = container.querySelectorAll('.item-row');
+        const last = rows[rows.length - 1];
+        const newRow = last.cloneNode(true);
+        const idx = parseInt(totalForms.value);
+        newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${idx}-`);
+        newRow.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+        newRow.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        newRow.classList.remove('d-none');
+        container.appendChild(newRow);
+        totalForms.value = idx + 1;
+        bindRow(newRow);
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block title %}Montar e Entregar Cesta — Sistema Cáritas{% endblock %}
+{% block page_title %}Montar e Entregar Cesta Básica{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:listagem' %}">Cesta Básica</a></li>
+<li class="breadcrumb-item active">Montar e Entregar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-8">
+<form method="post">
+{% csrf_token %}
+
+<fieldset class="form-section">
+    <legend>Dados da Entrega</legend>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Família beneficiada *</label>
+            {{ form.familia }}
+            {% for e in form.familia.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Data *</label>
+            {{ form.data }}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">{{ form.modelo_usado.label }}</label>
+            {{ form.modelo_usado }}
+        </div>
+        <div class="col-12">
+            <label class="form-label">Observação</label>
+            {{ form.observacao }}
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="form-section">
+    <legend class="d-flex justify-content-between align-items-center w-100">
+        <span>Itens do Estoque</span>
+        <button type="button" id="btn-add" class="btn btn-outline-secondary btn-sm" style="font-size:12px">
+            <i class="bi bi-plus me-1"></i> Adicionar Item
+        </button>
+    </legend>
+    <div class="alert alert-info py-2 mb-3" style="font-size:13px">
+        <i class="bi bi-lightbulb me-1"></i>
+        Selecione um <strong>Modelo de cesta</strong> acima para pré-preencher os itens automaticamente.
+        Os itens serão retirados do estoque de alimentos da sua paróquia.
+    </div>
+    {{ formset.management_form }}
+    <div id="formset-container">
+        {% for f in formset %}
+        <div class="item-row border rounded p-3 mb-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label small">{{ f.item_estoque.label }}</label>
+                    {{ f.item_estoque }}
+                    <div class="estoque-info form-text mt-1" style="font-size:12px"></div>
+                    {% for e in f.item_estoque.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    {% for e in f.non_field_errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">{{ f.quantidade.label }}</label>
+                    {{ f.quantidade }}
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remover" title="Remover">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="d-none">{{ f.DELETE }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</fieldset>
+
+<div class="d-flex gap-2">
+    <button type="submit" class="btn" style="background:#1a5276;color:#fff"><i class="bi bi-check-lg me-1"></i> Registrar Entrega</button>
+    <a href="{% url 'cestas:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const container = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_itens-TOTAL_FORMS');
+    const btnAdd = document.getElementById('btn-add');
+    const modeloSelect = document.getElementById('id_modelo_usado');
+
+    const modelos = {{ modelos_json|safe }};
+    const estoque = {{ itens_estoque_json|safe }};
+
+    function getStocks(select) {
+        try { return JSON.parse(select.dataset.stocks || '{}'); }
+        catch(e) { return {}; }
+    }
+
+    function updateInfo(select) {
+        const row = select.closest('.item-row');
+        const info = row.querySelector('.estoque-info');
+        const qtdInput = row.querySelector('.quantidade-input');
+        if (!info) return;
+        const stocks = getStocks(select);
+        const data = stocks[select.value];
+        if (!data || !select.value) {
+            info.textContent = '';
+            if (qtdInput) qtdInput.removeAttribute('max');
+            return;
+        }
+        info.textContent = `Disponível: ${data.qtd} ${data.unidade}`;
+        info.className = 'estoque-info form-text mt-1 ' + (data.qtd === 0 ? 'text-danger' : 'text-success');
+        if (qtdInput) { qtdInput.setAttribute('max', data.qtd); }
+    }
+
+    function bindRow(row) {
+        const select = row.querySelector('.item-estoque-select');
+        const qtdInput = row.querySelector('.quantidade-input');
+        if (select) {
+            select.addEventListener('change', () => updateInfo(select));
+            updateInfo(select);
+        }
+        if (qtdInput && select) {
+            qtdInput.addEventListener('input', function () {
+                const stocks = getStocks(select);
+                const data = stocks[select.value];
+                if (data && parseInt(this.value) > data.qtd) this.value = data.qtd;
+            });
+        }
+        row.querySelector('.btn-remover')?.addEventListener('click', function () {
+            const rows = container.querySelectorAll('.item-row:not([style*="none"])');
+            if (rows.length <= 1) { alert('É necessário ao menos 1 item.'); return; }
+            const del = row.querySelector('input[name$="-DELETE"]');
+            if (del) { del.checked = true; row.style.display = 'none'; }
+            else row.remove();
+        });
+    }
+
+    container.querySelectorAll('.item-row').forEach(bindRow);
+
+    btnAdd?.addEventListener('click', function () {
+        const forms = container.querySelectorAll('.item-row');
+        const last = forms[forms.length - 1];
+        const newRow = last.cloneNode(true);
+        const idx = parseInt(totalForms.value);
+        newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${idx}-`);
+        newRow.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+        newRow.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        newRow.querySelectorAll('.estoque-info').forEach(el => el.textContent = '');
+        newRow.style.display = '';
+        container.appendChild(newRow);
+        totalForms.value = idx + 1;
+        bindRow(newRow);
+    });
+
+    // Modelo pre-fill
+    modeloSelect?.addEventListener('change', function () {
+        const modeloId = this.value;
+        if (!modeloId || !modelos[modeloId]) return;
+        const modeloItens = modelos[modeloId];
+
+        // Build lookup: nome → first matching stock item id
+        const estoqueByNome = {};
+        Object.entries(estoque).forEach(([id, data]) => {
+            const n = data.nome;
+            if (!estoqueByNome[n]) estoqueByNome[n] = id;
+        });
+
+        // Remove existing rows
+        container.querySelectorAll('.item-row').forEach(r => r.remove());
+        totalForms.value = 0;
+
+        modeloItens.forEach((modeloItem, i) => {
+            // Clone from the last row template (or first row)
+            const allRows = container.querySelectorAll('.item-row');
+            let newRow;
+            if (allRows.length > 0) {
+                newRow = allRows[allRows.length - 1].cloneNode(true);
+            } else {
+                // get template from hidden or create minimal row by cloning from existing
+                // fallback: trigger btn-add logic manually
+                btnAdd.click();
+                const addedRows = container.querySelectorAll('.item-row');
+                newRow = addedRows[addedRows.length - 1];
+                newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${i}-`);
+            }
+
+            if (newRow.parentNode !== container) {
+                newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${i}-`);
+                newRow.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+                newRow.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+                newRow.style.display = '';
+                container.appendChild(newRow);
+                totalForms.value = i + 1;
+            }
+
+            // Pre-fill stock select
+            const select = newRow.querySelector('.item-estoque-select');
+            const qtdInput = newRow.querySelector('.quantidade-input');
+            const matchId = estoqueByNome[modeloItem.nome];
+            if (select && matchId) {
+                select.value = matchId;
+                bindRow(newRow);
+                updateInfo(select);
+            }
+            if (qtdInput) qtdInput.value = modeloItem.quantidade;
+        });
+
+        // Ensure TOTAL_FORMS is correct
+        totalForms.value = container.querySelectorAll('.item-row').length;
+    });
+})();
+</script>
+{% endblock %}

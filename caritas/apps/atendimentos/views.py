@@ -13,7 +13,6 @@ from .forms import AtendimentoEditarForm, AtendimentoForm, ItemAtendimentoFormSe
 
 TIPO_CATEGORIA_MAP = {
     'doacao_roupas': ['roupa', 'calcado'],
-    'doacao_cesta_basica': ['alimento'],
 }
 
 

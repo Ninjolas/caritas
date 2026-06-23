@@ -9,7 +9,11 @@ from apps.bazar.models import (
     ItemEntradaBazar, ItemEstoqueBazar, Venda,
 )
 from apps.brecho.models import BrechoEvento, VendaBrecho
-from apps.cestas.models import CestaPronta, EntregaCesta, ItemMontagem
+from apps.cestas.models import (
+    CestaRecebida, ItemCestaRecebida,
+    CestaEntregue, ItemCestaEntregue,
+    ModeloCesta, ModeloItemCesta,
+)
 from apps.doacoes.models import Doacao, ItemDoacao
 from apps.estoque.models import ItemEstoque, ProdutoCatalogo
 from apps.familias.models import Dependente, Familia
@@ -94,23 +98,26 @@ class Command(BaseCommand):
         self.stdout.write('  ✓ Catálogo de produtos (13)')
 
         # ── 4. Estoque ─────────────────────────────────────────────────────────
-        # Quantidades FINAIS — já descontadas: 10 de cada alimento (cestas montagem),
-        # 2 camisas (atendimento) + 5 camisas e 3 calças (brechó vendas).
-        def item_est(produto, qtd, unid, validade=None):
+        # Quantidades FINAIS — já descontadas: 2 cestas entregues e 2 camisas (atendimento)
+        # + 5 camisas e 3 calças (brechó vendas). Não inclui os itens avulsos das cestas
+        # recebidas (criados com produto=None, aparecem como entradas separadas).
+        def item_est(produto, qtd, unid, validade=None, nome_override=None):
             i = ItemEstoque(
                 paroquia=parq_sj, produto=produto,
+                nome=nome_override or (produto.nome if produto else ''),
+                categoria=produto.categoria if produto else 'alimento',
                 quantidade=qtd, unidade=unid, validade=validade,
                 registrado_por=coord_sj,
             )
             i.save()
             return i
 
-        e_arroz    = item_est(c_arroz,    40, 'kg',      date(2027, 1, 15))
-        e_feijao   = item_est(c_feijao,   30, 'kg',      date(2026, 12, 10))
-        e_oleo     = item_est(c_oleo,     20, 'unidade', date(2026, 10, 1))
-        e_macarrao = item_est(c_macarrao, 50, 'pacote',  date(2026, 11, 20))
-        e_acucar   = item_est(c_acucar,   25, 'kg',      date(2027, 3, 1))
-        e_leite    = item_est(c_leite,    20, 'lata',    date(2026, 6, 28))  # vence em breve
+        e_arroz    = item_est(c_arroz,    46, 'kg',      date(2027, 1, 15))
+        e_feijao   = item_est(c_feijao,   38, 'kg',      date(2026, 12, 10))
+        e_oleo     = item_est(c_oleo,     29, 'unidade', date(2026, 10, 1))
+        e_macarrao = item_est(c_macarrao, 58, 'pacote',  date(2026, 11, 20))
+        e_acucar   = item_est(c_acucar,   34, 'kg',      date(2027, 3, 1))
+        e_leite    = item_est(c_leite,    18, 'lata',    date(2026, 6, 28))  # vence em breve
         e_sal      = item_est(c_sal,      15, 'kg',      date(2026, 6, 10))  # já vencido
         e_camisa   = item_est(c_camisa,    5, 'unidade')
         e_calca    = item_est(c_calca,     5, 'unidade')
@@ -232,11 +239,6 @@ class Command(BaseCommand):
             paroquia=parq_sj, registrado_por=coord_sj,
         )
         Atendimento.objects.create(
-            familia=f_ana, tipo='doacao_cesta_basica', data=date(2026, 6, 12),
-            descricao='Entrega de cesta básica. Família em situação de extrema vulnerabilidade.',
-            paroquia=parq_sj, registrado_por=coord_sj,
-        )
-        Atendimento.objects.create(
             familia=f_carlos, tipo='encaminhamento', data=date(2026, 6, 15),
             descricao='Encaminhamento para apoio a refugiados na paróquia Nossa Senhora Aparecida.',
             paroquia=parq_sj, paroquia_destino=parq_nsa, registrado_por=coord_sj,
@@ -252,37 +254,100 @@ class Command(BaseCommand):
             descricao='Orientação sobre regularização de imóvel para fins de acessibilidade.',
             paroquia=parq_sj, registrado_por=vol_sj,
         )
-        self.stdout.write('  ✓ Atendimentos (7) — todos os 6 tipos cobertos')
+        self.stdout.write('  ✓ Atendimentos (6) — todos os tipos cobertos')
 
-        # ── 8. Cestas ──────────────────────────────────────────────────────────
-        # CestaPronta montagem — itens do estoque já descontados nas qtds finais acima
-        cesta1 = CestaPronta.objects.create(
-            paroquia=parq_sj, quantidade=10, origem='montagem', data=date(2026, 6, 3),
-            observacao='Montagem para distribuição da campanha do inverno.',
-            registrado_por=coord_sj,
-        )
-        for est_item, qtd in [(e_arroz, 10), (e_feijao, 10), (e_oleo, 10), (e_macarrao, 10), (e_acucar, 10)]:
-            ItemMontagem.objects.create(
-                cesta_pronta=cesta1, item_estoque=est_item,
-                item_nome=est_item.nome, quantidade_total=qtd,
-            )
-
-        CestaPronta.objects.create(
-            paroquia=parq_sj, quantidade=5, origem='doacao', data=date(2026, 6, 8),
-            observacao='Cestas prontas doadas pela campanha solidária do Lions Club.',
-            registrado_por=coord_sj,
-        )
-
-        for f, qtd, dt in [
-            (f_maria,   1, date(2026, 6, 5)),
-            (f_ana,     1, date(2026, 6, 12)),
-            (f_fernanda, 2, date(2026, 6, 18)),
+        # ── 8. Cestas Básicas ──────────────────────────────────────────────────
+        # Modelo padrão
+        modelo_padrao = ModeloCesta.objects.create(nome='Cesta Básica Padrão', paroquia=parq_sj)
+        for nome, qtd, unidade in [
+            ('Arroz',       5, 'kg'),
+            ('Feijão',      5, 'kg'),
+            ('Óleo De Soja',1, 'unidade'),
+            ('Macarrão',    2, 'pacote'),
+            ('Açúcar',      2, 'kg'),
+            ('Leite Em Pó', 2, 'lata'),
         ]:
-            EntregaCesta.objects.create(
-                familia=f, paroquia=parq_sj, quantidade=qtd,
-                data=dt, registrado_por=coord_sj,
+            ModeloItemCesta.objects.create(modelo=modelo_padrao, nome=nome, quantidade=qtd, unidade=unidade)
+
+        # Cestas recebidas — criam estoque avulso (produto=None, como o view receber faz)
+        def item_est_avulso(nome, qtd, unid, validade=None):
+            i = ItemEstoque(
+                paroquia=parq_sj, produto=None, nome=nome,
+                categoria='alimento', quantidade=qtd, unidade=unid,
+                validade=validade, registrado_por=coord_sj,
             )
-        self.stdout.write('  ✓ Cestas (2 entradas, 3 entregas)')
+            i.save()
+            return i
+
+        cr1 = CestaRecebida.objects.create(
+            data=date(2026, 5, 18), paroquia=parq_sj,
+            doador_nome='Lions Club Caxias do Sul',
+            observacao='Doação de cestas para a campanha do inverno.',
+            registrado_por=coord_sj,
+        )
+        for nome, qtd, unid, val in [
+            ('Arroz',        5, 'kg',      date(2027, 1, 15)),
+            ('Feijão',       5, 'kg',      date(2026, 12, 10)),
+            ('Óleo De Soja', 5, 'unidade', date(2026, 10, 1)),
+            ('Macarrão',     5, 'pacote',  date(2026, 11, 20)),
+            ('Açúcar',       5, 'kg',      date(2027, 3, 1)),
+            ('Leite Em Pó',  5, 'lata',    date(2026, 6, 28)),
+        ]:
+            ItemCestaRecebida.objects.create(cesta=cr1, nome=nome, quantidade=qtd, unidade=unid, validade=val)
+            item_est_avulso(nome, qtd, unid, val)
+
+        cr2 = CestaRecebida.objects.create(
+            data=date(2026, 6, 8), paroquia=parq_sj,
+            doador_nome='Supermercado Gaúcho',
+            observacao='Doação solidária de cestas básicas.',
+            registrado_por=coord_sj,
+        )
+        for nome, qtd, unid, val in [
+            ('Arroz',        10, 'kg',      date(2027, 1, 15)),
+            ('Feijão',        8, 'kg',      date(2026, 12, 10)),
+            ('Óleo De Soja',  3, 'unidade', date(2026, 10, 1)),
+            ('Macarrão',      8, 'pacote',  date(2026, 11, 20)),
+            ('Açúcar',        3, 'kg',      date(2027, 3, 1)),
+            ('Leite Em Pó',   4, 'lata',    date(2026, 6, 28)),
+        ]:
+            ItemCestaRecebida.objects.create(cesta=cr2, nome=nome, quantidade=qtd, unidade=unid, validade=val)
+            item_est_avulso(nome, qtd, unid, val)
+
+        # Cestas entregues — deduções já refletidas nas qtds do estoque acima
+        ce1 = CestaEntregue.objects.create(
+            data=date(2026, 6, 12), familia=f_ana, paroquia=parq_sj,
+            modelo_usado=modelo_padrao,
+            observacao='Entrega de cesta básica para família em extrema vulnerabilidade.',
+            registrado_por=coord_sj,
+        )
+        for est, nome, unid, qtd in [
+            (e_arroz,    'Arroz',        'kg',      2),
+            (e_feijao,   'Feijão',       'kg',      1),
+            (e_oleo,     'Óleo De Soja', 'unidade', 1),
+            (e_macarrao, 'Macarrão',     'pacote',  1),
+            (e_acucar,   'Açúcar',       'kg',      1),
+            (e_leite,    'Leite Em Pó',  'lata',    1),
+        ]:
+            ItemCestaEntregue.objects.create(
+                cesta=ce1, item_estoque=est, item_nome=nome, item_unidade=unid, quantidade=qtd,
+            )
+
+        ce2 = CestaEntregue.objects.create(
+            data=date(2026, 6, 20), familia=f_maria, paroquia=parq_sj,
+            observacao='Segunda entrega mensal para família com crianças.',
+            registrado_por=coord_sj,
+        )
+        for est, nome, unid, qtd in [
+            (e_arroz,    'Arroz',       'kg',     2),
+            (e_feijao,   'Feijão',      'kg',     1),
+            (e_macarrao, 'Macarrão',    'pacote', 1),
+            (e_leite,    'Leite Em Pó', 'lata',   1),
+        ]:
+            ItemCestaEntregue.objects.create(
+                cesta=ce2, item_estoque=est, item_nome=nome, item_unidade=unid, quantidade=qtd,
+            )
+
+        self.stdout.write('  ✓ Cestas (1 modelo padrão, 2 recebidas, 2 entregues)')
 
         # ── 9. Bazar ───────────────────────────────────────────────────────────
         cb_cam_m = CatalogoBazar.objects.create(nome='Camiseta',   genero='masculino')

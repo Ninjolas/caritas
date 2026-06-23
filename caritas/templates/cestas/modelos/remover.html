@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Remover Modelo — Sistema Cáritas{% endblock %}
+{% block page_title %}Remover Modelo de Cesta{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:listagem' %}">Cesta Básica</a></li>
+<li class="breadcrumb-item"><a href="{% url 'cestas:modelo_listagem' %}">Modelos</a></li>
+<li class="breadcrumb-item active">Remover</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:500px">
+    <div class="card border-danger">
+        <div class="card-body">
+            <h5 class="card-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar remoção</h5>
+            <p>Você está prestes a remover o modelo <strong>{{ modelo.nome }}</strong> com {{ modelo.itens.count }} item(ns). Essa ação não pode ser desfeita.</p>
+            <form method="post" class="d-flex gap-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Confirmar</button>
+                <a href="{% url 'cestas:modelo_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

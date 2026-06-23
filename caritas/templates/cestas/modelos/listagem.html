@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Modelos de Cesta — Sistema Cáritas{% endblock %}
+{% block page_title %}Modelos de Cesta Básica{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:listagem' %}">Cesta Básica</a></li>
+<li class="breadcrumb-item active">Modelos</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-0" style="font-size:14px">Modelos padrão para pré-preencher o formulário de montagem de cesta.</p>
+    <a href="{% url 'cestas:modelo_novo' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+        <i class="bi bi-plus me-1"></i> Novo Modelo
+    </a>
+</div>
+
+{% if modelos %}
+<div class="row g-3">
+    {% for modelo in modelos %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title mb-1">{{ modelo.nome }}</h6>
+                {% if modelo.paroquia %}<p class="text-muted mb-2" style="font-size:12px"><i class="bi bi-building me-1"></i>{{ modelo.paroquia.nome }}</p>{% endif %}
+                <ul class="list-unstyled mb-0" style="font-size:13px">
+                    {% for item in modelo.itens.all %}
+                    <li><i class="bi bi-dot"></i>{{ item.quantidade }} {{ item.unidade }} {{ item.nome }}</li>
+                    {% empty %}
+                    <li class="text-muted">Sem itens</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card-footer d-flex gap-2 justify-content-end" style="background:none">
+                <a href="{% url 'cestas:modelo_editar' modelo.pk %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'cestas:modelo_remover' modelo.pk %}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info" style="font-size:14px">
+    <i class="bi bi-info-circle me-1"></i> Nenhum modelo cadastrado. <a href="{% url 'cestas:modelo_novo' %}">Criar o primeiro</a>.
+</div>
+{% endif %}
+{% endblock %}

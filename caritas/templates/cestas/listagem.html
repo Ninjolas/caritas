@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Cesta Básica — Sistema Cáritas{% endblock %}
+{% block page_title %}Cesta Básica{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Cesta Básica</li>{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <p class="text-muted mb-0" style="font-size:14px">Histórico de cestas recebidas e entregues{% if is_admin %} de todas as paróquias{% endif %}.</p>
+    <div class="d-flex gap-2">
+        {% if request.user.perfil == 'coordenador' or request.user.perfil == 'administrador' %}
+        <a href="{% url 'cestas:modelo_listagem' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-card-list me-1"></i> Modelos
+        </a>
+        {% endif %}
+        <a href="{% url 'cestas:receber' %}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-inbox-fill me-1"></i> Registrar Cesta Recebida
+        </a>
+        <a href="{% url 'cestas:montar' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+            <i class="bi bi-box-seam me-1"></i> Montar e Entregar
+        </a>
+    </div>
+</div>
+
+<ul class="nav nav-pills mb-3" id="cestaTabs" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-recebidas">
+            <i class="bi bi-inbox me-1"></i> Recebidas
+            <span class="badge bg-secondary ms-1">{{ recebidas|length }}</span>
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-entregues">
+            <i class="bi bi-box-arrow-right me-1"></i> Entregues
+            <span class="badge bg-secondary ms-1">{{ entregues|length }}</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    {# ── Cestas Recebidas ─────────────────────────────────────────── #}
+    <div class="tab-pane fade show active" id="tab-recebidas">
+        <div class="card">
+            <div class="card-header">Histórico de Cestas Recebidas</div>
+            <div class="card-body p-0">
+                {% if recebidas %}
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Doador</th>
+                            {% if is_admin %}<th>Paróquia</th>{% endif %}
+                            <th>Itens</th>
+                            <th>Registrado por</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in recebidas %}
+                        <tr>
+                            <td style="white-space:nowrap">{{ c.data|date:"d/m/Y" }}</td>
+                            <td>{{ c.doador_nome|default:"Anônimo" }}</td>
+                            {% if is_admin %}<td>{{ c.paroquia.nome|default:"—" }}</td>{% endif %}
+                            <td style="font-size:13px;color:#374151">
+                                {% for item in c.itens.all %}
+                                    {{ item.quantidade }} {{ item.unidade }} {{ item.nome }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}—
+                                {% endfor %}
+                            </td>
+                            <td style="font-size:13px">{{ c.registrado_por.get_full_name|default:c.registrado_por.username }}</td>
+                            <td class="text-end" style="white-space:nowrap">
+                                {% if request.user.perfil == 'coordenador' or request.user.perfil == 'administrador' %}
+                                <a href="{% url 'cestas:editar_recebida' c.pk %}" class="btn btn-outline-secondary btn-sm" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{% url 'cestas:remover_recebida' c.pk %}" class="d-inline"
+                                      onsubmit="return confirm('Remover esta cesta recebida? Os itens serão revertidos do estoque.')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm ms-1" title="Remover">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox" style="font-size:2.5rem;display:block;opacity:.4;margin-bottom:8px"></i>
+                    <p class="mb-0">Nenhuma cesta recebida registrada.</p>
+                    <a href="{% url 'cestas:receber' %}" class="btn btn-outline-success btn-sm mt-3">
+                        Registrar primeira cesta recebida
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Cestas Entregues ─────────────────────────────────────────── #}
+    <div class="tab-pane fade" id="tab-entregues">
+        <div class="card">
+            <div class="card-header">Histórico de Cestas Entregues</div>
+            <div class="card-body p-0">
+                {% if entregues %}
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Família</th>
+                            {% if is_admin %}<th>Paróquia</th>{% endif %}
+                            <th>Modelo</th>
+                            <th>Itens</th>
+                            <th>Registrado por</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in entregues %}
+                        <tr>
+                            <td style="white-space:nowrap">{{ c.data|date:"d/m/Y" }}</td>
+                            <td><strong>{{ c.familia.responsavel_nome }}</strong></td>
+                            {% if is_admin %}<td>{{ c.paroquia.nome|default:"—" }}</td>{% endif %}
+                            <td style="font-size:13px;color:#6b7280">{{ c.modelo_usado.nome|default:"—" }}</td>
+                            <td style="font-size:13px;color:#374151">
+                                {% for item in c.itens.all %}
+                                    {{ item.quantidade }}x {{ item.item_nome }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}—
+                                {% endfor %}
+                            </td>
+                            <td style="font-size:13px">{{ c.registrado_por.get_full_name|default:c.registrado_por.username }}</td>
+                            <td class="text-end" style="white-space:nowrap">
+                                {% if request.user.perfil == 'coordenador' or request.user.perfil == 'administrador' %}
+                                <a href="{% url 'cestas:editar_entregue' c.pk %}" class="btn btn-outline-secondary btn-sm" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{% url 'cestas:remover_entregue' c.pk %}" class="d-inline"
+                                      onsubmit="return confirm('Remover esta entrega? Os itens serão restaurados ao estoque.')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm ms-1" title="Remover">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-box-seam" style="font-size:2.5rem;display:block;opacity:.4;margin-bottom:8px"></i>
+                    <p class="mb-0">Nenhuma cesta entregue ainda.</p>
+                    <a href="{% url 'cestas:montar' %}" class="btn btn-outline-primary btn-sm mt-3">
+                        Montar e entregar cesta
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -107,6 +107,9 @@
         <a href="{% url 'atendimentos:listagem' %}" class="nav-link {% if 'atendimentos' in request.path %}active{% endif %}">
             <i class="bi bi-calendar-check"></i> Atendimentos
         </a>
+        <a href="{% url 'cestas:listagem' %}" class="nav-link {% if 'cestas' in request.path %}active{% endif %}">
+            <i class="bi bi-basket2"></i> Cesta Básica
+        </a>
         <a href="{% url 'estoque:catalogo' %}" class="nav-link {% if 'catalogo' in request.path %}active{% endif %}">
             <i class="bi bi-journal-bookmark"></i> Catálogo
         </a>

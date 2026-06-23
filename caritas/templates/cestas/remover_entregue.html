@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Remover Cesta Entregue — Sistema Cáritas{% endblock %}
+{% block page_title %}Remover Cesta Entregue{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:listagem' %}">Cesta Básica</a></li>
+<li class="breadcrumb-item active">Remover</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:560px">
+    <div class="card border-danger">
+        <div class="card-body">
+            <h5 class="card-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar remoção</h5>
+            <p class="mb-1">Você está prestes a remover a cesta entregue:</p>
+            <ul class="mt-2 mb-3">
+                <li><strong>Data:</strong> {{ cesta.data|date:"d/m/Y" }}</li>
+                <li><strong>Família:</strong> {{ cesta.familia.responsavel_nome }}</li>
+                <li><strong>Itens:</strong>
+                    {% for item in cesta.itens.all %}
+                        {{ item.quantidade }} {{ item.item_unidade }} {{ item.item_nome }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </li>
+            </ul>
+            {% if cesta.itens.exists %}
+            <div class="alert alert-warning d-flex gap-2 align-items-start" style="font-size:13px">
+                <i class="bi bi-arrow-counterclockwise mt-1"></i>
+                <div>Os <strong>{{ cesta.itens.count }} itens</strong> desta cesta serão <strong>devolvidos ao estoque</strong> ao confirmar.</div>
+            </div>
+            {% endif %}
+            <form method="post" class="d-flex gap-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Confirmar remoção</button>
+                <a href="{% url 'cestas:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

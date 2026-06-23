@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Cesta Recebida — Sistema Cáritas{% endblock %}
+{% block page_title %}Registrar Cesta Recebida{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:listagem' %}">Cesta Básica</a></li>
+<li class="breadcrumb-item active">Registrar Recebida</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-8">
+<form method="post">
+{% csrf_token %}
+
+<fieldset class="form-section">
+    <legend>Dados da Cesta Recebida</legend>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Data *</label>
+            {{ form.data }}
+            {% for e in form.data.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Doador</label>
+            {{ form.doador_nome }}
+        </div>
+        <div class="col-12">
+            <label class="form-label">Observação</label>
+            {{ form.observacao }}
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="form-section">
+    <legend class="d-flex justify-content-between align-items-center w-100">
+        <span>Itens da Cesta</span>
+        <button type="button" id="btn-add" class="btn btn-outline-secondary btn-sm" style="font-size:12px">
+            <i class="bi bi-plus me-1"></i> Adicionar Item
+        </button>
+    </legend>
+    {{ formset.management_form }}
+    <div id="formset-container">
+        {% for f in formset %}
+        <div class="item-row border rounded p-3 mb-2 position-relative">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small">{{ f.nome.label }}</label>
+                    {{ f.nome }}
+                    {% for e in f.nome.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">{{ f.quantidade.label }}</label>
+                    {{ f.quantidade }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">{{ f.unidade.label }}</label>
+                    {{ f.unidade }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">{{ f.validade.label }}</label>
+                    {{ f.validade }}
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remover" title="Remover">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="d-none">{{ f.DELETE }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</fieldset>
+
+<div class="d-flex gap-2">
+    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i> Registrar Cesta</button>
+    <a href="{% url 'cestas:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const container = document.getElementById('formset-container');
+    const totalForms = document.getElementById('id_itens-TOTAL_FORMS');
+    const btnAdd = document.getElementById('btn-add');
+
+    function bindRow(row) {
+        row.querySelector('.btn-remover')?.addEventListener('click', function () {
+            const rows = container.querySelectorAll('.item-row:not([style*="none"])');
+            if (rows.length <= 1) { alert('É necessário ao menos 1 item.'); return; }
+            const del = row.querySelector('input[name$="-DELETE"]');
+            if (del) { del.checked = true; row.style.display = 'none'; }
+            else row.remove();
+        });
+    }
+
+    container.querySelectorAll('.item-row').forEach(bindRow);
+
+    btnAdd?.addEventListener('click', function () {
+        const forms = container.querySelectorAll('.item-row');
+        const last = forms[forms.length - 1];
+        const newRow = last.cloneNode(true);
+        const idx = parseInt(totalForms.value);
+        newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${idx}-`);
+        newRow.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+        newRow.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        newRow.style.display = '';
+        container.appendChild(newRow);
+        totalForms.value = idx + 1;
+        bindRow(newRow);
+    });
+})();
+</script>
+{% endblock %}

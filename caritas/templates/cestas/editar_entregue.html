@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Editar Cesta Entregue — Sistema Cáritas{% endblock %}
+{% block page_title %}Editar Cesta Entregue{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'cestas:listagem' %}">Cesta Básica</a></li>
+<li class="breadcrumb-item active">Editar Entregue</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+    <div class="alert alert-info d-flex align-items-center gap-2 mb-4" style="font-size:13px">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>Cesta entregue a <strong>{{ cesta.familia.responsavel_nome }}</strong>
+        em <strong>{{ cesta.data|date:"d/m/Y" }}</strong>
+        com <strong>{{ cesta.itens.count }} item(ns)</strong>. A família e os itens não podem ser alterados aqui.</div>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <fieldset class="form-section">
+            <legend>Dados</legend>
+            {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% for e in field.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+        </fieldset>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn" style="background:#1a5276;color:#fff">
+                <i class="bi bi-check-circle me-1"></i> Salvar
+            </button>
+            <a href="{% url 'cestas:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
