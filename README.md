@@ -12,18 +12,6 @@ Sistema web desenvolvido em Django para apoiar as atividades da Cáritas Diocesa
 
 ---
 
-## Usuários de teste
-
-| Usuário | Senha | Perfil | Paróquia |
-|---------|-------|--------|----------|
-| `admin` | *(senha definida no Render — var `DJANGO_SUPERUSER_PASSWORD`)* | Administrador (acesso total) | — |
-| `coord_sj` | `senha123` | Coordenador | São José |
-| `vol_sj` | `senha123` | Voluntário | São José |
-| `coord_nsa` | `senha123` | Coordenador | N. Sra. Aparecida |
-| `coord_bazar` | `senha123` | Coordenador do Bazar | — |
-
----
-
 ## Módulos disponíveis
 
 | Módulo | Descrição |
@@ -55,8 +43,6 @@ python manage.py seed          # popula com dados de exemplo
 python manage.py runserver
 ```
 
-Acesse em http://localhost:8000 com qualquer usuário da tabela acima.
-
 ---
 
 ## Resetar e re-popular o banco (Render)
@@ -65,9 +51,6 @@ Acesse em http://localhost:8000 com qualquer usuário da tabela acima.
 2. Dispare um novo deploy (qualquer push ou deploy manual)
 3. O `build.sh` irá: **flush → migrate → seed**
 4. Após o deploy, **remova ou desative** a variável `RESET_DB` para não resetar nos próximos deploys
-
-> A senha do `admin` é preservada conforme definida em `DJANGO_SUPERUSER_PASSWORD` no Render.
-> Os demais usuários de teste são criados com senha `senha123`.
 
 ---
 
