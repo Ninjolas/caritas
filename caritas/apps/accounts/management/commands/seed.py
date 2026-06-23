@@ -42,8 +42,9 @@ class Command(BaseCommand):
         self.stdout.write('  ✓ Paróquias (2)')
 
         # ── 2. Usuários ────────────────────────────────────────────────────────
-        # admin: get_or_create porque build.sh pode tê-lo criado antes do seed
-        admin, _ = Usuario.objects.get_or_create(username='admin')
+        # admin: get_or_create porque build.sh o cria antes com DJANGO_SUPERUSER_PASSWORD.
+        # Não alteramos a senha para preservar a credencial definida no Render.
+        admin, created = Usuario.objects.get_or_create(username='admin')
         admin.first_name = 'Administrador'
         admin.last_name = 'Sistema'
         admin.email = 'admin@caritas.org.br'
@@ -52,7 +53,8 @@ class Command(BaseCommand):
         admin.is_staff = True
         admin.is_superuser = True
         admin.is_active = True
-        admin.set_password('senha123')
+        if created:
+            admin.set_password('senha123')
         admin.save()
 
         def make_user(username, first, last, email, perfil, paroquia):
@@ -390,7 +392,7 @@ class Command(BaseCommand):
         # ── Resumo ─────────────────────────────────────────────────────────────
         self.stdout.write(self.style.SUCCESS('\n✅ Seed concluído com sucesso!\n'))
         self.stdout.write('   Logins disponíveis (senha: senha123):')
-        self.stdout.write('   admin        — Administrador (acesso total, sem paróquia)')
+        self.stdout.write('   admin        — Administrador (senha = DJANGO_SUPERUSER_PASSWORD do Render)')
         self.stdout.write('   coord_sj     — Coordenador São José')
         self.stdout.write('   vol_sj       — Voluntário São José')
         self.stdout.write('   coord_nsa    — Coordenador N. Sra. Aparecida')
