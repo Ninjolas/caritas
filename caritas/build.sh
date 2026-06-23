@@ -5,7 +5,8 @@ pip install -r requirements.txt
 
 python manage.py collectstatic --no-input
 
-# Zera todos os dados se RESET_DB=true (remova a variável após o deploy)
+# RESET_DB=true → zera o banco e popula com dados de demonstração.
+# Lembre de remover (ou setar para false) após o deploy de demonstração.
 if [ "$RESET_DB" = "true" ]; then
     echo ">>> RESET_DB detectado: limpando todos os dados do banco..."
     python manage.py flush --no-input
@@ -35,3 +36,10 @@ else:
     user.save()
     print(f'Admin "{username}" {"criado" if created else "atualizado"} com sucesso.')
 EOF
+
+# Seed de demonstração: roda junto com o reset para popular o banco
+if [ "$RESET_DB" = "true" ]; then
+    echo ">>> Populando banco com dados de demonstração..."
+    python manage.py seed
+    echo ">>> Seed concluído. Todos os usuários têm senha: senha123"
+fi
