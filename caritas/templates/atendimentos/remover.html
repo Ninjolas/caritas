@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Remover Atendimento — Sistema Cáritas{% endblock %}
+{% block page_title %}Remover Atendimento{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'atendimentos:listagem' %}">Atendimentos</a></li>
+<li class="breadcrumb-item active">Remover</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:560px">
+  <div class="card border-danger">
+    <div class="card-body">
+      <h5 class="card-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar remoção</h5>
+      <p class="mb-1">Você está prestes a remover o seguinte atendimento:</p>
+      <ul class="mt-2 mb-3">
+        <li><strong>Família:</strong> {{ atendimento.familia.responsavel_nome }}</li>
+        <li><strong>Tipo:</strong> {{ atendimento.get_tipo_display }}</li>
+        <li><strong>Data:</strong> {{ atendimento.data|date:"d/m/Y" }}</li>
+        <li><strong>Registrado por:</strong> {{ atendimento.registrado_por.get_full_name|default:atendimento.registrado_por.username }}</li>
+      </ul>
+      {% if atendimento.itens.exists %}
+      <div class="alert alert-warning d-flex gap-2 align-items-start" style="font-size:13px">
+        <i class="bi bi-arrow-counterclockwise mt-1"></i>
+        <div>
+          Este atendimento possui <strong>{{ atendimento.itens.count }} item(ns) de estoque</strong>.
+          As quantidades serão <strong>restauradas automaticamente</strong> ao confirmar.
+        </div>
+      </div>
+      {% endif %}
+      <form method="post" class="d-flex gap-2">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-trash me-1"></i> Confirmar remoção
+        </button>
+        <a href="{% url 'atendimentos:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

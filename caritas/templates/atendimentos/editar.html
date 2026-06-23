@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Editar Atendimento — Sistema Cáritas{% endblock %}
+{% block page_title %}Editar Atendimento{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'atendimentos:listagem' %}">Atendimentos</a></li>
+<li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px">
+
+  <div class="alert alert-info d-flex align-items-center gap-2 mb-4" style="font-size:13px">
+    <i class="bi bi-info-circle-fill"></i>
+    <div>
+      Atendimento de <strong>{{ atendimento.get_tipo_display }}</strong> para
+      <strong>{{ atendimento.familia.responsavel_nome }}</strong>.
+      O tipo e os itens de estoque não podem ser alterados aqui.
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <fieldset class="form-section">
+      <legend>Dados do Atendimento</legend>
+
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.data.id_for_label }}">{{ form.data.label }}</label>
+        {{ form.data }}
+        {% for e in form.data.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+      </div>
+
+      {% if atendimento.tipo == 'outro' %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.tipo_outro.id_for_label }}">{{ form.tipo_outro.label }}</label>
+        {{ form.tipo_outro }}
+        {% for e in form.tipo_outro.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+      </div>
+      {% endif %}
+
+      {% if atendimento.tipo == 'encaminhamento' %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.paroquia_destino.id_for_label }}">{{ form.paroquia_destino.label }}</label>
+        {{ form.paroquia_destino }}
+        {% for e in form.paroquia_destino.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.descricao.id_for_label }}">{{ form.descricao.label }}</label>
+        {{ form.descricao }}
+        {% for e in form.descricao.errors %}<div class="text-danger" style="font-size:12px;margin-top:4px">{{ e }}</div>{% endfor %}
+      </div>
+    </fieldset>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn" style="background:#1a5276;color:#fff;font-weight:500">
+        <i class="bi bi-check-circle me-1"></i> Salvar alterações
+      </button>
+      <a href="{% url 'atendimentos:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

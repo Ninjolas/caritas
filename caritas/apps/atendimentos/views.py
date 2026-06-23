@@ -4,10 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 
-from apps.accounts.decorators import modulo_paroquia_required
+from django.core.exceptions import PermissionDenied
+
+from apps.accounts.decorators import coordenador_required, modulo_paroquia_required
 from apps.estoque.models import ItemEstoque
 from .models import Atendimento, TIPOS_COM_ITENS
-from .forms import AtendimentoForm, ItemAtendimentoFormSet
+from .forms import AtendimentoEditarForm, AtendimentoForm, ItemAtendimentoFormSet
 
 TIPO_CATEGORIA_MAP = {
     'doacao_roupas': ['roupa', 'calcado'],
@@ -35,10 +37,17 @@ def _build_itens_json(paroquia):
 @login_required
 @modulo_paroquia_required
 def listagem(request):
-    atendimentos = Atendimento.objects.filter(
-        paroquia=request.user.paroquia
-    ).select_related('familia', 'registrado_por')
-    return render(request, 'atendimentos/listagem.html', {'atendimentos': atendimentos})
+    is_admin = request.user.perfil == 'administrador'
+    if is_admin:
+        atendimentos = Atendimento.objects.all().order_by('-data').select_related('familia', 'registrado_por', 'paroquia')
+    else:
+        atendimentos = Atendimento.objects.filter(
+            paroquia=request.user.paroquia
+        ).order_by('-data').select_related('familia', 'registrado_por')
+    return render(request, 'atendimentos/listagem.html', {
+        'atendimentos': atendimentos,
+        'is_admin': is_admin,
+    })
 
 
 @login_required
@@ -127,3 +136,47 @@ def registrar(request):
         'itens_json': _build_itens_json(paroquia),
         'tipo_categoria_json': json.dumps(TIPO_CATEGORIA_MAP),
     })
+
+
+@login_required
+@modulo_paroquia_required
+def editar(request, pk):
+    atendimento = get_object_or_404(Atendimento, pk=pk)
+    is_admin = request.user.perfil == 'administrador'
+    if not is_admin and atendimento.paroquia != request.user.paroquia:
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        form = AtendimentoEditarForm(request.POST, instance=atendimento)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Atendimento atualizado com sucesso!')
+            return redirect('atendimentos:listagem')
+    else:
+        form = AtendimentoEditarForm(instance=atendimento)
+
+    return render(request, 'atendimentos/editar.html', {
+        'form': form,
+        'atendimento': atendimento,
+    })
+
+
+@login_required
+@coordenador_required
+def remover(request, pk):
+    atendimento = get_object_or_404(Atendimento, pk=pk)
+    is_admin = request.user.perfil == 'administrador'
+    if not is_admin and atendimento.paroquia != request.user.paroquia:
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        with transaction.atomic():
+            for item in atendimento.itens.select_related('item_estoque').all():
+                if item.item_estoque:
+                    item.item_estoque.quantidade += item.quantidade
+                    item.item_estoque.save()
+            atendimento.delete()
+        messages.success(request, 'Atendimento removido e estoque restaurado.')
+        return redirect('atendimentos:listagem')
+
+    return render(request, 'atendimentos/remover.html', {'atendimento': atendimento})

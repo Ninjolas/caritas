@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <p class="text-muted mb-0">Registros de atendimentos da sua paróquia.</p>
+    <p class="text-muted mb-0">{% if is_admin %}Todos os atendimentos do sistema.{% else %}Registros de atendimentos da sua paróquia.{% endif %}</p>
     <a href="{% url 'atendimentos:registrar' %}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-lg me-1"></i> Registrar Atendimento
     </a>
@@ -27,7 +27,9 @@
                     <th>Data</th>
                     <th>Família</th>
                     <th>Tipo</th>
+                    {% if is_admin %}<th>Paróquia</th>{% endif %}
                     <th>Registrado por</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -36,7 +38,18 @@
                     <td>{{ a.data|date:"d/m/Y" }}</td>
                     <td>{{ a.familia.responsavel_nome }}</td>
                     <td><span class="badge bg-primary-subtle text-primary-emphasis">{{ a.get_tipo_display }}</span></td>
+                    {% if is_admin %}<td>{{ a.paroquia.nome|default:"—" }}</td>{% endif %}
                     <td>{{ a.registrado_por.get_full_name|default:a.registrado_por.username }}</td>
+                    <td class="text-end" style="white-space:nowrap">
+                        <a href="{% url 'atendimentos:editar' a.pk %}" class="btn btn-outline-secondary btn-sm" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if request.user.perfil == 'coordenador' or request.user.perfil == 'administrador' %}
+                        <a href="{% url 'atendimentos:remover' a.pk %}" class="btn btn-outline-danger btn-sm ms-1" title="Remover">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -83,3 +83,23 @@ ItemAtendimentoFormSet = formset_factory(
     validate_min=False,
     can_delete=True,
 )
+
+
+class AtendimentoEditarForm(forms.ModelForm):
+    """Edição segura: apenas campos sem impacto no estoque."""
+    class Meta:
+        model = Atendimento
+        fields = ['data', 'tipo_outro', 'paroquia_destino', 'descricao']
+        widgets = {
+            'data': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'tipo_outro': forms.TextInput(attrs={'class': 'form-control'}),
+            'paroquia_destino': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.accounts.models import Paroquia
+        self.fields['paroquia_destino'].queryset = Paroquia.objects.filter(ativa=True).order_by('nome')
+        self.fields['paroquia_destino'].required = False
+        self.fields['tipo_outro'].required = False
