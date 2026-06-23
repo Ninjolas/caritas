@@ -1,13 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Entrar — Sistema Cáritas{% endblock %}
 
 {% block content %}
 <div style="min-height:100vh;background:linear-gradient(135deg,#1a2d3d 0%,#1a5276 100%);display:flex;align-items:center;justify-content:center;padding:2rem;">
     <div style="width:100%;max-width:400px;">
         <div class="text-center mb-4">
-            <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;">
-                <i class="bi bi-heart-fill" style="color:#e74c3c"></i>
-            </div>
+            <img src="{% static 'images/logo_caritas.png' %}" alt="Cáritas" style="width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 1rem">
             <h4 style="color:#fff;font-weight:600;margin:0">Sistema Cáritas</h4>
             <p style="color:rgba(255,255,255,0.6);font-size:14px;margin-top:4px">Gestão Social Integrada</p>
         </div>
