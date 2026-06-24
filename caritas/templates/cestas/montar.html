@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Montar e Entregar Cesta — Sistema Cáritas{% endblock %}
 {% block page_title %}Montar e Entregar Cesta Básica{% endblock %}
 {% block breadcrumb %}
@@ -76,7 +76,7 @@
 </fieldset>
 
 <div class="d-flex gap-2">
-    <button type="submit" class="btn" style="background:#1a5276;color:#fff"><i class="bi bi-check-lg me-1"></i> Registrar Entrega</button>
+    <button type="submit" class="btn" style="background:var(--caritas-primary);color:#fff"><i class="bi bi-check-lg me-1"></i> Registrar Entrega</button>
     <a href="{% url 'cestas:listagem' %}" class="btn btn-outline-secondary">Cancelar</a>
 </div>
 </form>

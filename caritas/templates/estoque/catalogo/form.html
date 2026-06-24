@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}{% if produto %}Editar Produto{% else %}Novo Produto{% endif %} — Catálogo{% endblock %}
 {% block page_title %}{% if produto %}Editar Produto{% else %}Novo Produto{% endif %}{% endblock %}
 {% block breadcrumb %}
@@ -81,7 +81,7 @@
             </div>
         </fieldset>
         <div class="d-flex gap-2">
-            <button type="submit" class="btn" style="background:#1a5276;color:#fff;font-weight:500">
+            <button type="submit" class="btn" style="background:var(--caritas-primary);color:#fff;font-weight:500">
                 <i class="bi bi-check-circle me-1"></i> Salvar
             </button>
             <a href="{% url 'estoque:catalogo' %}" class="btn btn-outline-secondary">Cancelar</a>

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}{% if modelo %}Editar{% else %}Novo{% endif %} Modelo — Sistema Cáritas{% endblock %}
 {% block page_title %}{% if modelo %}Editar{% else %}Novo{% endif %} Modelo de Cesta{% endblock %}
 {% block breadcrumb %}
@@ -60,7 +60,7 @@
 </fieldset>
 
 <div class="d-flex gap-2">
-    <button type="submit" class="btn" style="background:#1a5276;color:#fff">
+    <button type="submit" class="btn" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-check-circle me-1"></i> Salvar Modelo
     </button>
     <a href="{% url 'cestas:modelo_listagem' %}" class="btn btn-outline-secondary">Cancelar</a>

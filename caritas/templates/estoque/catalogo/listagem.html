@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Catálogo de Produtos — Sistema Cáritas{% endblock %}
 {% block page_title %}Catálogo de Produtos{% endblock %}
 {% block breadcrumb %}
@@ -10,7 +10,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <p class="text-muted mb-0" style="font-size:14px">{{ produtos.count }} produto(s) cadastrado(s)</p>
     {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
-    <a href="{% url 'estoque:catalogo_criar' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+    <a href="{% url 'estoque:catalogo_criar' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-plus-circle me-1"></i> Novo produto
     </a>
     {% endif %}

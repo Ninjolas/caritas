@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Estoque — Sistema Cáritas{% endblock %}
 {% block page_title %}Estoque{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">Estoque</li>{% endblock %}
@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <p class="text-muted mb-0" style="font-size:14px">{{ itens.count }} item(ns) registrado(s)</p>
     {% if user.perfil == 'coordenador' or user.perfil == 'administrador' %}
-    <a href="{% url 'estoque:entrada' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+    <a href="{% url 'estoque:entrada' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-plus-circle me-1"></i> Registrar entrada
     </a>
     {% endif %}

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Coordenadores — Sistema Cáritas{% endblock %}
 {% block page_title %}Coordenadores{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">Coordenadores</li>{% endblock %}
@@ -6,7 +6,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <p class="text-muted mb-0" style="font-size:14px">{{ usuarios.count }} coordenador(es)</p>
-    <a href="{% url 'accounts:criar_coordenador' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+    <a href="{% url 'accounts:criar_coordenador' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-person-plus me-1"></i> Novo Coordenador
     </a>
 </div>

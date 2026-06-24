@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Famílias — Sistema Cáritas{% endblock %}
 {% block page_title %}Famílias{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">Famílias</li>{% endblock %}
@@ -6,7 +6,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <p class="text-muted mb-0" style="font-size:14px">{{ familias.count }} família(s) cadastrada(s)</p>
-    <a href="{% url 'familias:cadastrar_familia' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+    <a href="{% url 'familias:cadastrar_familia' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-person-plus me-1"></i> Nova família
     </a>
 </div>

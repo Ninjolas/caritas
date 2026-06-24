@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Trocar Senha — Sistema Cáritas{% endblock %}
 {% block page_title %}Trocar Senha{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">Trocar Senha — {{ usuario.username }}</li>{% endblock %}
@@ -30,7 +30,7 @@
                     {% endif %}
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn" style="background:#1a5276;color:#fff;font-weight:500">
+                    <button type="submit" class="btn" style="background:var(--caritas-primary);color:#fff;font-weight:500">
                         <i class="bi bi-check-circle me-1"></i> Salvar senha
                     </button>
                     <a href="{% if usuario.perfil == 'coordenador' %}{% url 'accounts:gerenciar_coordenadores' %}{% else %}{% url 'accounts:gerenciar_voluntarios' %}{% endif %}" class="btn btn-outline-secondary">

@@ -6,16 +6,42 @@
 {% endblock %}
 
 {% block content %}
-<p class="text-muted mb-4">
-    Resumo de <strong>{{ mes_atual }}</strong>
-    {% if is_admin %} — <span class="badge bg-secondary">Todas as paróquias</span>{% else %} — {{ paroquia }}{% endif %}
-</p>
+<!-- Cabeçalho: navegação de mês + botão download -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <a href="?mes={{ prev_mes }}&ano={{ prev_ano }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        <span class="fw-semibold" style="min-width:160px;text-align:center;font-size:15px">
+            {{ mes_atual }}{% if is_admin %} <span class="badge bg-secondary ms-1" style="font-size:11px">Geral</span>{% else %} — {{ paroquia }}{% endif %}
+        </span>
+        <a href="?mes={{ next_mes }}&ano={{ next_ano }}" class="btn btn-sm btn-outline-secondary" {% if is_current_month %}style="pointer-events:none;opacity:.4"{% endif %}>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        <form method="get" class="d-flex gap-1 ms-2">
+            <select name="mes" class="form-select form-select-sm" style="width:auto">
+                {% for n,label in mes_choices %}
+                <option value="{{ n }}" {% if n == mes %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="ano" class="form-select form-select-sm" style="width:auto">
+                {% for y in anos_disponiveis %}
+                <option value="{{ y }}" {% if y == ano %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">Ir</button>
+        </form>
+    </div>
+    <a href="{% url 'relatorios:download' %}?mes={{ mes }}&ano={{ ano }}" class="btn btn-sm btn-success">
+        <i class="bi bi-download me-1"></i> Baixar CSV
+    </a>
+</div>
 
 <!-- Cards resumo -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
         <div class="metric-card d-flex align-items-center gap-3">
-            <div class="metric-icon" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-people-fill"></i></div>
+            <div class="metric-icon" style="background:#fdecea;color:#C0392B"><i class="bi bi-people-fill"></i></div>
             <div>
                 <div class="metric-value">{{ total_familias }}</div>
                 <div class="metric-label">Famílias Cadastradas</div>
@@ -36,7 +62,7 @@
             <div class="metric-icon" style="background:#fef3c7;color:#92400e"><i class="bi bi-box-seam"></i></div>
             <div>
                 <div class="metric-value">{{ total_estoque_qtd }}</div>
-                <div class="metric-label">Unidades em Estoque <small class="d-block text-muted" style="font-size:11px">{{ total_estoque_itens }} tipo(s) de item</small></div>
+                <div class="metric-label">Unidades em Estoque <small class="d-block text-muted" style="font-size:11px">{{ total_estoque_itens }} tipo(s)</small></div>
             </div>
         </div>
     </div>
@@ -46,6 +72,46 @@
             <div>
                 <div class="metric-value">{{ atendimentos_mes.count }}</div>
                 <div class="metric-label">Atendimentos no Mês</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Linha 2: cestas -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#fdecea;color:#C0392B"><i class="bi bi-basket2-fill"></i></div>
+            <div>
+                <div class="metric-value">{{ cestas_recebidas_mes.count }}</div>
+                <div class="metric-label">Cestas Recebidas no Mês</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#dbeafe;color:#1d4ed8"><i class="bi bi-basket-fill"></i></div>
+            <div>
+                <div class="metric-value">{{ cestas_entregues_mes.count }}</div>
+                <div class="metric-label">Cestas Entregues no Mês</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#dcfce7;color:#166534"><i class="bi bi-gift-fill"></i></div>
+            <div>
+                <div class="metric-value">{{ doacoes_mes.count }}</div>
+                <div class="metric-label">Doações Recebidas no Mês</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card d-flex align-items-center gap-3">
+            <div class="metric-icon" style="background:#fef3c7;color:#92400e"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div>
+                <div class="metric-value">{{ itens_vencidos|length }}</div>
+                <div class="metric-label">Itens Vencidos no Estoque</div>
             </div>
         </div>
     </div>
@@ -76,7 +142,7 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <!-- Atendimentos por tipo (tabela) -->
+    <!-- Atendimentos por tipo -->
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header">Atendimentos por Tipo — {{ mes_atual }}</div>
@@ -86,10 +152,7 @@
                     <thead><tr><th>Tipo</th><th class="text-end">Qtd.</th></tr></thead>
                     <tbody>
                         {% for item in atendimentos_por_tipo %}
-                        <tr>
-                            <td>{{ item.label }}</td>
-                            <td class="text-end"><strong>{{ item.total }}</strong></td>
-                        </tr>
+                        <tr><td>{{ item.label }}</td><td class="text-end"><strong>{{ item.total }}</strong></td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -107,14 +170,7 @@
             <div class="card-body p-0">
                 {% if doacoes_mes %}
                 <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Doador</th>
-                            {% if is_admin %}<th>Paróquia</th>{% endif %}
-                            <th class="text-end">Itens</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Data</th><th>Doador</th>{% if is_admin %}<th>Paróquia</th>{% endif %}<th class="text-end">Itens</th></tr></thead>
                     <tbody>
                         {% for d in doacoes_mes %}
                         <tr>
@@ -128,6 +184,57 @@
                 </table>
                 {% else %}
                 <p class="text-muted text-center py-4 mb-0">Nenhuma doação neste mês.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cestas Básicas -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-basket2 me-1"></i>Cestas Recebidas — {{ mes_atual }}</div>
+            <div class="card-body p-0">
+                {% if cestas_recebidas_mes %}
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Data</th><th>Doador</th><th class="text-end">Itens</th></tr></thead>
+                    <tbody>
+                        {% for c in cestas_recebidas_mes %}
+                        <tr>
+                            <td>{{ c.data|date:"d/m" }}</td>
+                            <td>{{ c.doador_nome|default:"Anônimo" }}</td>
+                            <td class="text-end">{{ c.itens.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted text-center py-4 mb-0">Nenhuma cesta recebida neste mês.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-basket me-1"></i>Cestas Entregues — {{ mes_atual }}</div>
+            <div class="card-body p-0">
+                {% if cestas_entregues_mes %}
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Data</th><th>Família</th>{% if is_admin %}<th>Paróquia</th>{% endif %}<th class="text-end">Itens</th></tr></thead>
+                    <tbody>
+                        {% for c in cestas_entregues_mes %}
+                        <tr>
+                            <td>{{ c.data|date:"d/m" }}</td>
+                            <td>{{ c.familia.responsavel_nome }}</td>
+                            {% if is_admin %}<td>{{ c.paroquia }}</td>{% endif %}
+                            <td class="text-end">{{ c.itens.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted text-center py-4 mb-0">Nenhuma cesta entregue neste mês.</p>
                 {% endif %}
             </div>
         </div>
@@ -176,16 +283,16 @@
                 {
                     label: 'Atendimentos',
                     data: atendimentos,
-                    backgroundColor: 'rgba(124,58,237,0.7)',
-                    borderColor: '#7c3aed',
+                    backgroundColor: 'rgba(192,57,43,0.7)',
+                    borderColor: '#C0392B',
                     borderWidth: 1,
                     borderRadius: 4,
                 },
                 {
                     label: 'Doações recebidas',
                     data: doacoes,
-                    backgroundColor: 'rgba(30,136,229,0.65)',
-                    borderColor: '#1e88e5',
+                    backgroundColor: 'rgba(243,156,18,0.65)',
+                    borderColor: '#F39C12',
                     borderWidth: 1,
                     borderRadius: 4,
                 }
@@ -202,7 +309,7 @@
     var tipoTotais = {{ tipo_totais|safe }};
     var canvas = document.getElementById('grafico-tipos');
     if (canvas && tipoLabels.length > 0) {
-        var cores = ['#7c3aed','#1e88e5','#16a34a','#f59e0b','#ef4444','#6366f1'];
+        var cores = ['#C0392B','#E74C3C','#F39C12','#922B21','#7B241C','#6366f1'];
         new Chart(canvas, {
             type: 'doughnut',
             data: {

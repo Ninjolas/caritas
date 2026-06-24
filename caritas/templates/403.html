@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Acesso Negado — Sistema Cáritas{% endblock %}
 {% block page_title %}Acesso Negado{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">403</li>{% endblock %}
@@ -8,7 +8,7 @@
     <i class="bi bi-shield-x" style="font-size:56px;color:#d1d5db;display:block;margin-bottom:1rem"></i>
     <h4 style="color:#374151">Você não tem permissão para acessar esta página.</h4>
     <p class="text-muted" style="font-size:14px">Se acredita que isso é um erro, entre em contato com o administrador.</p>
-    <a href="{% url 'familias:dashboard' %}" class="btn mt-2" style="background:#1a5276;color:#fff">
+    <a href="{% url 'familias:dashboard' %}" class="btn mt-2" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-arrow-left me-1"></i> Voltar ao Dashboard
     </a>
 </div>

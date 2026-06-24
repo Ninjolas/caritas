@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Doações Recebidas — Sistema Cáritas{% endblock %}
 {% block page_title %}Doações Recebidas{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">Doações Recebidas</li>{% endblock %}
@@ -6,7 +6,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <p class="text-muted mb-0" style="font-size:14px">Registro de doações recebidas</p>
-    <a href="{% url 'doacoes:registrar' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+    <a href="{% url 'doacoes:registrar' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-plus-circle me-1"></i> Registrar doação
     </a>
 </div>

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Voluntários — Sistema Cáritas{% endblock %}
 {% block page_title %}Voluntários{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">Voluntários</li>{% endblock %}
@@ -6,7 +6,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <p class="text-muted mb-0" style="font-size:14px">{{ usuarios.count }} voluntário(s)</p>
-    <a href="{% url 'accounts:criar_voluntario' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+    <a href="{% url 'accounts:criar_voluntario' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-person-plus me-1"></i> Novo Voluntário
     </a>
 </div>

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Modelos de Cesta — Sistema Cáritas{% endblock %}
 {% block page_title %}Modelos de Cesta Básica{% endblock %}
 {% block breadcrumb %}
@@ -9,7 +9,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <p class="text-muted mb-0" style="font-size:14px">Modelos padrão para pré-preencher o formulário de montagem de cesta.</p>
-    <a href="{% url 'cestas:modelo_novo' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+    <a href="{% url 'cestas:modelo_novo' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
         <i class="bi bi-plus me-1"></i> Novo Modelo
     </a>
 </div>

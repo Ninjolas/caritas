@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}Cesta Básica — Sistema Cáritas{% endblock %}
 {% block page_title %}Cesta Básica{% endblock %}
 {% block breadcrumb %}<li class="breadcrumb-item active">Cesta Básica</li>{% endblock %}
@@ -15,7 +15,7 @@
         <a href="{% url 'cestas:receber' %}" class="btn btn-outline-success btn-sm">
             <i class="bi bi-inbox-fill me-1"></i> Registrar Cesta Recebida
         </a>
-        <a href="{% url 'cestas:montar' %}" class="btn btn-sm" style="background:#1a5276;color:#fff">
+        <a href="{% url 'cestas:montar' %}" class="btn btn-sm" style="background:var(--caritas-primary);color:#fff">
             <i class="bi bi-box-seam me-1"></i> Montar e Entregar
         </a>
     </div>
