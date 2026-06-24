@@ -115,7 +115,7 @@ class Command(BaseCommand):
         e_arroz    = item_est(c_arroz,    46, 'kg',      date(2027, 1, 15))
         e_feijao   = item_est(c_feijao,   38, 'kg',      date(2026, 12, 10))
         e_oleo     = item_est(c_oleo,     29, 'unidade', date(2026, 10, 1))
-        e_macarrao = item_est(c_macarrao, 58, 'pacote',  date(2026, 11, 20))
+        e_macarrao = item_est(c_macarrao, 58, 'pacotes',  date(2026, 11, 20))
         e_acucar   = item_est(c_acucar,   34, 'kg',      date(2027, 3, 1))
         e_leite    = item_est(c_leite,    18, 'lata',    date(2026, 6, 28))  # vence em breve
         e_sal      = item_est(c_sal,      15, 'kg',      date(2026, 6, 10))  # já vencido
@@ -263,7 +263,7 @@ class Command(BaseCommand):
             ('Arroz',       5, 'kg'),
             ('Feijão',      5, 'kg'),
             ('Óleo De Soja',1, 'unidade'),
-            ('Macarrão',    2, 'pacote'),
+            ('Macarrão',    2, 'pacotes'),
             ('Açúcar',      2, 'kg'),
             ('Leite Em Pó', 2, 'lata'),
         ]:
@@ -289,7 +289,7 @@ class Command(BaseCommand):
             ('Arroz',        5, 'kg',      date(2027, 1, 15)),
             ('Feijão',       5, 'kg',      date(2026, 12, 10)),
             ('Óleo De Soja', 5, 'unidade', date(2026, 10, 1)),
-            ('Macarrão',     5, 'pacote',  date(2026, 11, 20)),
+            ('Macarrão',     5, 'pacotes',  date(2026, 11, 20)),
             ('Açúcar',       5, 'kg',      date(2027, 3, 1)),
             ('Leite Em Pó',  5, 'lata',    date(2026, 6, 28)),
         ]:
@@ -306,7 +306,7 @@ class Command(BaseCommand):
             ('Arroz',        10, 'kg',      date(2027, 1, 15)),
             ('Feijão',        8, 'kg',      date(2026, 12, 10)),
             ('Óleo De Soja',  3, 'unidade', date(2026, 10, 1)),
-            ('Macarrão',      8, 'pacote',  date(2026, 11, 20)),
+            ('Macarrão',      8, 'pacotes',  date(2026, 11, 20)),
             ('Açúcar',        3, 'kg',      date(2027, 3, 1)),
             ('Leite Em Pó',   4, 'lata',    date(2026, 6, 28)),
         ]:
@@ -324,7 +324,7 @@ class Command(BaseCommand):
             (e_arroz,    'Arroz',        'kg',      2),
             (e_feijao,   'Feijão',       'kg',      1),
             (e_oleo,     'Óleo De Soja', 'unidade', 1),
-            (e_macarrao, 'Macarrão',     'pacote',  1),
+            (e_macarrao, 'Macarrão',     'pacotes',  1),
             (e_acucar,   'Açúcar',       'kg',      1),
             (e_leite,    'Leite Em Pó',  'lata',    1),
         ]:
@@ -340,7 +340,7 @@ class Command(BaseCommand):
         for est, nome, unid, qtd in [
             (e_arroz,    'Arroz',       'kg',     2),
             (e_feijao,   'Feijão',      'kg',     1),
-            (e_macarrao, 'Macarrão',    'pacote', 1),
+            (e_macarrao, 'Macarrão',    'pacotes', 1),
             (e_leite,    'Leite Em Pó', 'lata',   1),
         ]:
             ItemCestaEntregue.objects.create(
