@@ -6,7 +6,7 @@ from .models import Atendimento
 class AtendimentoAdmin(admin.ModelAdmin):
     list_display = ['familia', 'tipo', 'data', 'paroquia', 'registrado_por']
     list_filter = ['tipo', 'paroquia', 'data']
-    search_fields = ['familia__responsavel_nome']
+    search_fields = ['familia__responsavel_nome', 'paroquia']
     ordering = ['-data']
     readonly_fields = ['paroquia', 'registrado_por', 'criado_em']
 

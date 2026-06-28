@@ -170,47 +170,36 @@
             if (!estoqueByNome[n]) estoqueByNome[n] = id;
         });
 
+        // Save template before clearing
+        const existingRows = container.querySelectorAll('.item-row');
+        if (!existingRows.length) return;
+        const templateRow = existingRows[0].cloneNode(true);
+
         // Remove existing rows
-        container.querySelectorAll('.item-row').forEach(r => r.remove());
+        existingRows.forEach(r => r.remove());
         totalForms.value = 0;
 
         modeloItens.forEach((modeloItem, i) => {
-            // Clone from the last row template (or first row)
-            const allRows = container.querySelectorAll('.item-row');
-            let newRow;
-            if (allRows.length > 0) {
-                newRow = allRows[allRows.length - 1].cloneNode(true);
-            } else {
-                // get template from hidden or create minimal row by cloning from existing
-                // fallback: trigger btn-add logic manually
-                btnAdd.click();
-                const addedRows = container.querySelectorAll('.item-row');
-                newRow = addedRows[addedRows.length - 1];
-                newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${i}-`);
-            }
+            const newRow = templateRow.cloneNode(true);
+            newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${i}-`);
+            newRow.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
+            newRow.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+            newRow.querySelectorAll('.estoque-info').forEach(el => el.textContent = '');
+            newRow.style.display = '';
+            container.appendChild(newRow);
+            totalForms.value = i + 1;
+            bindRow(newRow);
 
-            if (newRow.parentNode !== container) {
-                newRow.innerHTML = newRow.innerHTML.replace(/itens-(\d+)-/g, `itens-${i}-`);
-                newRow.querySelectorAll('input:not([type=hidden])').forEach(el => el.value = '');
-                newRow.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-                newRow.style.display = '';
-                container.appendChild(newRow);
-                totalForms.value = i + 1;
-            }
-
-            // Pre-fill stock select
             const select = newRow.querySelector('.item-estoque-select');
             const qtdInput = newRow.querySelector('.quantidade-input');
             const matchId = estoqueByNome[modeloItem.nome];
             if (select && matchId) {
                 select.value = matchId;
-                bindRow(newRow);
                 updateInfo(select);
             }
             if (qtdInput) qtdInput.value = modeloItem.quantidade;
         });
 
-        // Ensure TOTAL_FORMS is correct
         totalForms.value = container.querySelectorAll('.item-row').length;
     });
 })();
