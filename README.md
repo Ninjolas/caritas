@@ -20,11 +20,11 @@ Sistema web desenvolvido em Django para apoiar as atividades da Cáritas Diocesa
 | **Estoque** | Controle de produtos com catálogo, validade e alertas |
 | **Doações** | Registro de doações recebidas (itens e financeiro) |
 | **Atendimentos** | Histórico de atendimentos vinculados às famílias |
-| **Cestas** | Montagem e entrega de cestas básicas |
+| **Cestas** | Recebimento de cestas (itens lançados no estoque automaticamente), modelos de cesta para pré-preencher entregas, e listagem separada de cestas recebidas e entregues |
 | **Bazar** | Estoque, doações e vendas do bazar de roupas |
 | **Brechó** | Eventos de brechó com controle de vendas |
 | **Financeiro** | Movimentações de entrada e saída por paróquia/diocese |
-| **Relatórios** | Gráficos e resumos por período |
+| **Relatórios** | Resumos e gráficos por período com navegação mensal, histórico dos últimos 6 meses e exportação em CSV |
 
 ---
 
